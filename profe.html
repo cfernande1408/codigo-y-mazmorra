@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel del profesor · Código y Mazmorra</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'><rect x='3' y='5' width='28' height='24' rx='5' fill='%232a2038' stroke='%23b98cff' stroke-width='2'/><path d='M10 13l5 4-5 4' fill='none' stroke='%23f2b544' stroke-width='3' stroke-linecap='round'/><path d='M18 22h7' stroke='%233fd1b5' stroke-width='3' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="5" width="28" height="24" rx="5" fill="#2a2038" stroke="#b98cff" stroke-width="2"/><path d="M10 13l5 4-5 4" fill="none" stroke="#f2b544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 22h7" stroke="#3fd1b5" stroke-width="3" stroke-linecap="round"/></svg>
+    <div><h1>Código <em>y</em> Mazmorra</h1><div class="sub">Panel del profesor</div></div>
+  </div>
+  <div class="cuenta" style="margin-left:auto"><a href="./" class="btn sm" style="text-decoration:none">Ir al juego</a><button class="btn sm" id="salir" hidden>Salir</button></div>
+</header>
+
+<div class="panel" id="panel" hidden>
+  <aside class="card">
+    <h3>Clases</h3>
+    <div class="clases" id="clases"></div>
+    <form class="nueva" id="fNueva"><input id="nNombre" placeholder="Nueva clase, p. ej. 2º SMR B" maxlength="60"><button class="btn sm">Crear</button></form>
+  </aside>
+  <section class="card" id="detalle"></section>
+</div>
+
+<div id="entrada" class="entrada">
+  <form class="ebox" id="fProfe">
+    <div class="brand"><h1>Panel del <em>profe</em></h1></div>
+    <p class="err-msg" id="eErr"></p>
+    <label class="campo"><span>Clave de profesor</span><input id="eClave" type="password" autocomplete="current-password" required></label>
+    <button class="btn primary" id="eBtn">Entrar</button>
+    <p class="aviso">Es la clave que pusiste en la última sección de <code>supabase/schema.sql</code>.</p>
+  </form>
+</div>
+
+<div id="modal" class="modal hidden"><div class="mbox" id="mbox"></div></div>
+<script src="js/config.js"></script>
+<script src="js/nube.js"></script>
+<script src="js/logic.js"></script>
+<script src="js/profe.js"></script>
+</body>
+</html>

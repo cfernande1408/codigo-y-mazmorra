@@ -1,0 +1,14 @@
+{
+  "name": "codigo-y-mazmorra-tests",
+  "description": "Pruebas de Código y Mazmorra",
+  "scripts": {
+    "test": "node logic.test.js",
+    "test:db": "node db.test.js",
+    "mock": "MOCK_CONFIG=1 node mock-supabase.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.1",
+    "pyodide": "^0.26.4"
+  },
+  "private": true
+}

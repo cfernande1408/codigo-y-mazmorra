@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Código y Mazmorra</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'><rect x='3' y='5' width='28' height='24' rx='5' fill='%232a2038' stroke='%23b98cff' stroke-width='2'/><path d='M10 13l5 4-5 4' fill='none' stroke='%23f2b544' stroke-width='3' stroke-linecap='round'/><path d='M18 22h7' stroke='%233fd1b5' stroke-width='3' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="5" width="28" height="24" rx="5" fill="#2a2038" stroke="#b98cff" stroke-width="2"/><path d="M10 13l5 4-5 4" fill="none" stroke="#f2b544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 22h7" stroke="#3fd1b5" stroke-width="3" stroke-linecap="round"/></svg>
+    <div><h1>Código <em>y</em> Mazmorra</h1><div class="sub">Escapa de la mazmorra programando en Python</div></div>
+  </div>
+  <div class="cuenta" id="cuenta" hidden></div>
+  <nav id="levels" aria-label="Niveles"></nav>
+</header>
+<main>
+  <section class="col">
+    <div class="card">
+      <div class="lvl-head">
+        <div><div class="lvl-num" id="lvlNum"></div><h2 id="lvlTitle"></h2></div>
+        <div class="tags" id="tags"></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="cv"></canvas>
+        <div id="loading"><div class="spinner"></div><div>Cargando Python…</div><div class="small">La primera vez tarda unos segundos</div></div>
+      </div>
+      <ul class="goals" id="goals"></ul>
+    </div>
+    <div class="card mission">
+      <h3>Misión</h3>
+      <div id="intro"></div>
+      <details id="hintBox"><summary>Ver pista</summary><div class="hint" id="hint"></div></details>
+    </div>
+  </section>
+  <section class="col">
+    <div class="card">
+      <div class="toolbar">
+        <button id="run" class="btn primary" disabled>▶ Ejecutar</button>
+        <button id="reset" class="btn">↺ Reiniciar</button>
+        <button id="restore" class="btn" title="Vuelve al código inicial del nivel">Código inicial</button>
+        <div class="speed" id="speed"><button data-s="1" class="on">1×</button><button data-s="2">2×</button><button data-s="4">4×</button></div>
+        <div class="lines" id="lineCount"></div>
+      </div>
+      <div class="editor"><div class="gutter" id="gutter"></div><textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor de código"></textarea></div>
+      <div class="kbd">Ctrl + Enter para ejecutar · Tab sangra 4 espacios · Mayús + Tab quita sangría</div>
+    </div>
+    <div class="card">
+      <h3>Consola</h3>
+      <div id="out"></div>
+    </div>
+    <div class="card">
+      <h3>Libro de hechizos</h3>
+      <p class="book-tip">Pulsa un hechizo para escribirlo en el editor.</p>
+      <div class="book-list" id="book"></div>
+    </div>
+  </section>
+</main>
+<footer>
+  <span id="pieTexto">Tu progreso y tu código se guardan en este navegador.</span>
+  <label id="profeLbl"><input type="checkbox" id="profe"> Modo profe (desbloquear todos los niveles)</label>
+  <button id="wipe">Borrar mi progreso</button>
+  <a href="profe.html" id="linkProfe" hidden style="color:var(--muted)">Panel del profesor</a>
+</footer>
+
+<div id="entrada" class="entrada hidden">
+  <form class="ebox" id="fEntrada" autocomplete="off">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="5" width="28" height="24" rx="5" fill="#2a2038" stroke="#b98cff" stroke-width="2"/><path d="M10 13l5 4-5 4" fill="none" stroke="#f2b544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 22h7" stroke="#3fd1b5" stroke-width="3" stroke-linecap="round"/></svg>
+      <h1>Código <em>y</em> Mazmorra</h1>
+    </div>
+    <div class="tabs"><button type="button" data-modo="entrar" class="on">Entrar</button><button type="button" data-modo="nuevo">Soy nuevo</button></div>
+    <p class="err-msg" id="eErr"></p>
+    <label class="campo"><span>Código de clase</span><input id="eClase" class="mono" maxlength="6" required></label>
+    <label class="campo"><span>Tu alias</span><input id="eAlias" maxlength="20" required></label>
+    <label class="campo"><span id="ePinLbl">PIN (4 números)</span><input id="ePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label>
+    <button class="btn primary" id="eBtn">Entrar</button>
+    <p class="aviso" id="eAviso">¿Se te ha olvidado el PIN? Pídele al profe que te lo cambie.</p>
+  </form>
+</div>
+
+<div id="modal" class="modal hidden"><div class="mbox" id="mbox"></div></div>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script src="js/config.js"></script>
+<script src="js/nube.js"></script>
+<script src="js/logic.js"></script>
+<script src="js/juego.js"></script>
+</body>
+</html>
