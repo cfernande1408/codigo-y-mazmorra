@@ -481,7 +481,7 @@ function crearArte(cv) {
       bufanda: '#2bb3a0', bufandaS: '#1f8d7e', camisa: '#fffaf0', camisaS: '#ebdfca', chaleco: '#78b357', chalecoS: '#5d9442',
       short: '#8a6444', shortS: '#6e4f35', media: '#4a5a46', mediaS: '#3a4838', bota: '#7a4f34', botaL: '#a87150', coleta: false, iris: '#6b8a5a' }
   };
-  let pj = PERSONAJES.viajera, sonrie = false;
+  let pj = PERSONAJES.viajera, sonrie = false, OJOS = 'toon';
   const MEJILLA = 'rgba(255,135,135,.5)', BOLSA = '#ad7a4c';
   function heroe(fx0, fy0, dir, pose, ph, k, now) {
     const run = pose === 'run', climb = pose === 'climb', atk = pose === 'attack';
@@ -589,13 +589,28 @@ function crearArte(cv) {
     const ojo = (ex, ey, sx2) => {
       if (aturdido) { ctx.beginPath(); for (let t = 0; t < 1; t += .1) { const a = t * Math.PI * 3.2, rad = 3 * (1 - t * .7); ctx.lineTo(ex + Math.cos(a) * rad * sx2, ey + Math.sin(a) * rad); } tinta(ctx, 1.2); return; }
       if (parpadeo || feliz) { ctx.beginPath(); ctx.moveTo(ex - 3 * sx2, ey + (feliz ? 1 : 0)); ctx.quadraticCurveTo(ex, ey + (feliz ? -2.5 : 1.2), ex + 3 * sx2, ey + (feliz ? 1 : 0)); tinta(ctx, 1.6); return; }
-      // ojo sencillo: óvalo oscuro con reflejo grande, sin blanco ni pestañas
-      const gi = ctx.createLinearGradient(0, ey - 3.4, 0, ey + 3.4); gi.addColorStop(0, '#2a1a12'); gi.addColorStop(.55, '#3b261b'); gi.addColorStop(1, pj.iris);
-      elipse(ctx, ex, ey, 2 * sx2, 3.3); ctx.fillStyle = gi; ctx.fill();
-      elipse(ctx, ex - .45 * sx2, ey - 1.15, .85 * sx2, 1); ctx.fillStyle = '#fff'; ctx.fill();
-      elipse(ctx, ex + .6 * sx2, ey + 1.5, .38 * sx2, .38); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fill();
+      if (OJOS === 'puntos') {
+        // puntitos negros, muy sencillos
+        elipse(ctx, ex, ey, 1.25 * sx2, 2.1); ctx.fillStyle = '#2a1a12'; ctx.fill();
+        elipse(ctx, ex - .35 * sx2, ey - .8, .45 * sx2, .5); ctx.fillStyle = '#fff'; ctx.fill();
+        return;
+      }
+      // ojo toon: almendra blanca, pupila grande y solo el párpado de arriba marcado
+      const W = 2.5 * sx2;
+      const almendra = () => { ctx.beginPath(); ctx.moveTo(ex - W, ey + .8); ctx.bezierCurveTo(ex - W * .85, ey - 4, ex + W * .85, ey - 4.2, ex + W, ey + .2); ctx.bezierCurveTo(ex + W * .75, ey + 3.4, ex - W * .75, ey + 3.6, ex - W, ey + .8); ctx.closePath(); };
+      almendra(); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.save(); almendra(); ctx.clip();
+      const gi = ctx.createLinearGradient(0, ey - 2.6, 0, ey + 3); gi.addColorStop(0, '#1d120c'); gi.addColorStop(1, pj.iris);
+      elipse(ctx, ex + .55 * sx2, ey + .6, 1.6 * sx2, 2.5); ctx.fillStyle = gi; ctx.fill();
+      elipse(ctx, ex + .65 * sx2, ey + .8, .8 * sx2, 1.3); ctx.fillStyle = '#140c08'; ctx.fill();
+      ctx.restore();
+      elipse(ctx, ex + .05 * sx2, ey - .5, .7 * sx2, .8); ctx.fillStyle = '#fff'; ctx.fill();
+      almendra(); ctx.lineWidth = .7; ctx.strokeStyle = 'rgba(74,52,40,.55)'; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ex - W * 1.05, ey + .6); ctx.bezierCurveTo(ex - W * .85, ey - 4, ex + W * .85, ey - 4.2, ex + W * 1.05, ey + .1);
+      ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1810'; ctx.stroke();
     };
-    ojo(hx + 3.8, hy + 2.6, 1); ojo(hx + 10.4, hy + 2.4, .75);
+    const oy = OJOS === 'puntos' ? 2.8 : 3.2;
+    ojo(hx + 3.6, hy + oy, 1); ojo(hx + 10.8, hy + oy - .2, .66);
     // mejillas, nariz y boca
     elipse(ctx, hx + 1.5, hy + 6.5, 2.6, 1.4); ctx.fillStyle = MEJILLA; ctx.fill();
     elipse(ctx, hx + 11.3, hy + 6.2, 1.6, 1.2); ctx.fill();
@@ -923,5 +938,6 @@ function crearArte(cv) {
     ctx.restore();
     pj = antes;
   }
-  return { prepara, pinta, evento, limpia, personaje, retrato };
+  function ojos(estilo) { OJOS = estilo; }
+  return { prepara, pinta, evento, limpia, personaje, retrato, ojos };
 }
