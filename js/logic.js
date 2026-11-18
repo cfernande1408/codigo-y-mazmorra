@@ -1,5 +1,5 @@
 // ===== Código y Mazmorra · lógica del juego (sin DOM) =====
-const NOMBRES = ["Grumo","Babos","Torvo","Mocarro","Zarpas","Lodo","Bufo","Pringue","Moco","Ceporro","Gorgojo","Tufo"];
+const NOMBRES = ["SyntaxError","NameError","TypeError","ValueError","IndexError","KeyError","AttributeError","ImportError","OverflowError","EOFError","Bug","Typo"];
 const CLAVES = ["abracadabra","calabaza","murcielago","tostada","kraken","pimiento","bigote","pepinillo","zanahoria","catapulta","macarrones","escarabajo"];
 const MAX_FRAMES = 1200;
 const VIDAS = 3;
@@ -68,12 +68,12 @@ const LEVELS = [
     make: () => ({ map: ["##########", "#H....g..#", "########.#", "#S..g....#", "##########"], enemies: [] })
   },
   {
-    clave: 'guardias', title: "Los guardias", concept: "Textos (str)", goals: ["salida"], maxLines: 7,
+    clave: 'guardias', title: "Los bugs", concept: "Textos (str)", goals: ["salida"], maxLines: 7,
     nuevos: ["atacar"],
-    intro: `<p>Dos guardias te cortan el paso. Para atacar, escribe su nombre <b>entre comillas</b>:</p><pre>atacar("Grumo")</pre><p>Un texto entre comillas es un <b>string</b> (<code>str</code>). Cada golpe quita 1 vida y cada guardia tiene 2. Tienes que estar <b>pegado</b> a él para atacar.</p>`,
-    hint: `Avanza 1, ataca a Grumo dos veces, avanza 4, ataca a Babos dos veces y avanza 3. Las mayúsculas cuentan: <code>"grumo"</code> no es lo mismo que <code>"Grumo"</code>.`,
+    intro: `<p>Dos bugs te cortan el paso. Se llaman como los errores de Python. Para atacar, escribe su nombre <b>entre comillas</b>:</p><pre>atacar("SyntaxError")</pre><p>Un texto entre comillas es un <b>string</b> (<code>str</code>). Cada golpe quita 1 vida y cada bug tiene 2. Tienes que estar <b>pegado</b> a él para atacar.</p>`,
+    hint: `Avanza 1, ataca a SyntaxError dos veces, avanza 4, ataca a NameError dos veces y avanza 3. Las mayúsculas cuentan: <code>"syntaxerror"</code> no es lo mismo que <code>"SyntaxError"</code>.`,
     starter: `derecha()\n`,
-    make: () => ({ map: ["###########", "#H.E...E.S#", "###########"], enemies: [{ name: "Grumo", hp: 2 }, { name: "Babos", hp: 2 }] })
+    make: () => ({ map: ["###########", "#H.E...E.S#", "###########"], enemies: [{ name: "SyntaxError", hp: 2 }, { name: "NameError", hp: 2 }] })
   },
   {
     clave: 'escalones', title: "Los escalones", concept: "Variables", goals: ["salida"], maxLines: 6,
@@ -139,7 +139,7 @@ const LEVELS = [
     clave: 'palabras', title: "Las palabras mágicas", concept: "Bloques de texto", goals: ["salida"], maxLines: null, random: true,
     nuevos: ["textos"],
     intro: `<p>Tres rejas que solo abren con palabras. Las variables <code>guardian</code> (un nombre) y <code>veces</code> (un número) ya existen y cambian en cada partida.</p><pre>reja +    "Hola, " + guardian\nreja *    "ja" * veces\nreja """  el pergamino de 3 líneas</pre><p>El pergamino es un <b>bloque de texto</b>: un texto de varias líneas escrito entre <b>comillas triples</b>:</p><pre>hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""</pre><p>Este nivel es mejor resolverlo en el editor con <b>Ejecutar</b>, porque la consola es de una sola línea.</p>`,
-    hint: `Con <code>+</code> se juntan textos y con <code>*</code> se repiten. El saludo tiene que quedar exacto, con su coma y su espacio: <code>Hola, Grumo</code>.`,
+    hint: `Con <code>+</code> se juntan textos y con <code>*</code> se repiten. El saludo tiene que quedar exacto, con su coma y su espacio: <code>Hola, NameError</code>.`,
     starter: `hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""\n\nderecha()\n`,
     make: () => {
       const guardian = NOMBRES[rnd(0, NOMBRES.length - 1)], veces = rnd(2, 5), hechizo = 'Uno para el sol\nDos para la luna\nTres para abrir';
@@ -230,15 +230,15 @@ const LEVELS = [
   {
     clave: 'emboscada', title: "Emboscada", concept: "Condicionales if", goals: ["salida"], maxLines: 5, random: true,
     nuevos: ["enemigo_cercano"],
-    intro: `<p>Hay guardias en sitios que cambian en cada partida. Avanza casilla a casilla y, <b>si</b> tienes un enemigo al lado, atácalo antes de seguir.</p><pre>enemigo = enemigo_cercano()\nif enemigo:\n    atacar(enemigo)</pre><p><code>enemigo_cercano()</code> te da su nombre, o <code>None</code> si no hay nadie. Un <code>if</code> con <code>None</code> funciona como <code>False</code>. Estos guardias caen de un golpe.</p>`,
+    intro: `<p>Hay bugs en sitios que cambian en cada partida. Avanza casilla a casilla y, <b>si</b> tienes un enemigo al lado, atácalo antes de seguir.</p><pre>enemigo = enemigo_cercano()\nif enemigo:\n    atacar(enemigo)</pre><p><code>enemigo_cercano()</code> te da su nombre, o <code>None</code> si no hay nadie. Un <code>if</code> con <code>None</code> funciona como <code>False</code>. Estos bugs caen de un golpe.</p>`,
     hint: `Son 8 pasos: <code>for i in range(8):</code>. Dentro: mira si hay enemigo, atácalo si lo hay y después avanza.`,
     starter: `for i in range(8):\n    derecha()\n`,
     make: pasilloConGuardias(1, 1, 2, 4)
   },
   {
-    clave: 'tozudos', title: "Guardias tozudos", concept: "while dentro de for", goals: ["salida"], maxLines: 5, random: true,
+    clave: 'tozudos', title: "Bugs tozudos", concept: "while dentro de for", goals: ["salida"], maxLines: 5, random: true,
     nuevos: [],
-    intro: `<p>Estos guardias aguantan entre 1 y 3 golpes, y no sabes cuántos. Tienes que atacar <b>mientras</b> siga habiendo un enemigo a tu lado.</p><p>Es un bucle <code>while</code> metido dentro de un bucle <code>for</code>. Fíjate bien en la sangría: cada nivel, 4 espacios más.</p>`,
+    intro: `<p>Estos bugs aguantan entre 1 y 3 golpes, y no sabes cuántos. Tienes que atacar <b>mientras</b> siga habiendo un enemigo a tu lado.</p><p>Es un bucle <code>while</code> metido dentro de un bucle <code>for</code>. Fíjate bien en la sangría: cada nivel, 4 espacios más.</p>`,
     hint: `Parte de tu solución del nivel anterior y cambia el <code>if</code> por un <code>while</code>. Dentro del while puedes atacar a <code>enemigo_cercano()</code> directamente.`,
     starter: `for i in range(8):\n    derecha()\n`,
     make: pasilloConGuardias(1, 3, 3, 5)
@@ -604,7 +604,7 @@ class Heroe:
     def mover(self, direccion, pasos=1): self._mov(_dir(direccion), pasos)
     def atacar(self, nombre):
         if not isinstance(nombre, str):
-            raise ErrorHeroe('Para atacar, escribe el nombre del enemigo entre comillas: atacar("Grumo")')
+            raise ErrorHeroe('Para atacar, escribe el nombre del enemigo entre comillas: atacar("NameError")')
         juego.atacar(nombre)
         self._chk()
     def decir(self, texto=""):

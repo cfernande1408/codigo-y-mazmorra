@@ -608,7 +608,7 @@ function crearArte(cv) {
     ctx.fillStyle = '#ffe58a'; ctx.fill(); tinta(ctx, 1.2);
   }
   // Enemigo: roca gruñona cubierta de musgo, con un brote en la cabeza
-  function enemigo(e, fx0, fy0, dir, now, alpha, hitK, hp) {
+  function enemigo(e, fx0, fy0, dir, now, alpha, hitK, hp, sube) {
     const br = Math.sin(now / 420 + e.x * 1.7), kb = hitK >= 0 && hitK < .6 ? Math.sin(hitK / .6 * Math.PI) * 6 : 0;
     const musgo = `hsl(${(e.hue % 60) + 85},45%,52%)`, musgoS = `hsl(${(e.hue % 60) + 85},45%,38%)`;
     ctx.save(); ctx.globalAlpha = alpha;
@@ -641,7 +641,7 @@ function crearArte(cv) {
     if (alpha > .3) {
       ctx.save(); ctx.globalAlpha = alpha;
       ctx.font = '800 12px Nunito, system-ui, sans-serif'; ctx.textAlign = 'center';
-      const tw = ctx.measureText(e.name).width + 14, ty = fy0 - 74;
+      const tw = ctx.measureText(e.name).width + 14, ty = fy0 - 74 - (sube ? 26 : 0);
       rr(ctx, fx0 - tw / 2, ty - 11, tw, 17, 8); ctx.fillStyle = '#fffaf0'; ctx.fill(); tinta(ctx, 1.6);
       ctx.fillStyle = INK; ctx.fillText(e.name, fx0, ty + 2);
       for (let i = 0; i < e.max; i++) { rr(ctx, fx0 - e.max * 5.5 + i * 11 + 1, ty + 9, 9, 6, 3); ctx.fillStyle = i < hp ? '#ef7d6c' : '#d9cfc0'; ctx.fill(); tinta(ctx, 1.2); }
@@ -786,7 +786,9 @@ function crearArte(cv) {
       const hit = c.attack && c.attack.x === e.x && c.attack.y === e.y;
       const alpha = e.hp <= 0 ? Math.max(0, 1 - k * 1.6) : 1;
       const dir = c.hx * T + T / 2 < e.x * T + T / 2 ? -1 : 1;
-      dib.push({ z: e.y + .001 * e.x, f: () => enemigo(e, e.x * T + T / 2, sueloY(e.x, e.y), dir, now, alpha, hit ? k : -1, k < .3 ? pe.hp : e.hp) });
+      // si hay otro bicho pegado, alterna la altura del cartel para que no se pisen
+      const sube = e.x % 2 === 1 && c.enemies.some(o => o !== e && o.hp > 0 && o.y === e.y && Math.abs(o.x - e.x) === 1);
+      dib.push({ z: e.y + .001 * e.x, f: () => enemigo(e, e.x * T + T / 2, sueloY(e.x, e.y), dir, now, alpha, hit ? k : -1, k < .3 ? pe.hp : e.hp, sube) });
     });
     dib.push({ z: hyC + .5, f: () => heroe(fxp, fyp, c.facing || 1, ph.pose, ph.ph, k, now) });
     dib.sort((a, b) => a.z - b.z).forEach(d => d.f());

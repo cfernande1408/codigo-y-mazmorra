@@ -8,7 +8,7 @@ const api = G.makeApi(() => SIM, { pedir: () => respuestas.length ? respuestas.s
 const SOL = {
   celda: `derecha()\nderecha()\nabajo()\nabajo()\nderecha()\nderecha()`,
   gemas: `derecha(7)\nabajo(2)\nizquierda(7)`,
-  guardias: `derecha()\natacar("Grumo")\natacar("Grumo")\nderecha(4)\natacar("Babos")\natacar("Babos")\nderecha(3)`,
+  guardias: `derecha()\natacar("SyntaxError")\natacar("SyntaxError")\nderecha(4)\natacar("NameError")\natacar("NameError")\nderecha(3)`,
   escalones: `pasos = 3\nderecha(pasos)\nabajo()\nderecha(pasos)\nabajo()\nderecha(pasos)`,
   clave: `clave = leer()\nderecha(2)\ndecir(clave)\nderecha(4)`,
   constantes: `ANCHO = 4\nALTO = 2\nderecha(ANCHO)\narriba(ALTO)\nderecha(ANCHO)`,
