@@ -66,9 +66,9 @@ function crearArte(cv) {
     nubeBlanca(g, LW * .55, 205, 110, 32, 53);
     // montes lejanos y campo
     capaColinas(g, LH * .6, '#7fb7d8', 90, 3, .7);
-    bosque(g, LH * .66, '#5f9f73', '#4b8a63', 7, 22);
+    bosque(g, LH * .66, VERDES.lejos, 7, 9, 26, 46, false);
     capaColinas(g, LH * .7, '#88c46a', 50, 17, 1.1);
-    bosque(g, LH * .76, '#58a04c', '#3f8640', 27, 30);
+    bosque(g, LH * .76, VERDES.medio, 27, 7, 50, 88, true);
     capaColinas(g, LH * .82, '#6db552', 35, 31, 1.5);
     hierbaLejana(g, LH * .82, 41);
     return c;
@@ -110,14 +110,82 @@ function crearArte(cv) {
     }
     g.restore();
   }
-  // hilera de árboles pintados con manchas de hoja
-  function bosque(g, base, col, colS, sem, n) {
-    const r = semilla(sem);
+  // ---------- vegetación: todo se pinta con la misma receta ----------
+  // copa = varios grumos de hoja. Cada grumo tiene borde festoneado (no es
+  // un círculo) y tres tonos: sombra abajo, medio y luz arriba a la izquierda.
+  // Se pinta primero la sombra de todos, luego el medio y luego la luz, así la
+  // copa se lee como una sola masa con volúmenes dentro.
+  const VERDES = {
+    lejos: { osc: '#5d8f86', med: '#6fa392', cla: '#8bbca2', bri: null, tronco: '#6f7f78' },
+    medio: { osc: '#3f7f45', med: '#559a4f', cla: '#7dbd5c', bri: 'rgba(200,236,140,.75)', tronco: '#7a5a42' },
+    fondo: { osc: '#86b874', med: '#9cc884', cla: '#b8db9c', bri: null, tronco: '#8a7058' },
+    cerca: { osc: '#357238', med: '#4c9145', cla: '#76b955', bri: 'rgba(214,244,150,.85)', tronco: '#6e4c36' }
+  };
+  function festonea(g, x, y, rad, r) {
+    g.beginPath(); g.arc(x, y, rad * .78, 0, Math.PI * 2);
+    const n = 9;
     for (let i = 0; i < n; i++) {
-      const x = (i / n) * LW + r() * 40 - 20, h = 22 + r() * 30, y = base + r() * 10;
-      g.fillStyle = colS; elipse(g, x + 3, y - h * .4, h * .55, h * .5); g.fill();
-      g.fillStyle = col; elipse(g, x, y - h * .5, h * .5, h * .48); g.fill();
-      for (let k = 0; k < 7; k++) { g.fillStyle = k % 2 ? 'rgba(170,220,120,.55)' : 'rgba(60,120,60,.35)'; elipse(g, x - h * .3 + r() * h * .6, y - h * .8 + r() * h * .6, 3 + r() * 5, 2 + r() * 3); g.fill(); }
+      const a = (i / n) * Math.PI * 2 + r() * .4, rr = rad * (.26 + r() * .1);
+      const cx = x + Math.cos(a) * (rad - rr * .9), cy = y + Math.sin(a) * (rad - rr * .9) * .92;
+      g.moveTo(cx + rr, cy); g.arc(cx, cy, rr, 0, Math.PI * 2);
+    }
+    g.fill();
+  }
+  function copa(g, grumos, pal, sem, detalle) {
+    let r = semilla(sem);
+    g.fillStyle = pal.osc; grumos.forEach(c => festonea(g, c.x + c.r * .06, c.y + c.r * .08, c.r, r));
+    r = semilla(sem + 1);
+    g.fillStyle = pal.med; grumos.forEach(c => festonea(g, c.x - c.r * .06, c.y - c.r * .1, c.r * .84, r));
+    r = semilla(sem + 2);
+    g.fillStyle = pal.cla; grumos.forEach(c => festonea(g, c.x - c.r * .26, c.y - c.r * .34, c.r * .46, r));
+    if (detalle && pal.bri) {
+      r = semilla(sem + 3); g.fillStyle = pal.bri;
+      grumos.forEach(c => { for (let k = 0; k < 3; k++) { const a = Math.PI * (1.05 + r() * .7); elipse(g, c.x + Math.cos(a) * c.r * .62, c.y + Math.sin(a) * c.r * .62, c.r * .13, c.r * .08); g.fill(); } });
+      g.lineWidth = 1.1; g.strokeStyle = 'rgba(40,70,40,.2)';
+      grumos.forEach(c => { g.beginPath(); g.arc(c.x, c.y + c.r * .1, c.r * .9, Math.PI * .15, Math.PI * .85); g.stroke(); });
+    }
+  }
+  function tronco(g, x, base, alto, ancho, col) {
+    g.fillStyle = col;
+    poly(g, [[x - ancho, base], [x - ancho * .55, base - alto], [x + ancho * .55, base - alto], [x + ancho, base]]); g.fill();
+    g.strokeStyle = col; g.lineCap = 'round'; g.lineWidth = ancho * .7;
+    g.beginPath(); g.moveTo(x, base - alto * .55); g.lineTo(x - ancho * 2.4, base - alto * 1.05);
+    g.moveTo(x, base - alto * .7); g.lineTo(x + ancho * 2.2, base - alto * 1.1); g.stroke();
+    g.fillStyle = 'rgba(40,25,15,.25)'; poly(g, [[x + ancho * .1, base], [x + ancho * .1, base - alto], [x + ancho * .55, base - alto], [x + ancho, base]]); g.fill();
+  }
+  // tipo: 'copa' (árbol ancho), 'alamo' (alto y estrecho) o 'mata' (arbusto)
+  function arbol(g, x, base, h, tipo, pal, sem, detalle) {
+    const r = semilla(sem), grumos = [];
+    g.fillStyle = 'rgba(40,80,30,.18)'; elipse(g, x + h * .05, base + 1, h * (tipo === 'alamo' ? .12 : .3), h * .04); g.fill();
+    if (tipo === 'mata') {
+      const n = 3 + Math.floor(r() * 2);
+      for (let i = 0; i < n; i++) grumos.push({ x: x + (i - (n - 1) / 2) * h * .42 + r() * h * .1, y: base - h * (.32 + r() * .12) - (i % 2) * h * .18, r: h * (.34 + r() * .1) });
+    } else if (tipo === 'alamo') {
+      tronco(g, x, base, h * .3, h * .035, pal.tronco);
+      for (let i = 0; i < 5; i++) { const t = i / 4; grumos.push({ x: x + (r() - .5) * h * .08, y: base - h * (.3 + t * .62), r: h * (.15 - t * .05) }); }
+    } else {
+      tronco(g, x, base, h * .48, h * .045, pal.tronco);
+      const cy = base - h * .66, w = h * .44;
+      grumos.push({ x, y: cy - h * .16, r: h * .22 }, { x: x - w * .38, y: cy - h * .1, r: h * .19 }, { x: x + w * .4, y: cy - h * .08, r: h * .18 }, { x: x - w * .05, y: cy + h * .04, r: h * .2 });
+      for (let i = 0; i < 6; i++) { const a = Math.PI * (1.05 + i / 5 * .9), d = .75 + r() * .2; grumos.push({ x: x + Math.cos(a) * w * d, y: cy + Math.sin(a) * h * .22 * d + h * .1, r: h * (.17 + r() * .06) }); }
+    }
+    // los grumos de abajo primero para que los de arriba los tapen
+    grumos.sort((a, b) => b.y - a.y);
+    copa(g, grumos, pal, sem * 7 + 1, detalle);
+  }
+  // hilera de árboles con huecos, mezcla de tipos y matas al pie
+  function bosque(g, base, pal, sem, n, hMin, hMax, detalle) {
+    const r = semilla(sem);
+    let x = -20;
+    while (x < LW + 40) {
+      const grupo = 2 + Math.floor(r() * 3);
+      for (let i = 0; i < grupo; i++) {
+        const h = hMin + r() * (hMax - hMin), y = base + r() * 8, t = r();
+        arbol(g, x, y, h, t < .22 ? 'alamo' : 'copa', pal, Math.floor(r() * 1e6), detalle);
+        x += h * (.38 + r() * .3);
+      }
+      if (r() < .7) arbol(g, x - hMin * .2, base + 10, hMin * .45, 'mata', pal, Math.floor(r() * 1e6), detalle);
+      x += LW / n * (.4 + r() * .9);
     }
   }
   function hierbaLejana(g, base, sem) {
@@ -212,11 +280,7 @@ function crearArte(cv) {
       manchas(g, px, py, T, T, 'rgba(255,220,170,A)', 3, x * 13 + y, .18);
       return;
     }
-    for (let i = 0; i < 3; i++) {
-      const bx = px + 8 + i * 22 + hash(x, y, 20 + i) * 8, bh = 14 + hash(x, y, 30 + i) * 22;
-      g.fillStyle = i % 2 ? 'rgba(120,175,100,.55)' : 'rgba(140,190,110,.5)';
-      elipse(g, bx, py + T - bh * .45, 15 + h * 6, bh * .55); g.fill();
-    }
+    if (h < .45) arbol(g, px + T * (.3 + h), py + T + 2, 26 + h * 30, 'mata', VERDES.cerca, x * 31 + y * 7, true);
     if (h > .6) for (let i = 0; i < 4; i++) { elipse(g, px + 10 + hash(x, y, 40 + i) * 44, py + T - 8 - hash(x, y, 50 + i) * 16, 2.2, 2.2); g.fillStyle = ['#ffffff', '#ffd6e3', '#fff2a8', '#d6e8ff'][i]; g.fill(); }
   }
   function relleno(g, x, y) {
