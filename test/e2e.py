@@ -46,6 +46,8 @@ async def main():
             await al.wait_for_selector('#cuenta:not([hidden])')
             await al.wait_for_selector('#home:not([hidden])')
             await al.screenshot(path=str(SHOTS / 'a1b_inicio.png'))
+            assert await al.locator('#mundos.bloqueado').count() == 1
+            await al.click('[data-pj="viajera"]')
             await al.click('[data-mundo="1"]')
             await al.wait_for_function("!document.getElementById('run').disabled", timeout=90000)
             await al.fill('#code', SOL1); await al.click('#run')
@@ -75,6 +77,7 @@ async def main():
             await al2.click('#eBtn'); await al2.wait_for_selector('#cuenta:not([hidden])')
             await al2.wait_for_selector('#home:not([hidden])')
             assert '1/2 niveles' in await al2.inner_text('[data-mundo="1"]')
+            await al2.click('[data-pj="viajero"]')
             await al2.click('[data-mundo="1"]')
             assert 'nivel 2' in (await al2.inner_text('#lvlNum')).lower(), 'debía abrir el nivel 2'
             await al2.evaluate("location.hash = '#mundo-2'"); await al2.wait_for_timeout(300)

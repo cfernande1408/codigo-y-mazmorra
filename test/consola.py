@@ -29,6 +29,7 @@ async def main():
             pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
             await pg.goto('http://localhost:8791/')
             await pg.wait_for_function("!document.getElementById('run').disabled", timeout=90000)
+            await pg.click('[data-pj="viajero"]')
             await pg.evaluate("location.hash = '#nivel-1'"); await pg.wait_for_selector('#juego:not([hidden])')
             await orden(pg, 'derecha()')
             await orden(pg, 'derecha()')

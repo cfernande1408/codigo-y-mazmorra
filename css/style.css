@@ -199,3 +199,16 @@ header .volver{white-space:nowrap}
 .aviso-mapa{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:88%;background:#fff4dc;color:#24102b;border:3px solid #24102b;border-radius:14px;padding:8px 14px;font:800 14px Nunito,system-ui,sans-serif;box-shadow:0 6px 0 rgba(0,0,0,.35);animation:pop .2s ease-out;text-align:center;line-height:1.35}
 .aviso-mapa.error{background:#ffd6dc}
 .aviso-mapa.ok{background:#d9ffe6}
+
+/* ---------- elección de personaje ---------- */
+.elige{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 20px}
+.elige h3{margin:0 0 4px;font-family:"Pixelify Sans",monospace;font-size:24px;color:var(--gold)}
+.elige p{margin:0;color:var(--muted);max-width:340px;line-height:1.45}
+.elige.falta{border-color:var(--gold);box-shadow:0 0 0 3px rgba(247,189,69,.25)}
+.elige.falta p{color:var(--gold);font-weight:800}
+.pjs{display:flex;gap:14px;margin-left:auto}
+.pj{background:var(--panel2);border:3px solid var(--line);border-radius:16px;padding:6px 6px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text);font:800 15px Nunito,system-ui,sans-serif;transition:transform .15s,border-color .15s}
+.pj:hover{transform:translateY(-3px);border-color:var(--teal)}
+.pj.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(247,189,69,.3)}
+.pj canvas{width:150px;height:159px;border-radius:11px;display:block}
+#mundos.bloqueado{opacity:.4;pointer-events:none;filter:grayscale(.4)}

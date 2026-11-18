@@ -155,7 +155,7 @@ function crearArte(cv) {
   }
 
   // ---------- nivel: islas de tierra con hierba ----------
-  const MB = 380;
+  const MB = 60;
   let forma = null; // 0 = cielo, 1 = borde, 2 = relleno
   function calculaForma() {
     forma = [];
@@ -407,12 +407,18 @@ function crearArte(cv) {
     const kx = x + Math.sin(a1) * l1, ky = y + Math.cos(a1) * l1;
     return [[x, y], [kx, ky], [kx + Math.sin(a2) * l2, ky + Math.cos(a2) * l2]];
   }
-  // La viajera (proporciones chibi): cabeza grande, ojos grandes con brillos,
-  // flequillo de mechones, coleta con lazo, bufanda de dos puntas, chaleco mostaza,
-  // pantalón corto azul, bolsa en bandolera y espada corta.
-  const PIEL = '#ffe1c9', PIEL_S = '#f3bfa2', MEJILLA = 'rgba(255,135,135,.5)', PELO = '#6a4130', PELO_S = '#4e2e22', PELO_L = '#a8714c',
-    BUFANDA = '#f06e5c', BUFANDA_S = '#cf5444', CAMISA = '#fffaf0', CAMISA_S = '#ebdfca', CHALECO = '#f1b54b', CHALECO_S = '#d4953a',
-    SHORT = '#5f88ba', SHORT_S = '#4b6f9b', MEDIA = '#4c5578', BOTA = '#8c5a3a', BOTA_L = '#b67a50', BOLSA = '#ad7a4c';
+  // Personajes (proporciones chibi). Comparten cuerpo y animaciones; cambian el
+  // pelo, los colores y algún detalle de la cara.
+  const PERSONAJES = {
+    viajera: { nombre: 'Viajera', piel: '#ffe1c9', pielS: '#f3bfa2', pelo: '#6a4130', peloS: '#4e2e22', peloL: '#a8714c',
+      bufanda: '#f06e5c', bufandaS: '#cf5444', camisa: '#fffaf0', camisaS: '#ebdfca', chaleco: '#f1b54b', chalecoS: '#d4953a',
+      short: '#5f88ba', shortS: '#4b6f9b', media: '#4c5578', mediaS: '#3d4566', bota: '#8c5a3a', botaL: '#b67a50', coleta: true, iris: '#a8714c' },
+    viajero: { nombre: 'Viajero', piel: '#f9d7bb', pielS: '#e9b493', pelo: '#3b2a24', peloS: '#281c18', peloL: '#6e5246',
+      bufanda: '#2bb3a0', bufandaS: '#1f8d7e', camisa: '#fffaf0', camisaS: '#ebdfca', chaleco: '#78b357', chalecoS: '#5d9442',
+      short: '#8a6444', shortS: '#6e4f35', media: '#4a5a46', mediaS: '#3a4838', bota: '#7a4f34', botaL: '#a87150', coleta: false, iris: '#6b8a5a' }
+  };
+  let pj = PERSONAJES.viajera;
+  const MEJILLA = 'rgba(255,135,135,.5)', BOLSA = '#ad7a4c';
   function heroe(fx0, fy0, dir, pose, ph, k, now) {
     const run = pose === 'run', climb = pose === 'climb', atk = pose === 'attack';
     let bob = run ? -Math.abs(Math.sin(ph)) * 2.6 : climb ? Math.sin(ph * 2) * 1 : Math.sin(now / 480) * .7;
@@ -446,73 +452,81 @@ function crearArte(cv) {
     const vel = run ? 1 : climb ? .4 : .3, ond = Math.sin(now / 140) * 3 * vel + Math.sin(now / 320) * 1.4;
 
     // bufanda: dos puntas al viento (detrás de todo)
-    [[0, BUFANDA_S], [1, BUFANDA]].forEach(([i, col]) => {
+    [[0, pj.bufandaS], [1, pj.bufanda]].forEach(([i, col]) => {
       const o = ond * (1 + i * .3), lx = -20 - vel * 7 - i * 3, ly = -26 + i * 4 + o;
       ctx.beginPath(); ctx.moveTo(sh[0] - 3, sh[1] - 1);
       ctx.bezierCurveTo(-8, -28 + o * .3, lx + 8, ly - 3, lx, ly);
       ctx.lineTo(lx + 1.5, ly + 4.5); ctx.bezierCurveTo(lx + 9, ly + 1, -7, -23 + o * .2, sh[0] - 2, sh[1] + 3); ctx.closePath();
       ctx.fillStyle = col; ctx.fill(); tinta(ctx, 1.5);
     });
+    if (pj.coleta) {
     // coleta (detrás de la cabeza)
     const col = ond * .8;
     ctx.beginPath(); ctx.moveTo(hx - 11, hy - 6);
     ctx.bezierCurveTo(hx - 24 - col * .4, hy - 7, hx - 24 - col, hy + 6, hx - 19 - col, hy + 13);
     ctx.quadraticCurveTo(hx - 17 - col * .6, hy + 4, hx - 10, hy + 1); ctx.closePath();
-    ctx.fillStyle = PELO; ctx.fill(); tinta(ctx, 1.5);
-    ctx.beginPath(); ctx.moveTo(hx - 15, hy - 4); ctx.quadraticCurveTo(hx - 20 - col * .5, hy + 1, hx - 19 - col, hy + 8); ctx.lineWidth = 1.2; ctx.strokeStyle = PELO_L; ctx.stroke();
-    elipse(ctx, hx - 12, hy - 5, 3, 2.6); ctx.fillStyle = BUFANDA; ctx.fill(); tinta(ctx, 1.3);
+    ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
+    ctx.beginPath(); ctx.moveTo(hx - 15, hy - 4); ctx.quadraticCurveTo(hx - 20 - col * .5, hy + 1, hx - 19 - col, hy + 8); ctx.lineWidth = 1.2; ctx.strokeStyle = pj.peloL; ctx.stroke();
+    elipse(ctx, hx - 12, hy - 5, 3, 2.6); ctx.fillStyle = pj.bufanda; ctx.fill(); tinta(ctx, 1.3);
 
+    }
     // brazo y pierna de atrás
     const ba = miembro(sh[0] - 2, sh[1] + 2, ba1, 6.5, ba2, 6);
-    trazo(ctx, ba.slice(0, 2), 5.6, CAMISA_S); trazo(ctx, ba.slice(1), 5, PIEL_S);
-    elipse(ctx, ba[2][0], ba[2][1], 2.6, 2.6); ctx.fillStyle = PIEL_S; ctx.fill(); tinta(ctx, 1.2);
+    trazo(ctx, ba.slice(0, 2), 5.6, pj.camisaS); trazo(ctx, ba.slice(1), 5, pj.pielS);
+    elipse(ctx, ba[2][0], ba[2][1], 2.6, 2.6); ctx.fillStyle = pj.pielS; ctx.fill(); tinta(ctx, 1.2);
     const bl = miembro(hip[0] - 2.5, hip[1] + 2, bT, 6.5, bS, 6);
-    trazo(ctx, bl.slice(0, 2), 5.8, '#3d4566'); trazo(ctx, bl.slice(1), 5.4, '#3d4566');
+    trazo(ctx, bl.slice(0, 2), 5.8, pj.mediaS); trazo(ctx, bl.slice(1), 5.4, pj.mediaS);
     bota(bl[2], bS, '#6f4630', '#8f6040');
     // bolsa
     rr(ctx, hip[0] - 11, hip[1] - 5, 8.5, 8, 2.5); ctx.fillStyle = BOLSA; ctx.fill(); tinta(ctx, 1.3);
     ctx.fillStyle = '#cf9a68'; ctx.fillRect(hip[0] - 11, hip[1] - 5, 8.5, 2.5);
     // pierna de delante
     const fl = miembro(hip[0] + 2.5, hip[1] + 2, fT, 6.5, fS, 6);
-    trazo(ctx, fl.slice(0, 2), 5.8, MEDIA); trazo(ctx, fl.slice(1), 5.4, MEDIA);
-    bota(fl[2], fS, BOTA, BOTA_L);
+    trazo(ctx, fl.slice(0, 2), 5.8, pj.media); trazo(ctx, fl.slice(1), 5.4, pj.media);
+    bota(fl[2], fS, pj.bota, pj.botaL);
     // pantalón corto
     poly(ctx, [[hip[0] - 7, hip[1] - 2], [hip[0] + 7, hip[1] - 2], [hip[0] + 8.5, hip[1] + 4.5], [hip[0] + 1, hip[1] + 5], [hip[0], hip[1] + 2.5], [hip[0] - 1, hip[1] + 5], [hip[0] - 8.5, hip[1] + 4.5]]);
-    ctx.fillStyle = SHORT; ctx.fill(); tinta(ctx, 1.5);
-    ctx.fillStyle = SHORT_S; ctx.fillRect(hip[0] - 7.5, hip[1] + 1, 5, 3);
+    ctx.fillStyle = pj.short; ctx.fill(); tinta(ctx, 1.5);
+    ctx.fillStyle = pj.shortS; ctx.fillRect(hip[0] - 7.5, hip[1] + 1, 5, 3);
     // torso redondeado: camisa y chaleco
     const torso = () => { ctx.beginPath(); ctx.moveTo(hip[0] - 7, hip[1]); ctx.lineTo(hip[0] + 7, hip[1]); ctx.quadraticCurveTo(sh[0] + 8.5, (hip[1] + sh[1]) / 2, sh[0] + 6, sh[1]); ctx.quadraticCurveTo(sh[0], sh[1] - 2.5, sh[0] - 6, sh[1]); ctx.quadraticCurveTo(hip[0] - 8.5, (hip[1] + sh[1]) / 2, hip[0] - 7, hip[1]); ctx.closePath(); };
-    torso(); ctx.fillStyle = CAMISA; ctx.fill();
+    torso(); ctx.fillStyle = pj.camisa; ctx.fill();
     ctx.save(); torso(); ctx.clip();
-    ctx.fillStyle = CHALECO; ctx.beginPath(); ctx.moveTo(sh[0] - 8, sh[1] - 3); ctx.lineTo(sh[0] + 2, sh[1] - 3); ctx.lineTo(hip[0] + 1, hip[1] + 1); ctx.lineTo(hip[0] - 10, hip[1] + 1); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pj.chaleco; ctx.beginPath(); ctx.moveTo(sh[0] - 8, sh[1] - 3); ctx.lineTo(sh[0] + 2, sh[1] - 3); ctx.lineTo(hip[0] + 1, hip[1] + 1); ctx.lineTo(hip[0] - 10, hip[1] + 1); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(sh[0] + 6, sh[1] - 3); ctx.lineTo(sh[0] + 10, sh[1] - 3); ctx.lineTo(hip[0] + 10, hip[1] + 1); ctx.lineTo(hip[0] + 5, hip[1] + 1); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = CHALECO_S; ctx.fillRect(hip[0] - 10, hip[1] - 12, 4, 13);
+    ctx.fillStyle = pj.chalecoS; ctx.fillRect(hip[0] - 10, hip[1] - 12, 4, 13);
     ctx.restore(); torso(); tinta(ctx, 1.6);
     ctx.fillStyle = '#e7c46a'; elipse(ctx, sh[0] + 3, sh[1] + 5, .9, .9); ctx.fill(); elipse(ctx, sh[0] + 2.6, sh[1] + 9, .9, .9); ctx.fill();
     // correa
     ctx.beginPath(); ctx.moveTo(sh[0] + 5, sh[1] + .5); ctx.lineTo(hip[0] - 6.5, hip[1] - 4); ctx.lineWidth = 3.6; ctx.strokeStyle = INK; ctx.stroke(); ctx.lineWidth = 2; ctx.strokeStyle = BOLSA; ctx.stroke();
     // vuelta de la bufanda
-    rr(ctx, sh[0] - 6.5, sh[1] - 4.5, 13.5, 6, 3); ctx.fillStyle = BUFANDA; ctx.fill(); tinta(ctx, 1.4);
-    ctx.fillStyle = BUFANDA_S; ctx.fillRect(sh[0] - 5.5, sh[1] - 1, 11.5, 1.4);
+    rr(ctx, sh[0] - 6.5, sh[1] - 4.5, 13.5, 6, 3); ctx.fillStyle = pj.bufanda; ctx.fill(); tinta(ctx, 1.4);
+    ctx.fillStyle = pj.bufandaS; ctx.fillRect(sh[0] - 5.5, sh[1] - 1, 11.5, 1.4);
 
     // ---- cabeza ----
     // pelo de atrás
-    elipse(ctx, hx - 1.5, hy - 1.5, 14.5, 14); ctx.fillStyle = PELO; ctx.fill(); tinta(ctx, 1.5);
-    ctx.fillStyle = PELO_S; elipse(ctx, hx - 6, hy + 4, 8, 7); ctx.fill();
+    if (pj.coleta) {
+      elipse(ctx, hx - 1.5, hy - 1.5, 14.5, 14); ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
+      ctx.fillStyle = pj.peloS; elipse(ctx, hx - 6, hy + 4, 8, 7); ctx.fill();
+    } else {
+      poly(ctx, [[hx + 6, hy - 14], [hx - 4, hy - 16], [hx - 12, hy - 12], [hx - 17, hy - 9], [hx - 14, hy - 5], [hx - 18, hy - 1], [hx - 13, hy + 2], [hx - 15, hy + 7], [hx - 9, hy + 8], [hx - 4, hy + 6], [hx + 4, hy - 2]]);
+      ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
+      ctx.fillStyle = pj.peloS; poly(ctx, [[hx - 13, hy + 1], [hx - 14, hy + 6], [hx - 9, hy + 7], [hx - 6, hy + 2]]); ctx.fill();
+    }
     // cara
     const cara = () => { ctx.beginPath(); ctx.moveTo(hx - 9, hy - 4); ctx.quadraticCurveTo(hx - 10, hy + 8, hx - 2, hy + 11.5); ctx.quadraticCurveTo(hx + 6, hy + 14, hx + 11.5, hy + 7); ctx.quadraticCurveTo(hx + 14, hy + 1, hx + 12.5, hy - 5); ctx.closePath(); };
-    cara(); ctx.fillStyle = PIEL; ctx.fill();
-    ctx.save(); cara(); ctx.clip(); ctx.fillStyle = PIEL_S; elipse(ctx, hx - 9, hy + 4, 4, 9); ctx.fill(); ctx.restore();
+    cara(); ctx.fillStyle = pj.piel; ctx.fill();
+    ctx.save(); cara(); ctx.clip(); ctx.fillStyle = pj.pielS; elipse(ctx, hx - 9, hy + 4, 4, 9); ctx.fill(); ctx.restore();
     cara(); tinta(ctx, 1.5);
     // oreja
-    elipse(ctx, hx - 6.5, hy + 2, 2.4, 3); ctx.fillStyle = PIEL; ctx.fill(); tinta(ctx, 1.1);
+    elipse(ctx, hx - 6.5, hy + 2, 2.4, 3); ctx.fillStyle = pj.piel; ctx.fill(); tinta(ctx, 1.1);
     // ojos
     const aturdido = pose === 'stun', parpadeo = (now % 4300) < 120, feliz = pose === 'win';
     const ojo = (ex, ey, sx2) => {
       if (aturdido) { ctx.beginPath(); for (let t = 0; t < 1; t += .1) { const a = t * Math.PI * 3.2, rad = 3 * (1 - t * .7); ctx.lineTo(ex + Math.cos(a) * rad * sx2, ey + Math.sin(a) * rad); } tinta(ctx, 1.2); return; }
       if (parpadeo || feliz) { ctx.beginPath(); ctx.moveTo(ex - 3 * sx2, ey + (feliz ? 1 : 0)); ctx.quadraticCurveTo(ex, ey + (feliz ? -2.5 : 1.2), ex + 3 * sx2, ey + (feliz ? 1 : 0)); tinta(ctx, 1.6); return; }
       elipse(ctx, ex, ey, 2.9 * sx2, 4); ctx.fillStyle = '#fff'; ctx.fill();
-      const gi = ctx.createLinearGradient(0, ey - 4, 0, ey + 4); gi.addColorStop(0, '#3a2418'); gi.addColorStop(1, '#a8714c');
+      const gi = ctx.createLinearGradient(0, ey - 4, 0, ey + 4); gi.addColorStop(0, '#3a2418'); gi.addColorStop(1, pj.iris);
       elipse(ctx, ex + .5 * sx2, ey + .4, 2.3 * sx2, 3.4); ctx.fillStyle = gi; ctx.fill();
       elipse(ctx, ex + .6 * sx2, ey + .6, 1.1 * sx2, 1.6); ctx.fillStyle = '#24140e'; ctx.fill();
       elipse(ctx, ex - .5 * sx2, ey - 1.4, 1.1 * sx2, 1.1); ctx.fillStyle = '#fff'; ctx.fill();
@@ -523,11 +537,12 @@ function crearArte(cv) {
     // mejillas, nariz y boca
     elipse(ctx, hx + 1.5, hy + 6.5, 2.6, 1.4); ctx.fillStyle = MEJILLA; ctx.fill();
     elipse(ctx, hx + 11.3, hy + 6.2, 1.6, 1.2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(hx + 8, hy + 4.8); ctx.lineTo(hx + 8.6, hy + 5.4); ctx.lineWidth = 1; ctx.strokeStyle = PIEL_S; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx + 8, hy + 4.8); ctx.lineTo(hx + 8.6, hy + 5.4); ctx.lineWidth = 1; ctx.strokeStyle = pj.pielS; ctx.stroke();
     ctx.beginPath();
     if (feliz) { ctx.moveTo(hx + 5.2, hy + 8.2); ctx.quadraticCurveTo(hx + 7.2, hy + 11.5, hx + 9.2, hy + 8.2); ctx.closePath(); ctx.fillStyle = '#c4554a'; ctx.fill(); tinta(ctx, 1.1); }
     else if (aturdido) { ctx.moveTo(hx + 5.5, hy + 9); ctx.quadraticCurveTo(hx + 7, hy + 8, hx + 8.5, hy + 9.3); tinta(ctx, 1.1); }
     else { ctx.moveTo(hx + 5.8, hy + 8.6); ctx.quadraticCurveTo(hx + 7.2, hy + 9.6, hx + 8.6, hy + 8.5); tinta(ctx, 1.1); }
+    if (pj.coleta) {
     // flequillo de mechones y casquete
     ctx.beginPath();
     ctx.moveTo(hx - 13, hy + 3); ctx.quadraticCurveTo(hx - 15, hy - 15, hx, hy - 16); ctx.quadraticCurveTo(hx + 14, hy - 15, hx + 14, hy - 2);
@@ -535,17 +550,36 @@ function crearArte(cv) {
     ctx.lineTo(hx + 6.5, hy - 1.5); ctx.lineTo(hx + 5, hy - 6.5); ctx.lineTo(hx + 2.5, hy - 2.5);
     ctx.lineTo(hx + 1, hy - 7.5); ctx.lineTo(hx - 2, hy - 3); ctx.lineTo(hx - 4, hy - 7);
     ctx.quadraticCurveTo(hx - 7, hy - 2, hx - 8, hy + 6); ctx.lineTo(hx - 10.5, hy + 9); ctx.closePath();
-    ctx.fillStyle = PELO; ctx.fill(); tinta(ctx, 1.5);
+    ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
+    } else {
+    // flequillo de punta y casquete
+    ctx.beginPath();
+    ctx.moveTo(hx - 13, hy + 2); ctx.quadraticCurveTo(hx - 15, hy - 14, hx - 2, hy - 16); ctx.quadraticCurveTo(hx + 13, hy - 16, hx + 14, hy - 3);
+    ctx.lineTo(hx + 12, hy - 5); ctx.lineTo(hx + 12.5, hy - .5); ctx.lineTo(hx + 9.5, hy - 5.5); ctx.lineTo(hx + 8, hy - 2);
+    ctx.lineTo(hx + 6, hy - 7); ctx.lineTo(hx + 3.5, hy - 3); ctx.lineTo(hx + 1.5, hy - 8); ctx.lineTo(hx - 1.5, hy - 4); ctx.lineTo(hx - 3.5, hy - 8.5);
+    ctx.quadraticCurveTo(hx - 7, hy - 3, hx - 8, hy + 3); ctx.lineTo(hx - 11, hy + 5); ctx.closePath();
+    ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
+    // cejas marcadas
+    if (!aturdido) { ctx.beginPath(); ctx.moveTo(hx + 1.5, hy - 2.6); ctx.lineTo(hx + 5.6, hy - 3.4); ctx.moveTo(hx + 9, hy - 3.3); ctx.lineTo(hx + 12, hy - 2.7); ctx.lineWidth = 1.6; ctx.strokeStyle = pj.peloS; ctx.lineCap = 'round'; ctx.stroke(); }
+    }
     // brillo del pelo
-    ctx.beginPath(); ctx.arc(hx - 1, hy - 3, 11, Math.PI * 1.18, Math.PI * 1.55); ctx.lineWidth = 2.2; ctx.strokeStyle = PELO_L; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(hx - 1, hy - 3, 11, Math.PI * 1.18, Math.PI * 1.55); ctx.lineWidth = 2.2; ctx.strokeStyle = pj.peloL; ctx.lineCap = 'round'; ctx.stroke();
     ctx.beginPath(); ctx.arc(hx - 1, hy - 3, 11, Math.PI * 1.62, Math.PI * 1.72); ctx.stroke();
+    if (pj.coleta) {
     // pelo de punta
     ctx.beginPath(); ctx.moveTo(hx + 1, hy - 15.5); ctx.quadraticCurveTo(hx + 3 + ond * .15, hy - 22, hx + 7 + ond * .2, hy - 21); ctx.quadraticCurveTo(hx + 4, hy - 19, hx + 4, hy - 15.5); ctx.closePath();
-    ctx.fillStyle = PELO; ctx.fill(); tinta(ctx, 1.3);
+    ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.3);
 
+    } else {
+    // tres mechones de punta
+    [[-6, -14, -10, -21, -3], [0, -16, 1, -24, 4], [6, -15, 10, -21, 9]].forEach(([a1, b1, a2, b2, a3]) => {
+      ctx.beginPath(); ctx.moveTo(hx + a1, hy + b1); ctx.quadraticCurveTo(hx + (a1 + a2) / 2 + ond * .1, hy + b2 + 2, hx + a2 + ond * .15, hy + b2); ctx.quadraticCurveTo(hx + (a2 + a3) / 2, hy + b1 - 3, hx + a3, hy + b1 + .5); ctx.closePath();
+      ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.3);
+    });
+    }
     // brazo de delante con espada corta
     const fa = miembro(sh[0] + 2, sh[1] + 2, fa1, 6.5, fa2, 6);
-    trazo(ctx, fa.slice(0, 2), 5.8, CAMISA); trazo(ctx, fa.slice(1), 5.2, PIEL);
+    trazo(ctx, fa.slice(0, 2), 5.8, pj.camisa); trazo(ctx, fa.slice(1), 5.2, pj.piel);
     const ang = Math.atan2(fa[2][1] - fa[1][1], fa[2][0] - fa[1][0]) + (atk ? 0 : climb ? -2.4 : -1.25);
     ctx.save(); ctx.translate(fa[2][0], fa[2][1]); ctx.rotate(ang);
     if (atk && k > .3 && k < .75) {
@@ -558,7 +592,7 @@ function crearArte(cv) {
     rr(ctx, 2.3, -4.5, 2.8, 9, 1.2); ctx.fillStyle = '#d6ac4c'; ctx.fill(); tinta(ctx, 1.1);
     rr(ctx, -3.5, -1.8, 6.3, 3.6, 1.4); ctx.fillStyle = '#7a5434'; ctx.fill(); tinta(ctx, 1);
     ctx.restore();
-    elipse(ctx, fa[2][0], fa[2][1], 2.8, 2.8); ctx.fillStyle = PIEL; ctx.fill(); tinta(ctx, 1.2);
+    elipse(ctx, fa[2][0], fa[2][1], 2.8, 2.8); ctx.fillStyle = pj.piel; ctx.fill(); tinta(ctx, 1.2);
     ctx.restore();
     if (pose === 'stun') for (let i = 0; i < 3; i++) { const a = now / 320 + i * 2.1; estrellita(fx0 + Math.cos(a) * 15, fy0 - 76 + Math.sin(a) * 4, 4.2); }
   }
@@ -706,8 +740,10 @@ function crearArte(cv) {
   function prepara(simulacion, ratio) {
     sim = simulacion; dpr = ratio || 1;
     W = sim.w * T; H = sim.h * T;
-    s = Math.min((LW - 70) / W, (LH - 110) / H, 1.2);
-    ox = (LW - W * s) / 2; oy = (LH - H * s) / 2 + 22;
+    // el nivel se apoya en el borde de abajo: la última fila de tierra queda medio cortada
+    const visible = H - T * .55;
+    s = Math.min((LW - 70) / W, (LH - 80) / visible, 1.35);
+    ox = (LW - W * s) / 2; oy = LH - visible * s;
     cv.width = LW * dpr; cv.height = LH * dpr;
     if (!capaFondo || capaFondo.width !== LW * dpr) { capaFondo = pintaFondo(); nubesMoviles = [90, 120, 70, 100].map((w, i) => ({ w, c: spriteNube(w, 300 + i * 11) })); }
     capaNivel = pintaNivel();
@@ -807,5 +843,21 @@ function crearArte(cv) {
     if (brillo) { ctx.fillStyle = 'rgba(255,255,255,.6)'; elipse(ctx, -5, -6, 3, 2); ctx.fill(); }
   }
   function limpia() { fx = []; shake = 0; victoria = 0; perdida = 0; }
-  return { prepara, pinta, evento, limpia };
+  function personaje(quien) { if (PERSONAJES[quien]) pj = PERSONAJES[quien]; }
+  // retrato animado del personaje (para elegirlo en la página de inicio)
+  function retrato(now, quien, ratio, alegre) {
+    const w = 170, h = 180, d = ratio || 1;
+    if (cv.width !== w * d) { cv.width = w * d; cv.height = h * d; }
+    const antes = pj; if (PERSONAJES[quien]) pj = PERSONAJES[quien];
+    ctx.setTransform(d, 0, 0, d, 0, 0); ctx.clearRect(0, 0, w, h);
+    const fondo = ctx.createLinearGradient(0, 0, 0, h); fondo.addColorStop(0, '#59a9ea'); fondo.addColorStop(.7, '#bfe2f7'); fondo.addColorStop(.7, '#7ec35e'); fondo.addColorStop(1, '#5aa845');
+    ctx.fillStyle = fondo; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; elipse(ctx, 40, 34, 26, 9); ctx.fill(); elipse(ctx, 55, 29, 16, 9); ctx.fill(); elipse(ctx, 132, 52, 20, 7); ctx.fill();
+    for (let i = 0; i < 14; i++) { ctx.fillStyle = ['#9edb72', '#6fb556'][i % 2]; elipse(ctx, (i * 37) % w, h * .74 + (i * 13) % 30, 6, 3); ctx.fill(); }
+    ctx.save(); ctx.translate(w / 2 - 6, h - 24); ctx.scale(1.75, 1.75);
+    heroe(0, 0, 1, alegre ? 'win' : 'idle', 0, 0, now);
+    ctx.restore();
+    pj = antes;
+  }
+  return { prepara, pinta, evento, limpia, personaje, retrato };
 }

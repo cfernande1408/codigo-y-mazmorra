@@ -41,6 +41,8 @@
   };
   const indice = id => LEVELS.findIndex(L => L.id === id);
   let vista = 'home';
+  // personaje elegido (se guarda por cuenta o por navegador)
+  const elegido = () => store.get(ns() + 'pj', null);
 
   // ---------- consola ----------
   function log(text, kind) { const d = document.createElement('div'); d.className = kind || 'print'; d.textContent = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
@@ -99,7 +101,19 @@
 
   // ---------- página de inicio y rutas (#mundos, #mundo-N, #nivel-N) ----------
   let miniaturas = false;
+  const retratos = [...document.querySelectorAll('#elige .pj')].map(b => ({ b, quien: b.dataset.pj, arte: crearArte(b.querySelector('canvas')) }));
+  retratos.forEach(r => r.b.onclick = () => { store.set(ns() + 'pj', r.quien); renderHome(); });
+  function pintaRetratos(now) {
+    if (vista !== 'home') return;
+    const sel = elegido();
+    retratos.forEach(r => r.arte.retrato(now, r.quien, dpr, sel === r.quien));
+  }
   function renderHome() {
+    const sel = elegido();
+    retratos.forEach(r => r.b.classList.toggle('on', sel === r.quien));
+    $('elige').classList.toggle('falta', !sel);
+    $('eligeAviso').textContent = sel ? `Juegas con ${sel === 'viajera' ? 'la viajera' : 'el viajero'}. Lo puedes cambiar cuando quieras.` : 'Antes de empezar, elige con quién quieres jugar.';
+    $('mundos').classList.toggle('bloqueado', !sel);
     const cont = $('mundos'); cont.innerHTML = '';
     [1, 2].forEach(ra => {
       const t = document.createElement('div'); t.className = 'ra-titulo';
@@ -119,7 +133,7 @@
         // miniatura: el primer nivel del mundo dibujado con el mismo motor
         try {
           const a = crearArte(b.querySelector('canvas')), s = crearPartida(LEVELS[indice(m.ids[0])]), f = snap(s);
-          a.prepara(s, 1); a.pinta(performance.now(), { p: f, c: f, k: 1, playing: false });
+          a.prepara(s, 1); a.personaje(elegido() || 'viajera'); a.pinta(performance.now(), { p: f, c: f, k: 1, playing: false });
         } catch (e) { }
       });
     });
@@ -137,6 +151,7 @@
   }
   function ruta() {
     const h = location.hash;
+    if (/^#(nivel|mundo)-/.test(h) && !elegido()) { history.replaceState(null, '', '#mundos'); mostrarVista('home'); return; }
     let m = /^#nivel-(\d+)$/.exec(h);
     if (m) {
       const i = indice(+m[1]);
@@ -177,7 +192,7 @@
   function newPreview() {
     SIM = crearPartida(LEVELS[li]); vivo = false; $('avisoMapa').hidden = true;
     view.base = view.prev = snap(SIM); view.playing = false; view.frames = [];
-    arte.prepara(SIM, dpr);
+    arte.prepara(SIM, dpr); arte.personaje(elegido() || 'viajera');
     renderGoals(SIM);
   }
   function selectLevel(i) {
@@ -334,7 +349,8 @@
   const arte = crearArte(cv);
   function render(now) {
     requestAnimationFrame(render);
-    if (!SIM || vista !== 'juego') return;
+    if (vista === 'home') { pintaRetratos(now); return; }
+    if (!SIM) return;
     tick(now);
     let p = view.base, c = view.base, k = 1;
     if (view.playing && view.frames[view.i]) {
