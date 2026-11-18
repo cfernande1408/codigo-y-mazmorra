@@ -8,7 +8,7 @@ function crearArte(cv) {
   const ctx = cv.getContext('2d');
   const LW = 960, LH = 540, T = 64, M = 56, INK = '#4a3428';
   let dpr = 1, sim = null, W = 0, H = 0, s = 1, ox = 0, oy = 0;
-  let capaFondo = null, capaNivel = null;
+  let capaFondo = null, capaNivel = null, nubesMoviles = null;
   let fx = [], shake = 0, ultimo = 0, antorchas = [], placas = [], victoria = 0, perdida = 0;
 
   // ---------- utilidades ----------
@@ -53,12 +53,19 @@ function crearArte(cv) {
   function pintaFondo() {
     const c = lienzo(LW * dpr, LH * dpr), g = c.getContext('2d'); g.scale(dpr, dpr);
     const sk = g.createLinearGradient(0, 0, 0, LH);
-    sk.addColorStop(0, '#6fb1e6'); sk.addColorStop(.45, '#a8d4f2'); sk.addColorStop(.75, '#e3f1f4'); sk.addColorStop(1, '#fbf1d8');
+    sk.addColorStop(0, '#2f7fd0'); sk.addColorStop(.35, '#5aa3e2'); sk.addColorStop(.65, '#a9d3f1'); sk.addColorStop(.85, '#e2f0f6'); sk.addColorStop(1, '#f8f1dc');
     g.fillStyle = sk; g.fillRect(0, 0, LW, LH);
     manchas(g, 0, 0, LW, LH * .6, 'rgba(255,255,255,A)', 26, 4, .35);
     const r = semilla(9);
-    cumulo(g, LW * .18, LH * .34, 210, r); cumulo(g, LW * .62, LH * .3, 300, r); cumulo(g, LW * .93, LH * .42, 170, r);
-    for (let i = 0; i < 5; i++) nubecilla(g, r() * LW, 30 + r() * 90, 50 + r() * 70);
+    // nubes lejanas, bajas y poco contrastadas
+    for (let i = 0; i < 6; i++) cumulo(g, r() * LW, LH * (.52 + r() * .06), 90 + r() * 90, 40 + r() * 40, 70 + i * 7, .45);
+    // estratos finos
+    g.fillStyle = 'rgba(255,255,255,.55)';
+    for (let i = 0; i < 7; i++) { const y = LH * (.4 + r() * .14), x = r() * LW, w = 80 + r() * 160; rr(g, x, y, w, 2.5 + r() * 2, 2); g.fill(); }
+    // grandes cúmulos de verano
+    cumulo(g, LW * .7, LH * .5, 330, 300, 11, 1);
+    cumulo(g, LW * .2, LH * .47, 230, 170, 23, .95);
+    cumulo(g, LW * .98, LH * .44, 150, 110, 37, .85);
     // montañas lejanas azuladas
     capaColinas(g, LH * .58, '#9fbfdc', 120, 3, .7);
     capaColinas(g, LH * .66, '#8fb59c', 70, 7, 1);
@@ -70,16 +77,42 @@ function crearArte(cv) {
     papel(g, LW, LH, 5);
     return c;
   }
-  function cumulo(g, cx, base, w, r) {
-    const bolas = [];
-    for (let i = 0; i < 9; i++) { const t = i / 8; bolas.push([cx + (t - .5) * w * .9 + (r() - .5) * 20, base - Math.sin(t * Math.PI) * w * .32 - r() * w * .08, w * (.13 + r() * .12)]); }
-    g.fillStyle = 'rgba(170,190,215,.55)'; bolas.forEach(([x, y, q]) => { elipse(g, x + 6, y + 10, q, q * .85); g.fill(); });
-    bolas.forEach(([x, y, q]) => { const gr = g.createRadialGradient(x - q * .3, y - q * .4, q * .1, x, y, q); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.7, '#f4f8fb'); gr.addColorStop(1, '#dbe6f0'); g.fillStyle = gr; elipse(g, x, y, q, q * .85); g.fill(); });
-    g.fillStyle = 'rgba(200,214,232,.7)'; elipse(g, cx, base + 2, w * .5, 10); g.fill();
-    g.fillStyle = '#f2f6fa'; elipse(g, cx, base - 6, w * .46, 12); g.fill();
+  // Cúmulo pintado: bultos grandes apilados en torre con base plana. La masa se
+  // sombrea de abajo (azul grisáceo) a arriba, y encima cada bulto lleva su cima
+  // iluminada; sin contornos, como un fondo pintado.
+  function cumulo(g, cx, base, w, alto, sem, fuerza) {
+    const r = semilla(sem), bultos = [];
+    const n = Math.round(10 + w / 22);
+    for (let i = 0; i < n; i++) {
+      const h = Math.pow(r(), 1.15);
+      const ancho = w * (1 - h * .6) * .42;
+      const rad = w * (.11 + r() * .08) * (1 - h * .4);
+      bultos.push({ x: cx + (r() * 2 - 1) * ancho, y: base - h * alto * .92 - rad * .15, r: rad });
+    }
+    bultos.push({ x: cx - w * .05, y: base - alto * .95, r: w * .1 });
+    bultos.sort((a, b) => b.y - a.y);
+    const lejana = fuerza < 1;
+    const top = base - alto - w * .2;
+    g.save();
+    if ('filter' in g) g.filter = lejana ? 'blur(1px)' : 'blur(.6px)';
+    g.beginPath(); g.rect(cx - w, top - 20, w * 2, base - top + 21); g.clip();
+    // masa: degradado vertical de sombra
+    const gm = g.createLinearGradient(0, top, 0, base);
+    gm.addColorStop(0, lejana ? '#e3ecf6' : '#dfe8f5'); gm.addColorStop(.55, lejana ? '#c9d7ea' : '#b9c9e2'); gm.addColorStop(1, lejana ? '#b3c4de' : '#8fa4cc');
+    g.fillStyle = gm; bultos.forEach(b => { elipse(g, b.x, b.y, b.r, b.r * .9); g.fill(); });
+    // cimas iluminadas
+    const gl = g.createLinearGradient(cx - w * .5, top, cx + w * .3, base); gl.addColorStop(0, '#fffef9'); gl.addColorStop(1, lejana ? '#eef3f9' : '#fff3df');
+    g.fillStyle = gl; bultos.forEach(b => { if (b.y < base - b.r * .6) { elipse(g, b.x - b.r * .2, b.y - b.r * .28, b.r * .7, b.r * .62); g.fill(); } });
+    // sombra en la base plana
+    const gb = g.createLinearGradient(0, base - alto * .18, 0, base); gb.addColorStop(0, 'rgba(110,130,185,0)'); gb.addColorStop(1, lejana ? 'rgba(150,170,205,.3)' : 'rgba(105,125,180,.5)');
+    g.fillStyle = gb; g.fillRect(cx - w, base - alto * .18, w * 2, alto * .18 + 1);
+    g.restore();
   }
-  function nubecilla(g, x, y, w) {
-    g.fillStyle = 'rgba(255,255,255,.75)'; elipse(g, x, y, w * .4, w * .12); g.fill(); elipse(g, x + w * .2, y - 5, w * .22, w * .1); g.fill();
+  // nubecilla suelta (sprite que luego se mueve)
+  function spriteNube(w, sem) {
+    const c = lienzo(w * 1.4 * dpr, w * .7 * dpr), g = c.getContext('2d'); g.scale(dpr, dpr);
+    cumulo(g, w * .7, w * .62, w, w * .3, sem, .9);
+    return c;
   }
   function capaColinas(g, base, col, alto, sem, frec) {
     const r = semilla(sem), f1 = .004 * frec + r() * .002, f2 = .011 * frec + r() * .004, fase = r() * 10;
@@ -619,7 +652,7 @@ function crearArte(cv) {
     s = Math.min((LW - 70) / W, (LH - 110) / H, 1.2);
     ox = (LW - W * s) / 2; oy = (LH - H * s) / 2 + 22;
     cv.width = LW * dpr; cv.height = LH * dpr;
-    if (!capaFondo || capaFondo.width !== LW * dpr) capaFondo = pintaFondo();
+    if (!capaFondo || capaFondo.width !== LW * dpr) { capaFondo = pintaFondo(); nubesMoviles = [90, 120, 70, 100].map((w, i) => ({ w, c: spriteNube(w, 300 + i * 11) })); }
     capaNivel = pintaNivel();
     fx = []; shake = 0; victoria = 0; perdida = 0;
   }
@@ -630,10 +663,10 @@ function crearArte(cv) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.drawImage(capaFondo, 0, 0, LW, LH);
     // nubecillas que se mueven y pájaros
-    for (let i = 0; i < 4; i++) {
-      const r = semilla(100 + i), w = 60 + r() * 70, y = 60 + r() * 130, x = ((r() * (LW + w) + now * (.006 + r() * .008)) % (LW + w * 2)) - w;
-      ctx.fillStyle = 'rgba(255,255,255,.8)'; elipse(ctx, x, y, w * .3, w * .14); ctx.fill(); elipse(ctx, x + w * .25, y + 3, w * .22, w * .11); ctx.fill(); elipse(ctx, x - w * .25, y + 4, w * .2, w * .1); ctx.fill();
-    }
+    nubesMoviles.forEach((n, i) => {
+      const r = semilla(100 + i), y = 40 + r() * 110, x = ((r() * (LW + n.w * 2) + now * (.005 + r() * .006)) % (LW + n.w * 2)) - n.w * 1.4;
+      ctx.globalAlpha = .9; ctx.drawImage(n.c, x, y, n.w * 1.4, n.w * .7); ctx.globalAlpha = 1;
+    });
     for (let i = 0; i < 3; i++) {
       const bx = ((now * .03 + i * 170) % (LW + 200)) - 100, by = 120 + i * 26 + Math.sin(now / 900 + i) * 8, a = Math.sin(now / 160 + i * 2) * 4;
       ctx.beginPath(); ctx.moveTo(bx - 7, by - a); ctx.quadraticCurveTo(bx - 3, by - 3, bx, by); ctx.quadraticCurveTo(bx + 3, by - 3, bx + 7, by - a); ctx.lineWidth = 1.8; ctx.strokeStyle = 'rgba(70,80,100,.6)'; ctx.stroke();
