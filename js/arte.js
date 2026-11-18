@@ -49,69 +49,91 @@ function crearArte(cv) {
     for (let i = 0; i < w * h / 260; i++) { g.fillStyle = r() < .5 ? 'rgba(255,255,255,.05)' : 'rgba(90,60,30,.035)'; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
   }
 
-  // ---------- fondo: cielo de verano, nubes grandes, montañas y colinas ----------
+  // ---------- fondo: cielo azul intenso, nubes esponjosas y campo pintado ----------
   function pintaFondo() {
     const c = lienzo(LW * dpr, LH * dpr), g = c.getContext('2d'); g.scale(dpr, dpr);
-    const sk = g.createLinearGradient(0, 0, 0, LH);
-    sk.addColorStop(0, '#2f7fd0'); sk.addColorStop(.35, '#5aa3e2'); sk.addColorStop(.65, '#a9d3f1'); sk.addColorStop(.85, '#e2f0f6'); sk.addColorStop(1, '#f8f1dc');
+    const sk = g.createLinearGradient(0, 0, 0, LH * .7);
+    sk.addColorStop(0, '#1376d6'); sk.addColorStop(.5, '#3a97e6'); sk.addColorStop(1, '#8cc9f2');
     g.fillStyle = sk; g.fillRect(0, 0, LW, LH);
-    manchas(g, 0, 0, LW, LH * .6, 'rgba(255,255,255,A)', 26, 4, .35);
     const r = semilla(9);
-    // nubes lejanas, bajas y poco contrastadas
-    for (let i = 0; i < 6; i++) cumulo(g, r() * LW, LH * (.52 + r() * .06), 90 + r() * 90, 40 + r() * 40, 70 + i * 7, .45);
-    // estratos finos
-    g.fillStyle = 'rgba(255,255,255,.55)';
-    for (let i = 0; i < 7; i++) { const y = LH * (.4 + r() * .14), x = r() * LW, w = 80 + r() * 160; rr(g, x, y, w, 2.5 + r() * 2, 2); g.fill(); }
-    // grandes cúmulos de verano
-    cumulo(g, LW * .7, LH * .5, 330, 300, 11, 1);
-    cumulo(g, LW * .2, LH * .47, 230, 170, 23, .95);
-    cumulo(g, LW * .98, LH * .44, 150, 110, 37, .85);
-    // montañas lejanas azuladas
-    capaColinas(g, LH * .58, '#9fbfdc', 120, 3, .7);
-    capaColinas(g, LH * .66, '#8fb59c', 70, 7, 1);
-    arbolesLejanos(g, LH * .7, 13);
-    capaColinas(g, LH * .76, '#7fac6a', 45, 17, 1.3);
-    arbolesLejanos(g, LH * .8, 27);
-    capaColinas(g, LH * .88, '#679a57', 30, 31, 1.6);
-    manchas(g, 0, LH * .55, LW, LH * .45, 'rgba(255,250,220,A)', 18, 21, .25);
-    papel(g, LW, LH, 5);
+    // vetas finas
+    for (let i = 0; i < 5; i++) veta(g, r() * LW, 30 + r() * 140, 90 + r() * 140, r);
+    // nubes esponjosas
+    nubeBlanca(g, LW * .3, 120, 230, 70, 11);
+    nubeBlanca(g, LW * .74, 70, 170, 55, 23);
+    nubeBlanca(g, LW * .05, 180, 140, 45, 37);
+    nubeBlanca(g, LW * .95, 170, 120, 40, 41);
+    nubeBlanca(g, LW * .55, 205, 110, 32, 53);
+    // montes lejanos y campo
+    capaColinas(g, LH * .6, '#7fb7d8', 90, 3, .7);
+    bosque(g, LH * .66, '#5f9f73', '#4b8a63', 7, 22);
+    capaColinas(g, LH * .7, '#88c46a', 50, 17, 1.1);
+    bosque(g, LH * .76, '#58a04c', '#3f8640', 27, 30);
+    capaColinas(g, LH * .82, '#6db552', 35, 31, 1.5);
+    hierbaLejana(g, LH * .82, 41);
     return c;
   }
-  // Cúmulo pintado: bultos grandes apilados en torre con base plana. La masa se
-  // sombrea de abajo (azul grisáceo) a arriba, y encima cada bulto lleva su cima
-  // iluminada; sin contornos, como un fondo pintado.
-  function cumulo(g, cx, base, w, alto, sem, fuerza) {
+  // nube blanca de borde algodonoso: bultos de borde suave, sombra gris azulada
+  // en la mitad de abajo y pequeños copos por arriba
+  function nubeBlanca(gDest, cx, cy, w, h, sem) {
+    // se pinta en un lienzo aparte para que la sombra solo caiga sobre la nube
+    const x0 = cx - w, y0 = cy - h * 2.5, ancho = w * 2, alto = h * 2.9;
+    const tmp = lienzo(ancho * dpr, alto * dpr), g = tmp.getContext('2d'); g.scale(dpr, dpr); g.translate(-x0, -y0);
     const r = semilla(sem), bultos = [];
-    const n = Math.round(10 + w / 22);
+    const n = Math.round(w / 9);
     for (let i = 0; i < n; i++) {
-      const h = Math.pow(r(), 1.15);
-      const ancho = w * (1 - h * .6) * .42;
-      const rad = w * (.11 + r() * .08) * (1 - h * .4);
-      bultos.push({ x: cx + (r() * 2 - 1) * ancho, y: base - h * alto * .92 - rad * .15, r: rad });
+      const t = r() * 2 - 1, alto = 1 - Math.abs(t) * .85;
+      bultos.push({ x: cx + t * w * .5, y: cy - alto * h * (.25 + r() * .6), r: h * (.28 + r() * .3) * (.6 + alto * .5) });
     }
-    bultos.push({ x: cx - w * .05, y: base - alto * .95, r: w * .1 });
-    bultos.sort((a, b) => b.y - a.y);
-    const lejana = fuerza < 1;
-    const top = base - alto - w * .2;
+    const suave = (x, y, rad, col, dura) => { const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, col); gr.addColorStop(dura, col); gr.addColorStop(1, col.replace(/[\d.]+\)$/, '0)')); g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); };
     g.save();
-    if ('filter' in g) g.filter = lejana ? 'blur(1px)' : 'blur(.6px)';
-    g.beginPath(); g.rect(cx - w, top - 20, w * 2, base - top + 21); g.clip();
-    // masa: degradado vertical de sombra
-    const gm = g.createLinearGradient(0, top, 0, base);
-    gm.addColorStop(0, lejana ? '#e3ecf6' : '#dfe8f5'); gm.addColorStop(.55, lejana ? '#c9d7ea' : '#b9c9e2'); gm.addColorStop(1, lejana ? '#b3c4de' : '#8fa4cc');
-    g.fillStyle = gm; bultos.forEach(b => { elipse(g, b.x, b.y, b.r, b.r * .9); g.fill(); });
-    // cimas iluminadas
-    const gl = g.createLinearGradient(cx - w * .5, top, cx + w * .3, base); gl.addColorStop(0, '#fffef9'); gl.addColorStop(1, lejana ? '#eef3f9' : '#fff3df');
-    g.fillStyle = gl; bultos.forEach(b => { if (b.y < base - b.r * .6) { elipse(g, b.x - b.r * .2, b.y - b.r * .28, b.r * .7, b.r * .62); g.fill(); } });
-    // sombra en la base plana
-    const gb = g.createLinearGradient(0, base - alto * .18, 0, base); gb.addColorStop(0, 'rgba(110,130,185,0)'); gb.addColorStop(1, lejana ? 'rgba(150,170,205,.3)' : 'rgba(105,125,180,.5)');
-    g.fillStyle = gb; g.fillRect(cx - w, base - alto * .18, w * 2, alto * .18 + 1);
+    g.beginPath(); g.rect(cx - w, cy - h * 2.5, w * 2, h * 2.5 + h * .35); g.clip();       // base casi plana
+    bultos.forEach(b => suave(b.x, b.y + b.r * .25, b.r * 1.05, 'rgba(178,201,228,1)', .72));
+    bultos.forEach(b => suave(b.x - b.r * .08, b.y - b.r * .12, b.r * .92, 'rgba(255,255,255,1)', .7));
+    // copos en el borde de arriba
+    for (let i = 0; i < n * 3; i++) {
+      const b = bultos[Math.floor(r() * n)], a = Math.PI * (1.05 + r() * .9);
+      suave(b.x + Math.cos(a) * b.r * .8, b.y + Math.sin(a) * b.r * .8, b.r * (.18 + r() * .14), 'rgba(255,255,255,1)', .6);
+    }
+    // sombra suave en la base
+    const gb = g.createLinearGradient(0, cy - h * .1, 0, cy + h * .35); gb.addColorStop(0, 'rgba(160,185,220,0)'); gb.addColorStop(1, 'rgba(160,185,220,.55)');
+    g.globalCompositeOperation = 'source-atop'; g.fillStyle = gb; g.fillRect(cx - w, cy - h * .1, w * 2, h * .45);
     g.restore();
+    gDest.drawImage(tmp, x0, y0, ancho, alto);
+  }
+  function veta(g, x, y, w, r) {
+    g.save(); if ('filter' in g) g.filter = 'blur(2px)';
+    g.strokeStyle = 'rgba(255,255,255,.42)'; g.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      g.lineWidth = 3 + r() * 4; g.beginPath(); const yy = y + i * 5;
+      g.moveTo(x, yy); g.quadraticCurveTo(x + w * .5, yy - 8 - r() * 8, x + w * (.8 + r() * .3), yy + 2); g.stroke();
+    }
+    g.restore();
+  }
+  // hilera de árboles pintados con manchas de hoja
+  function bosque(g, base, col, colS, sem, n) {
+    const r = semilla(sem);
+    for (let i = 0; i < n; i++) {
+      const x = (i / n) * LW + r() * 40 - 20, h = 22 + r() * 30, y = base + r() * 10;
+      g.fillStyle = colS; elipse(g, x + 3, y - h * .4, h * .55, h * .5); g.fill();
+      g.fillStyle = col; elipse(g, x, y - h * .5, h * .5, h * .48); g.fill();
+      for (let k = 0; k < 7; k++) { g.fillStyle = k % 2 ? 'rgba(170,220,120,.55)' : 'rgba(60,120,60,.35)'; elipse(g, x - h * .3 + r() * h * .6, y - h * .8 + r() * h * .6, 3 + r() * 5, 2 + r() * 3); g.fill(); }
+    }
+  }
+  function hierbaLejana(g, base, sem) {
+    const r = semilla(sem);
+    g.fillStyle = '#5aa845'; g.fillRect(0, base + 10, LW, LH - base);
+    for (let i = 0; i < 520; i++) {
+      const x = r() * LW, y = base + 4 + r() * (LH - base);
+      g.fillStyle = ['rgba(150,215,95,.7)', 'rgba(70,140,60,.6)', 'rgba(190,235,130,.6)'][i % 3];
+      elipse(g, x, y, 2 + r() * 4, 1 + r() * 2); g.fill();
+    }
+    for (let i = 0; i < 60; i++) { g.fillStyle = ['#fff', '#ffe46b', '#ffc2d6', '#cfe0ff'][i % 4]; elipse(g, r() * LW, base + 12 + r() * (LH - base), 1.4, 1.4); g.fill(); }
   }
   // nubecilla suelta (sprite que luego se mueve)
   function spriteNube(w, sem) {
     const c = lienzo(w * 1.4 * dpr, w * .7 * dpr), g = c.getContext('2d'); g.scale(dpr, dpr);
-    cumulo(g, w * .7, w * .62, w, w * .3, sem, .9);
+    nubeBlanca(g, w * .7, w * .45, w * .9, w * .2, sem);
     return c;
   }
   function capaColinas(g, base, col, alto, sem, frec) {
