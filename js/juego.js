@@ -190,7 +190,7 @@
     $('intro').innerHTML = L.intro; $('hint').innerHTML = L.hint; $('hintBox').open = false;
     ed.value = store.get(codeKey(L.id), serverCode[L.id] || L.starter); errLine = 0; updateGutter(); ed.scrollTop = 0;
     newPreview(); renderNav(); renderBook(); clearLog();
-    log(`Nivel ${i + 1}: ${L.title}. Escribe tu código y pulsa Ejecutar.`, 'muted');
+    log(`${L.title}: escribe tu código y pulsa Ejecutar, o da órdenes una a una en la consola.`, 'muted');
     setRunning(false);
   }
 
