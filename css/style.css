@@ -1,10 +1,10 @@
-:root{--bg:#14111a;--panel:#1f1a27;--panel2:#272031;--line:#3a3147;--text:#efe8f5;--muted:#a99bbd;--gold:#f2b544;--teal:#3fd1b5;--red:#ff6b6b;--violet:#b98cff;--code:#17131d}
+:root{--bg:#160b22;--panel:#221232;--panel2:#2c1840;--line:#43275c;--text:#fbf0ff;--muted:#b49cc8;--gold:#f7bd45;--teal:#2fd6c3;--red:#ff5f7a;--violet:#c58bff;--code:#150a20}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:Nunito,system-ui,sans-serif;font-size:15px}
-body{background:radial-gradient(1200px 500px at 20% -10%,#2a1f3a 0,transparent 60%),var(--bg);min-height:100vh}
+body{background:radial-gradient(1100px 520px at 15% -10%,#4a1d4f 0,transparent 60%),radial-gradient(900px 500px at 100% 0,#1d3a57 0,transparent 55%),var(--bg);min-height:100vh}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:14px 20px;border-bottom:1px solid var(--line);background:rgba(20,17,26,.85);position:sticky;top:0;z-index:5;backdrop-filter:blur(6px)}
 .brand{display:flex;align-items:center;gap:10px}
-.brand h1{font-family:"Pixelify Sans",monospace;font-size:26px;margin:0;color:var(--gold);letter-spacing:.5px;text-shadow:0 2px 0 #7a4a10}
+.brand h1{font-family:"Pixelify Sans",monospace;font-size:26px;margin:0;color:var(--gold);letter-spacing:.5px;text-shadow:0 2px 0 #24102b,0 0 14px rgba(247,189,69,.35)}
 .brand h1 em{font-style:normal;color:var(--violet);text-shadow:0 2px 0 #4a2a7a}
 .brand .sub{color:var(--muted);font-size:13px}
 .logo{width:34px;height:34px}
@@ -29,7 +29,7 @@ main{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:18px;
 .tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(63,209,181,.13);color:var(--teal);border:1px solid rgba(63,209,181,.35);white-space:nowrap}
 .tag.rnd{background:rgba(185,140,255,.12);color:var(--violet);border-color:rgba(185,140,255,.35)}
-.canvas-wrap{position:relative;border-radius:10px;overflow:hidden;background:#0d0b11;border:1px solid #2c2536}
+.canvas-wrap{position:relative;border-radius:12px;overflow:hidden;background:#1d0f2f;border:3px solid #24102b;box-shadow:0 0 0 2px #f7bd45,0 10px 30px rgba(0,0,0,.4)}
 canvas{display:block;width:100%;height:auto;image-rendering:auto}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:rgba(13,11,17,.78);font-weight:800;text-align:center;padding:12px}
 #loading.hidden{display:none}
