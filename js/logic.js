@@ -43,9 +43,9 @@ const LEVELS = [
   {
     id: 1, title: "La celda", concept: "Secuencia", goals: ["salida"], maxLines: null,
     nuevos: ["derecha", "izquierda", "arriba", "abajo", "print"],
-    intro: `<p>Te has despertado en una celda de la mazmorra. Para moverte tienes que dar órdenes en <b>Python</b>, <b>una por línea</b>. El héroe las ejecuta en orden, de arriba abajo.</p><pre>heroe.derecha()\nheroe.abajo()</pre><p>Llega a la salida (el portal morado) <b>sin chocarte con las paredes</b>.</p>`,
+    intro: `<p>Te has despertado en una celda de la mazmorra. Para moverte tienes que dar órdenes en <b>Python</b>. Escribe una en la <b>consola de debajo del mapa</b> y pulsa Enter: el héroe se mueve al momento.</p><pre>heroe.derecha()</pre><p>Llega a la salida (el portal) <b>sin chocarte con las paredes</b>. Cada orden se apunta en el editor: al final tendrás un programa que puedes lanzar entero con <b>Ejecutar</b>.</p>`,
     hint: `Te hacen falta 6 órdenes: 2 a la derecha, 2 abajo y otra vez 2 a la derecha. Se escribe <code>heroe</code>, en minúsculas y sin tilde, y siempre con paréntesis al final.`,
-    starter: `# Cada línea es una orden para el héroe\nheroe.derecha()\n`,
+    starter: `# Aquí se apuntan tus órdenes. Cada línea es una orden para el héroe\n`,
     make: () => ({ map: ["#######", "#H..###", "###.###", "###..S#", "#######"], enemies: [] })
   },
   {
@@ -406,8 +406,7 @@ def _linea(e):
         tb = tb.tb_next
     return ln
 
-def _run(code):
-    ns = {"__name__": "__main__", "heroe": Heroe(), "input": _no_input}
+def _ejecutar(code, ns, modo):
     cuenta = [0]
     def local(frame, event, arg):
         if event == "line":
@@ -420,7 +419,7 @@ def _run(code):
             return local
         return None
     try:
-        comp = compile(code, _FICHERO, "exec")
+        comp = compile(code, _FICHERO, modo)
     except SyntaxError as e:
         return ["error", e.lineno or 0, type(e).__name__, e.msg or ""]
     sys.settrace(glob)
@@ -436,6 +435,28 @@ def _run(code):
     finally:
         sys.settrace(None)
     return res
+
+def _ns_nuevo():
+    return {"__name__": "__main__", "heroe": Heroe(), "input": _no_input}
+
+def _run(code):
+    return _ejecutar(code, _ns_nuevo(), "exec")
+
+# consola directa: el espacio de nombres se conserva entre órdenes
+_NS_VIVO = None
+
+def _vivo_nuevo():
+    global _NS_VIVO
+    _NS_VIVO = _ns_nuevo()
+
+def _vivo_reponer(code):
+    _vivo_nuevo()
+    return _ejecutar(code, _NS_VIVO, "exec")
+
+def _vivo(code):
+    if _NS_VIVO is None:
+        _vivo_nuevo()
+    return _ejecutar(code, _NS_VIVO, "single")
 `;
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { LEVELS, API_DOCS, crearPartida, makeApi, terminar, PRELUDE, contarLineas, snap };

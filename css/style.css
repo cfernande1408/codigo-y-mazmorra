@@ -157,3 +157,11 @@ table.notas{border-collapse:collapse;width:100%;font-size:13.5px}
 .mbox.ancho{max-width:760px;text-align:left}
 .mbox pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:"JetBrains Mono",monospace;font-size:13px;color:#d8f5ee;max-height:300px;overflow:auto;white-space:pre}
 .mbox h4{margin:14px 0 6px;color:var(--gold);font-size:14px}
+
+/* ---------- consola directa ---------- */
+.repl{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px}
+.repl:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(63,209,181,.15)}
+.repl .prompt{font-family:"JetBrains Mono",monospace;color:var(--teal);font-weight:600}
+.repl input{flex:1;min-width:0;background:none;border:0;outline:0;color:#e8e2f0;font:15px "JetBrains Mono",monospace;padding:6px 0}
+.repl input::placeholder{color:#6b5f7a}
+#out .cmd{color:var(--teal)}

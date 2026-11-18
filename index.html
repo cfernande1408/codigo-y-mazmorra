@@ -30,6 +30,11 @@
         <canvas id="cv"></canvas>
         <div id="loading"><div class="spinner"></div><div>Cargando Python…</div><div class="small">La primera vez tarda unos segundos</div></div>
       </div>
+      <form class="repl" id="repl" autocomplete="off">
+        <span class="prompt">&gt;&gt;&gt;</span>
+        <input id="replIn" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="Escribe una orden y pulsa Enter, p. ej. heroe.derecha()" aria-label="Consola directa">
+        <button class="btn sm" id="replBtn">Enviar ⏎</button>
+      </form>
       <ul class="goals" id="goals"></ul>
     </div>
     <div class="card mission">

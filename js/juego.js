@@ -15,7 +15,7 @@
   let prog = store.get(ns() + 'prog', {}), profe = !NUBE && store.get('cym_profe', false), speed = 1;
   let serverCode = {}, pendientes = cuenta ? store.get(ns() + 'pend', []) : [];
   let li = store.get('cym_lvl', 0); if (!(li >= 0 && li < LEVELS.length)) li = 0;
-  let SIM = null, py = null, lastCode = '', particles = [], errLine = 0;
+  let SIM = null, py = null, lastCode = '', particles = [], errLine = 0, vivo = false, desdeConsola = false;
   const view = { base: null, prev: null, frames: [], i: 0, start: 0, playing: false };
   const api = makeApi(() => SIM);
 
@@ -97,7 +97,7 @@
     $('goals').innerHTML = g.join('');
   }
   function newPreview() {
-    SIM = crearPartida(LEVELS[li]);
+    SIM = crearPartida(LEVELS[li]); vivo = false;
     view.base = view.prev = snap(SIM); view.playing = false; view.frames = []; particles = [];
     cv.width = SIM.w * T * dpr; cv.height = SIM.h * T * dpr;
     renderGoals(SIM);
@@ -116,11 +116,11 @@
   }
 
   // ---------- ejecución ----------
-  function setRunning(r) { $('run').disabled = r || !py; $('run').textContent = r ? '… Ejecutando' : '▶ Ejecutar'; }
+  function setRunning(r) { $('run').disabled = r || !py; $('replBtn').disabled = r || !py; $('run').textContent = r ? '… Ejecutando' : '▶ Ejecutar'; }
   function run() {
     if (!py || view.playing || (NUBE && !cuenta)) return;
     closeModal();
-    const L = LEVELS[li], code = ed.value; lastCode = code;
+    const L = LEVELS[li], code = ed.value; lastCode = code; desdeConsola = false;
     store.set(codeKey(L.id), code);
     clearLog(); errLine = 0; particles = [];
     newPreview();
@@ -135,6 +135,62 @@
     if (view.frames[0]) frameStart(view.frames[0]);
     setRunning(true);
   }
+  // ---------- consola directa: cada orden se ejecuta al momento ----------
+  const historial = []; let hIdx = 0;
+  function consola(cmd) {
+    if (!py || view.playing || (NUBE && !cuenta)) return false;
+    cmd = cmd.replace(/\s+$/, ''); if (!cmd.trim()) return false;
+    closeModal();
+    if (!vivo || SIM.over) {
+      if (SIM.over) newPreview();
+      py.runPython('_vivo_nuevo()'); vivo = true; errLine = 0; particles = [];
+      const hayCodigo = ed.value.split('\n').some(l => l.trim() && !l.trim().startsWith('#'));
+      if (hayCodigo) {
+        ed.focus(); ed.select(); insertText('# Órdenes de la consola\n');
+        log('He vaciado el editor para apuntar tus órdenes (Ctrl+Z en el editor recupera lo anterior).', 'muted');
+      }
+      $('replIn').focus();
+    }
+    log('>>> ' + cmd, 'cmd'); desdeConsola = true;
+    const desde = SIM.frames.length;
+    let res;
+    try { const fn = py.globals.get('_vivo'); const r = fn(cmd); res = r.toJs(); r.destroy(); fn.destroy(); }
+    catch (e) { res = ['error', 0, 'Error', String(e && e.message || e)]; }
+    const [kind, , name, msg] = res;
+    const nuevos = SIM.frames.slice(desde);
+    if (kind === 'ok' && !(SIM.over && SIM.over.type === 'fail')) {
+      if (ed.value && !ed.value.endsWith('\n')) ed.value += '\n';
+      ed.value += cmd.trim() + '\n'; ed.scrollTop = ed.scrollHeight; onEdit();
+      store.set(codeKey(LEVELS[li].id), ed.value);
+    }
+    lastCode = ed.value;
+    if (kind !== 'ok') nuevos.push(Object.assign({}, nuevos.length ? nuevos[nuevos.length - 1] : view.base,
+      { dur: 0, say: null, attack: null, bump: null, end: null, log: { text: traducirError(kind, 0, name, msg), kind: 'error' } }));
+    if (!nuevos.length) return true;
+    view.frames = nuevos; view.i = 0; view.prev = view.base; view.start = performance.now(); view.playing = true;
+    frameStart(nuevos[0]); setRunning(true);
+    return true;
+  }
+  $('repl').addEventListener('submit', e => {
+    e.preventDefault();
+    const inp = $('replIn'), v = inp.value;
+    if (consola(v) !== false) { historial.push(v); hIdx = historial.length; inp.value = ''; }
+  });
+  $('replIn').addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' && hIdx > 0) { e.preventDefault(); e.target.value = historial[--hIdx]; }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); hIdx = Math.min(historial.length, hIdx + 1); e.target.value = historial[hIdx] || ''; }
+  });
+
+  // repite en silencio lo apuntado en el editor para volver al punto anterior al fallo
+  function reponer() {
+    newPreview();
+    try {
+      const fn = py.globals.get('_vivo_reponer'); const r = fn(ed.value); r.destroy(); fn.destroy();
+    } catch (e) { newPreview(); return; }
+    if (SIM.over) { newPreview(); return; }
+    vivo = true; SIM.frames = []; view.base = view.prev = snap(SIM);
+  }
+
   function frameStart(f) {
     if (f.log) log(f.log.text, f.log.kind);
     if (f.end === 'win') confetti(f.hx, f.hy);
@@ -175,9 +231,16 @@
       enviar(L.id, false, 0, lastCode);
       let h = `<div class="ico">💥</div><h2>¡Ups!</h2><p>${esc(o.msg)}</p>`;
       if (L.random) h += '<p class="small">Recuerda: este mapa cambia en cada partida. Tu código tiene que funcionar en cualquier caso.</p>';
-      h += '<div class="mbtns"><button class="btn gold" id="mRetry">Volver a intentarlo</button></div>';
-      openModal(h, true);
-      $('mRetry').onclick = () => { closeModal(); newPreview(); ed.focus(); };
+      if (desdeConsola) {
+        h += '<p class="small">La última orden no se ha apuntado en el editor.</p><div class="mbtns"><button class="btn" id="mZero">Empezar de cero</button><button class="btn gold" id="mRetry">Volver a donde estaba</button></div>';
+        openModal(h, true);
+        $('mRetry').onclick = () => { closeModal(); reponer(); $('replIn').focus(); };
+        $('mZero').onclick = () => { closeModal(); newPreview(); $('replIn').focus(); };
+      } else {
+        h += '<div class="mbtns"><button class="btn gold" id="mRetry">Volver a intentarlo</button></div>';
+        openModal(h, true);
+        $('mRetry').onclick = () => { closeModal(); newPreview(); ed.focus(); };
+      }
     }
   }
   function openModal(html, fail) { const b = $('mbox'); b.className = 'mbox' + (fail ? ' fail' : ''); b.innerHTML = html; $('modal').classList.remove('hidden'); }
