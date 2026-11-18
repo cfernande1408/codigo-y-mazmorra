@@ -481,7 +481,7 @@ function crearArte(cv) {
       bufanda: '#2bb3a0', bufandaS: '#1f8d7e', camisa: '#fffaf0', camisaS: '#ebdfca', chaleco: '#78b357', chalecoS: '#5d9442',
       short: '#8a6444', shortS: '#6e4f35', media: '#4a5a46', mediaS: '#3a4838', bota: '#7a4f34', botaL: '#a87150', coleta: false, iris: '#6b8a5a' }
   };
-  let pj = PERSONAJES.viajera;
+  let pj = PERSONAJES.viajera, sonrie = false;
   const MEJILLA = 'rgba(255,135,135,.5)', BOLSA = '#ad7a4c';
   function heroe(fx0, fy0, dir, pose, ph, k, now) {
     const run = pose === 'run', climb = pose === 'climb', atk = pose === 'attack';
@@ -585,19 +585,17 @@ function crearArte(cv) {
     // oreja
     elipse(ctx, hx - 6.5, hy + 2, 2.4, 3); ctx.fillStyle = pj.piel; ctx.fill(); tinta(ctx, 1.1);
     // ojos
-    const aturdido = pose === 'stun', parpadeo = (now % 4300) < 120, feliz = pose === 'win';
+    const aturdido = pose === 'stun', parpadeo = (now % 4300) < 120, feliz = pose === 'win' || sonrie;
     const ojo = (ex, ey, sx2) => {
       if (aturdido) { ctx.beginPath(); for (let t = 0; t < 1; t += .1) { const a = t * Math.PI * 3.2, rad = 3 * (1 - t * .7); ctx.lineTo(ex + Math.cos(a) * rad * sx2, ey + Math.sin(a) * rad); } tinta(ctx, 1.2); return; }
       if (parpadeo || feliz) { ctx.beginPath(); ctx.moveTo(ex - 3 * sx2, ey + (feliz ? 1 : 0)); ctx.quadraticCurveTo(ex, ey + (feliz ? -2.5 : 1.2), ex + 3 * sx2, ey + (feliz ? 1 : 0)); tinta(ctx, 1.6); return; }
-      elipse(ctx, ex, ey, 2.9 * sx2, 4); ctx.fillStyle = '#fff'; ctx.fill();
-      const gi = ctx.createLinearGradient(0, ey - 4, 0, ey + 4); gi.addColorStop(0, '#3a2418'); gi.addColorStop(1, pj.iris);
-      elipse(ctx, ex + .5 * sx2, ey + .4, 2.3 * sx2, 3.4); ctx.fillStyle = gi; ctx.fill();
-      elipse(ctx, ex + .6 * sx2, ey + .6, 1.1 * sx2, 1.6); ctx.fillStyle = '#24140e'; ctx.fill();
-      elipse(ctx, ex - .5 * sx2, ey - 1.4, 1.1 * sx2, 1.1); ctx.fillStyle = '#fff'; ctx.fill();
-      elipse(ctx, ex + 1.1 * sx2, ey + 1.9, .55 * sx2, .55); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(ex - 3.2 * sx2, ey - 2.6); ctx.quadraticCurveTo(ex, ey - 4.8, ex + 3.4 * sx2, ey - 3); ctx.lineWidth = 1.9; ctx.strokeStyle = '#2a1810'; ctx.lineCap = 'round'; ctx.stroke();
+      // ojo sencillo: óvalo oscuro con reflejo grande, sin blanco ni pestañas
+      const gi = ctx.createLinearGradient(0, ey - 3.4, 0, ey + 3.4); gi.addColorStop(0, '#2a1a12'); gi.addColorStop(.55, '#3b261b'); gi.addColorStop(1, pj.iris);
+      elipse(ctx, ex, ey, 2 * sx2, 3.3); ctx.fillStyle = gi; ctx.fill();
+      elipse(ctx, ex - .45 * sx2, ey - 1.15, .85 * sx2, 1); ctx.fillStyle = '#fff'; ctx.fill();
+      elipse(ctx, ex + .6 * sx2, ey + 1.5, .38 * sx2, .38); ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fill();
     };
-    ojo(hx + 3.5, hy + 1.5, 1); ojo(hx + 10.5, hy + 1.2, .72);
+    ojo(hx + 3.8, hy + 2.6, 1); ojo(hx + 10.4, hy + 2.4, .75);
     // mejillas, nariz y boca
     elipse(ctx, hx + 1.5, hy + 6.5, 2.6, 1.4); ctx.fillStyle = MEJILLA; ctx.fill();
     elipse(ctx, hx + 11.3, hy + 6.2, 1.6, 1.2); ctx.fill();
@@ -624,7 +622,7 @@ function crearArte(cv) {
     ctx.quadraticCurveTo(hx - 7, hy - 3, hx - 8, hy + 3); ctx.lineTo(hx - 11, hy + 5); ctx.closePath();
     ctx.fillStyle = pj.pelo; ctx.fill(); tinta(ctx, 1.5);
     // cejas marcadas
-    if (!aturdido) { ctx.beginPath(); ctx.moveTo(hx + 1.5, hy - 2.6); ctx.lineTo(hx + 5.6, hy - 3.4); ctx.moveTo(hx + 9, hy - 3.3); ctx.lineTo(hx + 12, hy - 2.7); ctx.lineWidth = 1.6; ctx.strokeStyle = pj.peloS; ctx.lineCap = 'round'; ctx.stroke(); }
+    if (!aturdido) { ctx.beginPath(); ctx.moveTo(hx + 2, hy - 1.6); ctx.lineTo(hx + 5.4, hy - 2.1); ctx.moveTo(hx + 9.2, hy - 2); ctx.lineTo(hx + 11.6, hy - 1.6); ctx.lineWidth = 1.1; ctx.strokeStyle = pj.peloS; ctx.lineCap = 'round'; ctx.stroke(); }
     }
     // brillo del pelo
     ctx.beginPath(); ctx.arc(hx - 1, hy - 3, 11, Math.PI * 1.18, Math.PI * 1.55); ctx.lineWidth = 2.2; ctx.strokeStyle = pj.peloL; ctx.lineCap = 'round'; ctx.stroke();
@@ -921,7 +919,7 @@ function crearArte(cv) {
     ctx.fillStyle = 'rgba(255,255,255,.9)'; elipse(ctx, 40, 34, 26, 9); ctx.fill(); elipse(ctx, 55, 29, 16, 9); ctx.fill(); elipse(ctx, 132, 52, 20, 7); ctx.fill();
     for (let i = 0; i < 14; i++) { ctx.fillStyle = ['#9edb72', '#6fb556'][i % 2]; elipse(ctx, (i * 37) % w, h * .74 + (i * 13) % 30, 6, 3); ctx.fill(); }
     ctx.save(); ctx.translate(w / 2 - 6, h - 24); ctx.scale(1.75, 1.75);
-    heroe(0, 0, 1, alegre ? 'win' : 'idle', 0, 0, now);
+    sonrie = !!alegre; heroe(0, 0, 1, 'idle', 0, 0, now); sonrie = false;
     ctx.restore();
     pj = antes;
   }
