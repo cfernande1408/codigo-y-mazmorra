@@ -160,7 +160,7 @@ const API_DOCS = {
 
 // ---------- simulación ----------
 const DIRS = { derecha: [1, 0], izquierda: [-1, 0], arriba: [0, -1], abajo: [0, 1] };
-const HUES = [110, 280, 25, 190, 340];
+const HUES = [110, 280, 320, 190, 250];
 function hueOf(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return HUES[h % HUES.length]; }
 
 function crearPartida(level) {

@@ -5,6 +5,11 @@ escribiendo código Python real, que se ejecuta en el navegador con
 [Pyodide](https://pyodide.org). Incluye un panel para el profesor con
 el progreso de cada alumno.
 
+- **Vista lateral estilo cómic**: el palacio cortado en sección sobre un
+  atardecer con ciudad en parallax, escaleras, rejas, antorchas y un
+  héroe animado que corre, trepa y ataca.
+- **Consola directa**: cada orden se ejecuta al momento y se apunta en el
+  editor; con «Ejecutar» se lanza el programa entero.
 - **10 niveles**: secuencia, parámetros, strings, `for`, variables,
   `while`, `if`, bucles anidados, funciones y un laberinto aleatorio.
 - **Mapas aleatorios** a partir del nivel 5 (salvo el 9): la solución no
@@ -84,6 +89,7 @@ profe.html          panel del profesor
 css/style.css
 js/config.js        URL y clave de Supabase
 js/logic.js         niveles, simulación y puente con Python
+js/arte.js          dibujo del juego (vista lateral, animaciones, efectos)
 js/juego.js         interfaz del juego, cuentas y sincronización
 js/profe.js         panel del profesor
 js/nube.js          cliente RPC mínimo
