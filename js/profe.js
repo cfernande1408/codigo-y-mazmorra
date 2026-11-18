@@ -6,6 +6,7 @@
     set(v) { try { v ? sessionStorage.setItem('cym_profe_token', v) : sessionStorage.removeItem('cym_profe_token'); } catch (e) { } }
   };
   const N = LEVELS.length;
+  const mundoDe = L => MUNDOS.find(m => m.id === L.mundo);
   let token = ses.get(), clases = [], actual = null, alumnos = [], timer = 0;
 
   if (!Nube.activa) {
@@ -142,10 +143,12 @@
         <div class="stat"><b>${n}</b><span>alumnos</span></div>
         <div class="stat"><b>${activos}</b><span>activos ahora (15 min)</span></div>
         <div class="stat"><b>${media.toFixed(1)}</b><span>niveles superados de media</span></div>
-        <div class="stat"><b>${atasco ? 'Nivel ' + atasco.L.id : '—'}</b><span>${atasco ? `${atasco.n} atascado${atasco.n > 1 ? 's' : ''} · ${esc(atasco.L.concept)}` : 'nadie atascado'}</span></div>
+        <div class="stat"><b>${atasco ? 'Nivel ' + atasco.L.id : '—'}</b><span>${atasco ? `${atasco.n} atascado${atasco.n > 1 ? 's' : ''} · ${esc(mundoDe(atasco.L).titulo)} · ${esc(atasco.L.concept)}` : 'nadie atascado'}</span></div>
       </div>
-      ${n ? `<div class="tabla-wrap"><table class="notas"><thead><tr><th style="text-align:left">Alumno</th><th>Niveles</th><th>Estrellas</th>
-        ${LEVELS.map(L => `<th class="n" title="${esc(L.title)} · ${esc(L.concept)}">${L.id}</th>`).join('')}<th></th></tr></thead><tbody>${filas}</tbody></table></div>`
+      ${n ? `<div class="tabla-wrap"><table class="notas"><thead>
+        <tr><th colspan="3"></th>${MUNDOS.map(m => `<th colspan="${m.ids.length}" class="grupo" style="--c:${m.color}" title="${esc(m.tema)}">${m.icono} ${esc(m.titulo)}</th>`).join('')}<th></th></tr>
+        <tr><th style="text-align:left">Alumno</th><th>Niveles</th><th>Estrellas</th>
+        ${LEVELS.map(L => `<th class="n" title="Nivel ${L.id}: ${esc(L.title)} · ${esc(L.concept)}">${mundoDe(L).ids.indexOf(L.id) + 1}</th>`).join('')}<th></th></tr></thead><tbody>${filas}</tbody></table></div>`
         : `<div class="vacio">Todavía no se ha apuntado nadie.<br>Diles que entren en <b>${esc(enlaceClase())}</b><br>o que pongan el código <b>${esc(actual.codigo)}</b> y elijan «Soy nuevo».</div>`}
       <p class="small" id="estadoCarga" style="margin-top:10px">★ superado · ✗ n = intentos sin superarlo · pulsa una casilla para ver el código. Se actualiza solo cada 30 s.</p>`;
 
@@ -178,7 +181,7 @@
       if (!r) return;
       const L = LEVELS.find(x => x.id === nivel);
       let h = `<h2 style="text-align:left">${esc(r.alias)} · Nivel ${nivel}</h2>
-        <p class="small">${esc(L.title)} · ${esc(L.concept)} — ${r.intentos} intento(s) · última ejecución ${fecha(r.actualizado)}${r.superado ? ' · superado el ' + fecha(r.superado) : ''}</p>`;
+        <p class="small">${esc(mundoDe(L).titulo)} · ${esc(L.title)} · ${esc(L.concept)} — ${r.intentos} intento(s) · última ejecución ${fecha(r.actualizado)}${r.superado ? ' · superado el ' + fecha(r.superado) : ''}</p>`;
       if (r.solucion) h += `<h4>${'★'.repeat(r.estrellas)} Mejor solución</h4><pre>${esc(r.solucion)}</pre>`;
       if (r.codigo !== r.solucion) h += `<h4>Último código ejecutado</h4><pre>${esc(r.codigo || '(vacío)')}</pre>`;
       h += '<div class="mbtns" style="margin-top:14px"><button class="btn" data-cerrar>Cerrar</button></div>';

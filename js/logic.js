@@ -48,15 +48,10 @@ function pasilloPuertas(puertas, extra) {
   g[1][2 + 2 * puertas.length] = 'S';
   return Object.assign({ map: toRows(g), enemies: [], doors: puertas }, extra || {});
 }
-const CAPITULOS = {
-  1: 'Capítulo 1 · Variables, tipos y operadores',
-  2: 'Capítulo 2 · Bucles, condiciones y funciones'
-};
 
 const LEVELS = [
-  // ===================== CAPÍTULO 1 =====================
   {
-    id: 1, cap: 1, title: "La celda", concept: "Instrucciones", goals: ["salida"], maxLines: null,
+    clave: 'celda', title: "La celda", concept: "Instrucciones", goals: ["salida"], maxLines: null,
     nuevos: ["derecha", "izquierda", "arriba", "abajo", "print"],
     intro: `<p>Te has despertado en una celda del palacio. Para moverte tienes que dar órdenes en <b>Python</b>. Escribe una en la <b>consola de debajo del mapa</b> y pulsa Enter: el héroe se mueve al momento.</p><pre>heroe.derecha()</pre><p>Llega a la salida (el portal) <b>sin chocarte con las paredes</b>. Cada orden se apunta en el editor: al final tendrás un programa que puedes lanzar entero con <b>Ejecutar</b>.</p>`,
     hint: `Te hacen falta 6 órdenes: 2 a la derecha, 2 abajo y otra vez 2 a la derecha. Se escribe <code>heroe</code>, en minúsculas y sin tilde, y siempre con paréntesis al final.`,
@@ -64,7 +59,7 @@ const LEVELS = [
     make: () => ({ map: ["#######", "#H..###", "###.###", "###..S#", "#######"], enemies: [] })
   },
   {
-    id: 2, cap: 1, title: "El pasillo de las gemas", concept: "Números", goals: ["gemas", "salida"], maxLines: 3,
+    clave: 'gemas', title: "El pasillo de las gemas", concept: "Números", goals: ["gemas", "salida"], maxLines: 3,
     nuevos: [],
     intro: `<p>Escribir <code>heroe.derecha()</code> siete veces es un rollo. Puedes poner un <b>número entero</b> (<code>int</code>) entre los paréntesis:</p><pre>heroe.derecha(7)</pre><p>Recoge las dos gemas y llega a la salida.</p>`,
     hint: `Derecha 7, abajo 2 e izquierda 7. Las gemas se recogen solas al pasar por encima.`,
@@ -72,7 +67,7 @@ const LEVELS = [
     make: () => ({ map: ["##########", "#H....g..#", "########.#", "#S..g....#", "##########"], enemies: [] })
   },
   {
-    id: 3, cap: 1, title: "Los guardias", concept: "Textos (str)", goals: ["salida"], maxLines: 7,
+    clave: 'guardias', title: "Los guardias", concept: "Textos (str)", goals: ["salida"], maxLines: 7,
     nuevos: ["atacar"],
     intro: `<p>Dos guardias te cortan el paso. Para atacar, escribe su nombre <b>entre comillas</b>:</p><pre>heroe.atacar("Grumo")</pre><p>Un texto entre comillas es un <b>string</b> (<code>str</code>). Cada golpe quita 1 vida y cada guardia tiene 2. Tienes que estar <b>pegado</b> a él para atacar.</p>`,
     hint: `Avanza 1, ataca a Grumo dos veces, avanza 4, ataca a Babos dos veces y avanza 3. Las mayúsculas cuentan: <code>"grumo"</code> no es lo mismo que <code>"Grumo"</code>.`,
@@ -80,7 +75,7 @@ const LEVELS = [
     make: () => ({ map: ["###########", "#H.E...E.S#", "###########"], enemies: [{ name: "Grumo", hp: 2 }, { name: "Babos", hp: 2 }] })
   },
   {
-    id: 4, cap: 1, title: "Los escalones", concept: "Variables", goals: ["salida"], maxLines: 6,
+    clave: 'escalones', title: "Los escalones", concept: "Variables", goals: ["salida"], maxLines: 6,
     nuevos: [],
     intro: `<p>Los tres escalones miden lo mismo: 3 casillas. En vez de escribir el 3 cada vez, guárdalo en una <b>variable</b>:</p><pre>pasos = 3\nheroe.derecha(pasos)</pre><p>El <code>=</code> no significa «igual»: significa «guarda este valor con este nombre». Crea la variable <code>pasos</code> y úsala para bajar hasta la salida.</p>`,
     hint: `Derecha <code>pasos</code>, abajo 1, derecha <code>pasos</code>, abajo 1 y derecha <code>pasos</code>. El nombre de la variable va sin comillas.`,
@@ -94,7 +89,7 @@ const LEVELS = [
     }
   },
   {
-    id: 5, cap: 1, title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
+    clave: 'clave', title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["leer", "decir"],
     intro: `<p>La reja solo se abre si dices la contraseña de la placa. Pero <b>la contraseña cambia cada vez que ejecutas</b>, así que no puedes copiarla a mano. Guárdala en una variable:</p><pre>clave = heroe.leer()</pre><p>Luego úsala con <code>heroe.decir(clave)</code>. Ahí va sin comillas: es el nombre de la variable, no un texto.</p>`,
     hint: `La placa está justo encima de ti. Lee, avanza 2 hasta la reja, di la clave y avanza 4.`,
@@ -102,7 +97,7 @@ const LEVELS = [
     make: () => { const pw = CLAVES[rnd(0, CLAVES.length - 1)]; return { map: ["#########", "#C#######", "#H..D..S#", "#########"], enemies: [], signo: pw, doors: [{ respuesta: pw, etiqueta: '?' }] }; }
   },
   {
-    id: 6, cap: 1, title: "Las constantes del palacio", concept: "Constantes", goals: ["salida"], maxLines: 5,
+    clave: 'constantes', title: "Las constantes del palacio", concept: "Constantes", goals: ["salida"], maxLines: 5,
     nuevos: [],
     intro: `<p>Una <b>constante</b> es una variable que no va a cambiar nunca. En Python se escriben en <b>MAYÚSCULAS</b> y se ponen al principio del programa:</p><pre>ANCHO = 4\nALTO = 2</pre><p>Python no impide cambiarlas, pero es una norma que todo el mundo respeta. Define <code>ANCHO</code> y <code>ALTO</code> con las medidas de la torre y úsalas para llegar arriba.</p>`,
     hint: `Derecha <code>ANCHO</code>, arriba <code>ALTO</code> y derecha <code>ANCHO</code> otra vez. Mayúsculas y minúsculas son nombres distintos: <code>ANCHO</code> no es <code>ancho</code>.`,
@@ -120,7 +115,7 @@ const LEVELS = [
     make: () => ({ map: ["###########", "#####....S#", "#####.#####", "#H....#####", "###########"], enemies: [] })
   },
   {
-    id: 7, cap: 1, title: "La cámara del tesoro", concept: "Operadores matemáticos", goals: ["salida"], maxLines: 8, random: true,
+    clave: 'tesoro', title: "La cámara del tesoro", concept: "Operadores matemáticos", goals: ["salida"], maxLines: 8, random: true,
     nuevos: ["operadores"],
     intro: `<p>En esta cámara hay <code>cofres</code> llenos de <code>oro</code> y unos <code>ladrones</code> esperando su parte. Esas tres variables <b>ya existen</b> y cambian en cada partida (míralas con <code>print(oro)</code>). Cada reja pide un cálculo:</p><pre>reja ×   oro total:     oro * cofres\nreja //  a cada ladrón: total // ladrones\nreja %   lo que sobra:  total % ladrones</pre><p>Guarda el total en una variable para no repetir el cálculo.</p>`,
     hint: `<pre>total = oro * cofres\nheroe.derecha()\nheroe.decir(total)\nheroe.derecha(2)</pre>y lo mismo con <code>total // ladrones</code> y <code>total % ladrones</code>. Ojo: <code>/</code> da decimales; para repartir en enteros se usa <code>//</code>.`,
@@ -140,7 +135,7 @@ const LEVELS = [
     }
   },
   {
-    id: 8, cap: 1, title: "Las palabras mágicas", concept: "Bloques de texto", goals: ["salida"], maxLines: null, random: true,
+    clave: 'palabras', title: "Las palabras mágicas", concept: "Bloques de texto", goals: ["salida"], maxLines: null, random: true,
     nuevos: ["textos"],
     intro: `<p>Tres rejas que solo abren con palabras. Las variables <code>guardian</code> (un nombre) y <code>veces</code> (un número) ya existen y cambian en cada partida.</p><pre>reja +    "Hola, " + guardian\nreja *    "ja" * veces\nreja """  el pergamino de 3 líneas</pre><p>El pergamino es un <b>bloque de texto</b>: un texto de varias líneas escrito entre <b>comillas triples</b>:</p><pre>hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""</pre><p>Este nivel es mejor resolverlo en el editor con <b>Ejecutar</b>, porque la consola es de una sola línea.</p>`,
     hint: `Con <code>+</code> se juntan textos y con <code>*</code> se repiten. El saludo tiene que quedar exacto, con su coma y su espacio: <code>Hola, Grumo</code>.`,
@@ -155,7 +150,7 @@ const LEVELS = [
     }
   },
   {
-    id: 9, cap: 1, title: "Código roto", concept: "Errores", goals: ["salida"], maxLines: null,
+    clave: 'roto', title: "Código roto", concept: "Errores", goals: ["salida"], maxLines: null,
     nuevos: [],
     intro: `<p>Un aprendiz ha dejado un programa que <b>tiene tres errores</b>. Ejecútalo, lee el mensaje de la consola (y la línea marcada en rojo) y arréglalo. Repite hasta que funcione.</p><ul><li><b>SyntaxError</b>: algo mal escrito (comillas, paréntesis…).</li><li><b>NameError</b>: un nombre que Python no conoce.</li><li><b>TypeError</b>: mezclar tipos que no casan, como texto + número.</li></ul>`,
     hint: `Hay unas comillas sin cerrar, una variable mal escrita y un número que hay que convertir a texto con <code>str()</code> para poder juntarlo con <code>+</code>.`,
@@ -163,7 +158,7 @@ const LEVELS = [
     make: () => ({ map: ["##########", "#H...D..S#", "##########"], enemies: [], doors: [{ respuesta: 'Llevo 3 gemas', etiqueta: '!', pista: t => `Has dicho «${t}», pero la reja espera «Llevo 3 gemas».` }] })
   },
   {
-    id: 10, cap: 1, title: "La placa de los pasos", concept: "Conversiones: int()", goals: ["salida"], maxLines: 4, random: true,
+    clave: 'placa', title: "La placa de los pasos", concept: "Conversiones: int()", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["int", "str"],
     intro: `<p>La placa dice cuántos pasos hay hasta la reja, pero <code>heroe.leer()</code> siempre devuelve un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Para usarlo como número hay que <b>convertirlo</b>:</p><pre>numero = int(heroe.leer())</pre><p>Avanza ese número de pasos y di a la reja <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
     hint: `<code>int()</code> convierte un texto en número entero, <code>float()</code> en decimal y <code>str()</code> un número en texto. Después de la reja hay 2 pasos hasta la salida.`,
@@ -176,7 +171,7 @@ const LEVELS = [
     }
   },
   {
-    id: 11, cap: 1, title: "El guardián pregunta", concept: "Entrada: input()", goals: ["salida"], maxLines: 6, random: true,
+    clave: 'guardian', title: "El guardián pregunta", concept: "Entrada: input()", goals: ["salida"], maxLines: 6, random: true,
     nuevos: ["input"],
     intro: `<p><code>input()</code> le hace una pregunta a la persona que está jugando (¡tú!) y devuelve lo que escribe, <b>siempre como texto</b>:</p><pre>respuesta = input("¿Cuántos pasos? ")</pre><p>El pasillo mide algo distinto cada vez. Pregunta cuántos pasos hay hasta la reja (cuéntalos en el mapa cuando salga la pregunta), conviértelo con <code>int()</code> y avanza. Luego pregunta tu nombre y di a la reja <code>"Soy "</code> + tu nombre.</p>`,
     hint: `<pre>pasos = int(input("¿Cuántos pasos? "))\nheroe.derecha(pasos)\nnombre = input("¿Cómo te llamas? ")</pre>Después de la reja hay 2 pasos hasta la salida.`,
@@ -190,7 +185,7 @@ const LEVELS = [
     }
   },
   {
-    id: 12, cap: 1, title: "Las rejas de la verdad", concept: "Comparaciones y lógica", goals: ["salida"], maxLines: 8, random: true,
+    clave: 'verdad', title: "Las rejas de la verdad", concept: "Comparaciones y lógica", goals: ["salida"], maxLines: 8, random: true,
     nuevos: [],
     intro: `<p>La variable <code>numero</code> ya existe y cambia en cada partida. Cada reja pide <code>True</code> o <code>False</code>, y Python lo calcula por ti con una <b>comparación</b>:</p><pre>reja >    numero > 10\nreja ==   numero % 2 == 0     (¿es par?)\nreja and  numero > 10 and numero % 2 == 0</pre><p>Dile a cada reja el resultado: <code>heroe.decir(numero > 10)</code>.</p>`,
     hint: `Las comparaciones (<code>&gt; &lt; == !=</code>) devuelven <code>True</code> o <code>False</code>. <code>and</code> solo es <code>True</code> si las dos partes lo son. No escribas True a mano: deja que Python lo calcule.`,
@@ -205,9 +200,8 @@ const LEVELS = [
       ], { vars: { numero } });
     }
   },
-  // ===================== CAPÍTULO 2 =====================
   {
-    id: 13, cap: 2, title: "La escalera de caracol", concept: "Bucle for", goals: ["gemas", "salida"], maxLines: 3,
+    clave: 'caracol', title: "La escalera de caracol", concept: "Bucle for", goals: ["gemas", "salida"], maxLines: 3,
     nuevos: [],
     intro: `<p>La escalera repite el mismo movimiento 4 veces: dos a la derecha y uno abajo. En vez de copiar y pegar, usa un <b>bucle</b>:</p><pre>for i in range(4):\n    # lo que se repite</pre><p>Todo lo que esté <b>sangrado</b> (4 espacios a la derecha) debajo del <code>for</code> se repite.</p>`,
     hint: `Dentro del bucle van dos órdenes: <code>heroe.derecha(2)</code> y <code>heroe.abajo()</code>. No te olvides de los dos puntos <code>:</code> al final de la línea del <code>for</code>.`,
@@ -220,7 +214,7 @@ const LEVELS = [
     }
   },
   {
-    id: 14, cap: 2, title: "El pasillo sin fin", concept: "Bucle while", goals: ["salida"], maxLines: 3, random: true,
+    clave: 'sinfin', title: "El pasillo sin fin", concept: "Bucle while", goals: ["salida"], maxLines: 3, random: true,
     nuevos: ["hay_camino"],
     intro: `<p>Cada vez que ejecutas, el pasillo mide algo distinto. Necesitas un bucle que se repita <b>mientras</b> haya camino:</p><pre>while heroe.hay_camino("derecha"):\n    heroe.derecha()</pre><p>Cuando se acabe el pasillo, la salida está justo debajo.</p>`,
     hint: `Después del <code>while</code>, ya sin sangría, añade la orden para bajar.`,
@@ -233,7 +227,7 @@ const LEVELS = [
     }
   },
   {
-    id: 15, cap: 2, title: "Emboscada", concept: "Condicionales if", goals: ["salida"], maxLines: 5, random: true,
+    clave: 'emboscada', title: "Emboscada", concept: "Condicionales if", goals: ["salida"], maxLines: 5, random: true,
     nuevos: ["enemigo_cercano"],
     intro: `<p>Hay guardias en sitios que cambian en cada partida. Avanza casilla a casilla y, <b>si</b> tienes un enemigo al lado, atácalo antes de seguir.</p><pre>enemigo = heroe.enemigo_cercano()\nif enemigo:\n    heroe.atacar(enemigo)</pre><p><code>enemigo_cercano()</code> te da su nombre, o <code>None</code> si no hay nadie. Un <code>if</code> con <code>None</code> funciona como <code>False</code>. Estos guardias caen de un golpe.</p>`,
     hint: `Son 8 pasos: <code>for i in range(8):</code>. Dentro: mira si hay enemigo, atácalo si lo hay y después avanza.`,
@@ -241,7 +235,7 @@ const LEVELS = [
     make: pasilloConGuardias(1, 1, 2, 4)
   },
   {
-    id: 16, cap: 2, title: "Guardias tozudos", concept: "while dentro de for", goals: ["salida"], maxLines: 5, random: true,
+    clave: 'tozudos', title: "Guardias tozudos", concept: "while dentro de for", goals: ["salida"], maxLines: 5, random: true,
     nuevos: [],
     intro: `<p>Estos guardias aguantan entre 1 y 3 golpes, y no sabes cuántos. Tienes que atacar <b>mientras</b> siga habiendo un enemigo a tu lado.</p><p>Es un bucle <code>while</code> metido dentro de un bucle <code>for</code>. Fíjate bien en la sangría: cada nivel, 4 espacios más.</p>`,
     hint: `Parte de tu solución del nivel anterior y cambia el <code>if</code> por un <code>while</code>. Dentro del while puedes atacar a <code>heroe.enemigo_cercano()</code> directamente.`,
@@ -249,7 +243,7 @@ const LEVELS = [
     make: pasilloConGuardias(1, 3, 3, 5)
   },
   {
-    id: 17, cap: 2, title: "Las tres columnas", concept: "Funciones (def)", goals: ["gemas", "salida"], maxLines: 8,
+    clave: 'columnas', title: "Las tres columnas", concept: "Funciones (def)", goals: ["gemas", "salida"], maxLines: 8,
     nuevos: [],
     intro: `<p>Rodea cada columna para recoger sus gemas. Las tres vueltas son iguales, así que crea tu propia orden con <code>def</code>:</p><pre>def vuelta():\n    heroe.derecha(2)\n    # ...\n\nvuelta()</pre><p>Definir una función no hace nada por sí solo: hay que <b>llamarla</b> escribiendo su nombre con paréntesis.</p>`,
     hint: `Una vuelta: derecha 2, abajo 2, izquierda 2, arriba 2. Entre columna y columna, avanza 4 a la derecha. Puedes combinar la función con un <code>for</code>.`,
@@ -268,14 +262,66 @@ const LEVELS = [
     }
   },
   {
-    id: 18, cap: 2, title: "El laberinto", concept: "Algoritmos", goals: ["salida"], maxLines: null, random: true,
+    clave: 'laberinto', title: "El laberinto", concept: "Algoritmos", goals: ["salida"], maxLines: null, random: true,
     nuevos: ["mover", "en_salida"],
     intro: `<p>Un laberinto distinto en cada partida. Hay un truco clásico: la <b>regla de la mano derecha</b>. Si apoyas la mano en la pared de tu derecha y nunca la sueltas, acabas encontrando la salida.</p><p>En cada paso: si puedes girar a la derecha, gira; si no, sigue recto; si tampoco, gira a la izquierda; y si no hay nada, date la vuelta. Guarda hacia dónde miras en una variable y usa una lista de direcciones.</p>`,
     hint: `<pre>if heroe.hay_camino(direcciones[dcha]):\n    mirando = dcha\nelif heroe.hay_camino(direcciones[mirando]):\n    pass\nelif heroe.hay_camino(direcciones[(mirando + 3) % 4]):\n    mirando = (mirando + 3) % 4\nelse:\n    mirando = (mirando + 2) % 4</pre>`,
     starter: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1  # miras a la derecha (posición 1)\n\nwhile not heroe.en_salida():\n    dcha = (mirando + 1) % 4  # lo que queda a tu derecha\n    # 1) ¿Camino a la derecha? Gira hacia allí\n    # 2) Si no, ¿camino de frente? Sigue recto\n    # 3) Si no, gira a la izquierda o date la vuelta\n    heroe.mover(direcciones[mirando])\n`,
     make: laberinto
+  },
+  {
+    clave: 'potencias', title: "La torre de las potencias", concept: "Potencias y prioridad", goals: ["salida"], maxLines: 7, random: true,
+    nuevos: [],
+    intro: `<p>Más operadores. <code>**</code> es la <b>potencia</b>: <code>2 ** 3</code> es 2 × 2 × 2 = 8. Y cuidado con el <b>orden</b>: igual que en mates, Python hace primero <code>**</code>, luego <code>* / // %</code> y al final <code>+ -</code>. Los paréntesis van siempre primero.</p><pre>reja **   base ** exponente\nreja +*   base + extra * 2\nreja ()   (base + extra) * 2</pre><p>Las variables <code>base</code>, <code>exponente</code> y <code>extra</code> ya existen y cambian en cada partida.</p>`,
+    hint: `Escribe las cuentas tal cual en Python y deja que él las calcule: <code>heroe.decir(base + extra * 2)</code>. Fíjate en que las dos últimas rejas dan resultados distintos.`,
+    starter: `print(base, exponente, extra)\nheroe.derecha()\n`,
+    make: () => {
+      const base = rnd(2, 5), exponente = rnd(2, 3), extra = rnd(2, 6);
+      const r1 = base ** exponente, r2 = base + extra * 2, r3 = (base + extra) * 2;
+      return pasilloPuertas([
+        { respuesta: String(r1), etiqueta: '**', pista: t => String(t) === String(base * exponente) ? `Has dicho ${t}: eso es base * exponente. La potencia es **.` : 'Esta reja pide base ** exponente.' },
+        { respuesta: String(r2), etiqueta: '+*', pista: t => String(t) === String(r3) ? 'Ojo con la prioridad: * se hace antes que +. Python calcula primero extra * 2.' : 'Esta reja pide base + extra * 2.' },
+        { respuesta: String(r3), etiqueta: '()', pista: t => String(t) === String(r2) ? 'Aquí hay paréntesis: (base + extra) se calcula primero.' : 'Esta reja pide (base + extra) * 2.' }
+      ], { vars: { base, exponente, extra } });
+    }
+  },
+  {
+    clave: 'roto2', title: "Código roto 2", concept: "Más errores", goals: ["salida"], maxLines: null,
+    nuevos: [],
+    intro: `<p>Otro programa estropeado, con <b>tres errores</b> distintos de los de antes. Ejecútalo, lee cada mensaje y arréglalo:</p><ul><li><b>IndentationError</b>: espacios de más al principio de una línea.</li><li><b>NameError</b>: Python distingue MAYÚSCULAS y minúsculas.</li><li><b>ValueError</b>: <code>int()</code> solo convierte textos que son números, como <code>"3"</code>.</li></ul>`,
+    hint: `Quita los espacios del principio de la línea 3, usa el mismo nombre que la constante y cambia <code>"tres"</code> por <code>"3"</code>.`,
+    starter: `# Otro programa con 3 errores. Ejecútalo y arréglalos uno a uno.\nALTO = 2\n  heroe.derecha(2)\nheroe.arriba(alto)\n\npasos = int("tres")\nheroe.derecha(pasos)\n`,
+    make: () => ({ map: ["########", "###...S#", "###.####", "#H..####", "########"], enemies: [] })
   }
 ];
+
+// ---------- mundos: cada uno es un tema con sus niveles ----------
+const MUNDOS = [
+  { id: 1, ra: 1, titulo: 'Primeros pasos', tema: 'Instrucciones y números', color: '#2fc6b8', icono: '👣', niveles: ['celda', 'gemas'],
+    desc: 'Tus primeras órdenes en Python: moverte por el palacio sin chocarte.' },
+  { id: 2, ra: 1, titulo: 'Variables y constantes', tema: 'Guardar valores con nombre', color: '#f2b544', icono: '📦', niveles: ['escalones', 'clave', 'constantes'],
+    desc: 'Guarda valores con un nombre, léelos de las placas y escribe constantes en MAYÚSCULAS.' },
+  { id: 3, ra: 1, titulo: 'Textos', tema: 'Strings y bloques de texto', color: '#ff4f8b', icono: '📜', niveles: ['guardias', 'palabras'],
+    desc: 'Comillas, unir y repetir textos y bloques de varias líneas.' },
+  { id: 4, ra: 1, titulo: 'Operadores', tema: 'Aritméticos, comparaciones y lógicos', color: '#c58bff', icono: '➗', niveles: ['tesoro', 'potencias', 'verdad'],
+    desc: 'Cuentas con + - * / // % **, prioridad, comparaciones y and.' },
+  { id: 5, ra: 1, titulo: 'Entrada y conversiones', tema: 'input(), int() y str()', color: '#5ec8ff', icono: '⌨️', niveles: ['placa', 'guardian'],
+    desc: 'Pregunta a quien juega y convierte textos en números.' },
+  { id: 6, ra: 1, titulo: 'Errores', tema: 'Leer y arreglar errores', color: '#ff7a3d', icono: '🐞', niveles: ['roto', 'roto2'],
+    desc: 'Programas rotos: lee el mensaje de error, encuentra la línea y arréglalo.' },
+  { id: 7, ra: 2, titulo: 'Bucles', tema: 'for y while', color: '#7be07b', icono: '🔁', niveles: ['caracol', 'sinfin'],
+    desc: 'Repite órdenes sin copiar y pegar.' },
+  { id: 8, ra: 2, titulo: 'Condiciones', tema: 'if y bucles anidados', color: '#ffd35a', icono: '🔀', niveles: ['emboscada', 'tozudos'],
+    desc: 'Decide qué hacer según lo que encuentres.' },
+  { id: 9, ra: 2, titulo: 'Funciones y algoritmos', tema: 'def y el laberinto', color: '#9fa8ff', icono: '🧩', niveles: ['columnas', 'laberinto'],
+    desc: 'Crea tus propias órdenes y escapa del laberinto.' }
+];
+(function ordenarNiveles() {
+  const orden = MUNDOS.flatMap(m => m.niveles);
+  LEVELS.sort((a, b) => orden.indexOf(a.clave) - orden.indexOf(b.clave));
+  LEVELS.forEach((L, i) => { L.id = i + 1; L.mundo = MUNDOS.find(m => m.niveles.includes(L.clave)).id; });
+  MUNDOS.forEach(m => { m.ids = m.niveles.map(c => LEVELS.find(L => L.clave === c).id); });
+})();
 
 const API_DOCS = {
   derecha: { sig: "heroe.derecha(pasos)", ins: "heroe.derecha()", desc: "Avanza a la derecha. Sin número, 1 casilla." },
@@ -628,7 +674,8 @@ def _ejecutar(code, ns, modo):
         msg = str(e)
         nombre = getattr(e, "name", None)
         if nombre:
-            parecidos = difflib.get_close_matches(nombre, [k for k in ns if not k.startswith("_")] + ["print", "input", "int", "str", "float"], n=1)
+            candidatos = [k for k in ns if not k.startswith("_")] + ["print", "input", "int", "str", "float"]
+            parecidos = [k for k in candidatos if k.lower() == nombre.lower()] or difflib.get_close_matches(nombre, candidatos, n=1)
             if parecidos:
                 msg += "||" + parecidos[0]
         res = ["error", _linea(e), "NameError", msg]
@@ -664,4 +711,4 @@ def _vivo(code):
     return _ejecutar(code, _NS_VIVO, "single")
 `;
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { LEVELS, CAPITULOS, API_DOCS, crearPartida, makeApi, terminar, revisar, leerVars, traducirError, PRELUDE, contarLineas, snap };
+if (typeof module !== 'undefined' && module.exports) module.exports = { LEVELS, MUNDOS, API_DOCS, crearPartida, makeApi, terminar, revisar, leerVars, traducirError, PRELUDE, contarLineas, snap };

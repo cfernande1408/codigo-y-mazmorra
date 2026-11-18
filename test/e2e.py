@@ -44,6 +44,9 @@ async def main():
             await al.screenshot(path=str(SHOTS / 'a1_registro.png'))
             await al.click('#eBtn')
             await al.wait_for_selector('#cuenta:not([hidden])')
+            await al.wait_for_selector('#home:not([hidden])')
+            await al.screenshot(path=str(SHOTS / 'a1b_inicio.png'))
+            await al.click('[data-mundo="1"]')
             await al.wait_for_function("!document.getElementById('run').disabled", timeout=90000)
             await al.fill('#code', SOL1); await al.click('#run')
             await al.wait_for_selector('#mNext', timeout=20000)
@@ -70,9 +73,13 @@ async def main():
             await al2.goto('http://localhost:8790/')
             await al2.fill('#eClase', codigo.lower()); await al2.fill('#eAlias', 'dragón 7'); await al2.fill('#ePin', '1234')
             await al2.click('#eBtn'); await al2.wait_for_selector('#cuenta:not([hidden])')
+            await al2.wait_for_selector('#home:not([hidden])')
+            assert '1/2 niveles' in await al2.inner_text('[data-mundo="1"]')
+            await al2.click('[data-mundo="1"]')
             assert 'nivel 2' in (await al2.inner_text('#lvlNum')).lower(), 'debía abrir el nivel 2'
+            await al2.evaluate("location.hash = '#mundo-2'"); await al2.wait_for_timeout(300)
             locked = await al2.eval_on_selector_all('#levels .chip.locked', 'e => e.length')
-            assert locked == 16, locked
+            assert locked == 2, locked
             # el profe desbloquea todo
             await prof.click('#desb'); await prof.wait_for_timeout(500)
             await al2.reload(); await al2.wait_for_timeout(1500)

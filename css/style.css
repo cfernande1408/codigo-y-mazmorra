@@ -169,3 +169,29 @@ table.notas{border-collapse:collapse;width:100%;font-size:13.5px}
 nav .cap{font:800 11px Nunito,system-ui,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:1px;align-self:center;padding:0 2px 0 8px;white-space:nowrap}
 nav .cap:first-child{padding-left:0}
 .mission ul{margin:0 0 10px;padding-left:20px;line-height:1.55}
+
+/* ---------- página de inicio: mundos ---------- */
+.home{max-width:1300px;margin:0 auto;padding:22px 20px 10px}
+.home-cab h2{font-family:"Pixelify Sans",monospace;font-size:34px;margin:0;color:var(--gold);text-shadow:0 2px 0 #24102b}
+.home-cab p{color:var(--muted);margin:4px 0 0}
+.ra-titulo{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font:800 13px Nunito,system-ui,sans-serif;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.ra-titulo b{color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;letter-spacing:1px}
+.ra-titulo::after{content:"";flex:1;height:1px;background:var(--line)}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.mundo{--c:var(--teal);text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:0;overflow:hidden;cursor:pointer;color:var(--text);font-family:Nunito,system-ui,sans-serif;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s,border-color .15s}
+.mundo:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 14px 30px rgba(0,0,0,.35),0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent)}
+.mundo .mini{position:relative;aspect-ratio:16/9;background:#1d0f2f;border-bottom:3px solid var(--c)}
+.mundo .mini canvas{width:100%;height:100%;display:block}
+.mundo .chapa{position:absolute;top:10px;left:10px;font:900 12px Nunito,system-ui,sans-serif;background:#fff4dc;color:#24102b;border:2px solid #24102b;border-radius:999px;padding:2px 9px}
+.mundo .hecho{position:absolute;top:10px;right:10px;font:900 12px Nunito,system-ui,sans-serif;background:var(--gold);color:#24102b;border:2px solid #24102b;border-radius:999px;padding:2px 9px}
+.mundo .info{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.mundo h3{margin:0;font-family:"Pixelify Sans",monospace;font-size:23px;font-weight:700}
+.mundo .tema{margin:0;font-weight:800;color:var(--c);font-size:14px}
+.mundo .desc{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45;flex:1}
+.mundo .prog{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:12.5px;color:var(--muted)}
+.mundo .barra{flex:1;height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.mundo .barra i{display:block;height:100%;background:var(--c);border-radius:99px}
+.mundo .prog b{color:var(--gold)}
+header .volver{white-space:nowrap}
+
+.notas th.grupo{color:var(--c);border-bottom:2px solid var(--c);font-size:11px;white-space:nowrap;padding:6px 4px}

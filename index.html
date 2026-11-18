@@ -16,10 +16,18 @@
     <svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="5" width="28" height="24" rx="5" fill="#2a2038" stroke="#b98cff" stroke-width="2"/><path d="M10 13l5 4-5 4" fill="none" stroke="#f2b544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 22h7" stroke="#3fd1b5" stroke-width="3" stroke-linecap="round"/></svg>
     <div><h1>Código <em>y</em> Mazmorra</h1><div class="sub">Escapa de la mazmorra programando en Python</div></div>
   </div>
+  <button class="btn sm volver" id="btnMundos" hidden>🏰 Mundos</button>
   <div class="cuenta" id="cuenta" hidden></div>
-  <nav id="levels" aria-label="Niveles"></nav>
+  <nav id="levels" aria-label="Niveles del mundo"></nav>
 </header>
-<main>
+<section class="home" id="home" hidden>
+  <div class="home-cab">
+    <h2>Elige un mundo</h2>
+    <p>Cada mundo es un tema de Python. Dentro, los niveles se desbloquean en orden.</p>
+  </div>
+  <div id="mundos"></div>
+</section>
+<main id="juego" hidden>
   <section class="col">
     <div class="card">
       <div class="lvl-head">

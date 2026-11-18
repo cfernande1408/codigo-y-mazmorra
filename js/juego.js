@@ -32,7 +32,15 @@
   function hash(x, y) { let h = (x * 374761393 + y * 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
   function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-  const unlocked = i => profe || (cuenta && cuenta.desbloquear) || i === 0 || (prog[LEVELS[i - 1].id] || 0) > 0;
+  const mundoDe = L => MUNDOS.find(m => m.id === L.mundo);
+  // dentro de cada mundo los niveles se desbloquean en orden; los mundos están todos abiertos
+  const unlocked = i => {
+    if (profe || (cuenta && cuenta.desbloquear)) return true;
+    const L = LEVELS[i], ids = mundoDe(L).ids, k = ids.indexOf(L.id);
+    return k === 0 || (prog[ids[k - 1]] || 0) > 0;
+  };
+  const indice = id => LEVELS.findIndex(L => L.id === id);
+  let vista = 'home';
 
   // ---------- consola ----------
   function log(text, kind) { const d = document.createElement('div'); d.className = kind || 'print'; d.textContent = text; out.appendChild(d); out.scrollTop = out.scrollHeight; }
@@ -74,17 +82,75 @@
   // ---------- nivel ----------
   function renderNav() {
     const nav = $('levels'); nav.innerHTML = '';
-    LEVELS.forEach((L, i) => {
-      if (i === 0 || LEVELS[i - 1].cap !== L.cap) { const c = document.createElement('span'); c.className = 'cap'; c.textContent = 'Cap. ' + L.cap; c.title = CAPITULOS[L.cap]; nav.appendChild(c); }
+    if (vista !== 'juego') return;
+    const m = mundoDe(LEVELS[li]);
+    const c = document.createElement('span'); c.className = 'cap'; c.textContent = m.icono + ' ' + m.titulo; nav.appendChild(c);
+    m.ids.forEach((id, k) => {
+      const i = indice(id), L = LEVELS[i];
       const b = document.createElement('button'); const ok = unlocked(i); b.dataset.n = L.id;
       b.className = 'chip' + (i === li ? ' on' : '') + (ok ? '' : ' locked');
       const st = prog[L.id] || 0, max = L.maxLines ? 2 : 1;
-      b.innerHTML = `<span class="n">${ok ? i + 1 : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
-      b.title = `${i + 1}. ${L.title} · ${L.concept}`;
-      b.onclick = () => { if (!ok) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; } selectLevel(i); };
+      b.innerHTML = `<span class="n">${ok ? k + 1 : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
+      b.title = `${k + 1}. ${L.title} · ${L.concept}`;
+      b.onclick = () => { if (!ok) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; } irA('#nivel-' + L.id); };
       nav.appendChild(b);
     });
   }
+
+  // ---------- página de inicio y rutas (#mundos, #mundo-N, #nivel-N) ----------
+  let miniaturas = false;
+  function renderHome() {
+    const cont = $('mundos'); cont.innerHTML = '';
+    [1, 2].forEach(ra => {
+      const t = document.createElement('div'); t.className = 'ra-titulo';
+      t.innerHTML = ra === 1 ? '<b>RA1</b> Variables, tipos y operadores' : '<b>RA2</b> Bucles, condiciones y funciones';
+      cont.appendChild(t);
+      const rej = document.createElement('div'); rej.className = 'rejilla'; cont.appendChild(rej);
+      MUNDOS.filter(m => m.ra === ra).forEach(m => {
+        const hechos = m.ids.filter(id => prog[id] > 0).length;
+        const est = m.ids.reduce((a, id) => a + (prog[id] || 0), 0);
+        const maxEst = m.ids.reduce((a, id) => a + (LEVELS[indice(id)].maxLines ? 2 : 1), 0);
+        const b = document.createElement('button'); b.className = 'mundo'; b.dataset.mundo = m.id; b.style.setProperty('--c', m.color);
+        b.innerHTML = `<div class="mini"><canvas width="960" height="540"></canvas><span class="chapa">Mundo ${m.id}</span>${hechos === m.ids.length ? '<span class="hecho">✓ Completado</span>' : ''}</div>
+          <div class="info"><h3>${m.icono} ${esc(m.titulo)}</h3><p class="tema">${esc(m.tema)}</p><p class="desc">${esc(m.desc)}</p>
+          <div class="prog"><div class="barra"><i style="width:${Math.round(100 * hechos / m.ids.length)}%"></i></div><span>${hechos}/${m.ids.length} niveles · <b>★ ${est}/${maxEst}</b></span></div></div>`;
+        b.onclick = () => irA('#mundo-' + m.id);
+        rej.appendChild(b);
+        // miniatura: el primer nivel del mundo dibujado con el mismo motor
+        try {
+          const a = crearArte(b.querySelector('canvas')), s = crearPartida(LEVELS[indice(m.ids[0])]), f = snap(s);
+          a.prepara(s, 1); a.pinta(performance.now(), { p: f, c: f, k: 1, playing: false });
+        } catch (e) { }
+      });
+    });
+  }
+  function mostrarVista(v) {
+    vista = v;
+    $('home').hidden = v !== 'home'; $('juego').hidden = v !== 'juego'; $('btnMundos').hidden = v !== 'juego';
+    if (v === 'home') { closeModal(); renderHome(); window.scrollTo(0, 0); }
+    renderNav();
+  }
+  function irA(h) { if (location.hash === h) ruta(); else location.hash = h; }
+  function primeroPendiente(m) {
+    const id = m.ids.find((id, k) => unlocked(indice(id)) && !(prog[id] > 0)) || m.ids.filter(id => unlocked(indice(id))).pop();
+    return indice(id);
+  }
+  function ruta() {
+    const h = location.hash;
+    let m = /^#nivel-(\d+)$/.exec(h);
+    if (m) {
+      const i = indice(+m[1]);
+      if (i < 0) return irA('#mundos');
+      if (!unlocked(i)) return irA('#mundo-' + LEVELS[i].mundo);
+      vista = 'juego'; if (i !== li || $('juego').hidden) selectLevel(i); mostrarVista('juego'); return;
+    }
+    m = /^#mundo-(\d+)$/.exec(h);
+    if (m) { const mu = MUNDOS.find(x => x.id === +m[1]); if (mu) { history.replaceState(null, '', '#nivel-' + LEVELS[primeroPendiente(mu)].id); return ruta(); } }
+    mostrarVista('home');
+  }
+  window.addEventListener('hashchange', ruta);
+  $('btnMundos').onclick = () => irA('#mundos');
+
   function renderBook() {
     const book = $('book'); book.innerHTML = '';
     const nuevos = new Set(LEVELS[li].nuevos), keys = [];
@@ -117,7 +183,8 @@
   function selectLevel(i) {
     closeModal(); li = i; store.set('cym_lvl', i);
     const L = LEVELS[i];
-    $('lvlNum').textContent = `${CAPITULOS[L.cap]} · Nivel ${i + 1} de ${LEVELS.length}`;
+    const mu = mundoDe(L);
+    $('lvlNum').textContent = `${mu.icono} ${mu.titulo} · Nivel ${mu.ids.indexOf(L.id) + 1} de ${mu.ids.length}`;
     $('lvlTitle').textContent = L.title;
     $('tags').innerHTML = `<span class="tag">${esc(L.concept)}</span>` + (L.random ? '<span class="tag rnd">🎲 Cambia en cada partida</span>' : '');
     $('intro').innerHTML = L.intro; $('hint').innerHTML = L.hint; $('hintBox').open = false;
@@ -236,18 +303,19 @@
       const stars = 1 + (reto ? 1 : 0), max = L.maxLines ? 2 : 1;
       prog[L.id] = Math.max(prog[L.id] || 0, stars); store.set(ns() + 'prog', prog); renderNav();
       enviar(L.id, true, stars, lastCode);
-      const last = li === LEVELS.length - 1;
-      let h = `<div class="ico">${last ? '👑' : '🏆'}</div><h2>${last ? '¡Has escapado!' : '¡Nivel superado!'}</h2>`;
+      const mu = mundoDe(L), k = mu.ids.indexOf(L.id), last = k === mu.ids.length - 1;
+      const todo = mu.ids.every(id => prog[id] > 0);
+      let h = `<div class="ico">${last ? '👑' : '🏆'}</div><h2>${last ? (todo ? '¡Mundo completado!' : '¡Último nivel superado!') : '¡Nivel superado!'}</h2>`;
       h += `<div class="bigstars">${'★'.repeat(stars)}<i>${'★'.repeat(max - stars)}</i></div><ul class="mlist"><li>★ Misión completada</li>`;
       if (L.maxLines) h += `<li class="${reto ? '' : 'no'}">${reto ? '★' : '☆'} Reto: ${L.maxLines} líneas o menos (tu código tiene ${n})</li>`;
       h += '</ul>';
-      if (last) h += `<p>Has salido de la mazmorra con un algoritmo de verdad. ¡Eso ya es programar!</p>`;
+      if (last && todo) h += `<p>Has terminado el mundo «${esc(mu.titulo)}». ¡A por el siguiente!</p>`;
       if (L.random) h += `<p class="small">Este mapa es aleatorio: ejecútalo un par de veces más para comprobar que tu código funciona siempre.</p>`;
       h += '<div class="mbtns">';
-      if (!last) h += '<button class="btn gold" id="mNext">Siguiente nivel ▶</button>';
+      h += last ? '<button class="btn gold" id="mNext">Elegir otro mundo 🏰</button>' : '<button class="btn gold" id="mNext">Siguiente nivel ▶</button>';
       h += '<button class="btn" id="mStay">Seguir aquí</button></div>';
       openModal(h, false);
-      if (!last) $('mNext').onclick = () => selectLevel(li + 1);
+      $('mNext').onclick = () => { closeModal(); irA(last ? '#mundos' : '#nivel-' + mu.ids[k + 1]); };
       $('mStay').onclick = closeModal;
     } else {
       enviar(L.id, false, 0, lastCode);
@@ -274,7 +342,7 @@
   const arte = crearArte(cv);
   function render(now) {
     requestAnimationFrame(render);
-    if (!SIM) return;
+    if (!SIM || vista !== 'juego') return;
     tick(now);
     let p = view.base, c = view.base, k = 1;
     if (view.playing && view.frames[view.i]) {
@@ -292,11 +360,11 @@
     speed = +b.dataset.s; document.querySelectorAll('#speed button').forEach(x => x.classList.toggle('on', x === b));
   });
   $('profe').checked = profe;
-  $('profe').onchange = e => { profe = e.target.checked; store.set('cym_profe', profe); renderNav(); };
+  $('profe').onchange = e => { profe = e.target.checked; store.set('cym_profe', profe); renderNav(); if (vista === 'home') renderHome(); };
   let wipeArmed = false;
   $('wipe').onclick = e => {
     if (!wipeArmed) { wipeArmed = true; e.target.textContent = '¿Seguro? Pulsa otra vez para borrar'; setTimeout(() => { wipeArmed = false; e.target.textContent = 'Borrar mi progreso'; }, 4000); return; }
-    LEVELS.forEach(L => store.del(codeKey(L.id))); prog = {}; store.set(ns() + 'prog', prog); wipeArmed = false; e.target.textContent = 'Borrar mi progreso'; selectLevel(0);
+    LEVELS.forEach(L => store.del(codeKey(L.id))); prog = {}; store.set(ns() + 'prog', prog); wipeArmed = false; e.target.textContent = 'Borrar mi progreso'; irA('#mundos');
   };
 
   // ---------- nube (cuentas de alumno) ----------
@@ -334,7 +402,7 @@
       const sinBorrador = store.get(codeKey(LEVELS[li].id), null) === null;
       aplicarEstado(r);
       if (!view.playing && sinBorrador && serverCode[LEVELS[li].id] && ed.value !== serverCode[LEVELS[li].id]) { ed.value = serverCode[LEVELS[li].id]; updateGutter(); }
-      renderNav(); vaciar();
+      renderNav(); if (vista === 'home') renderHome(); vaciar();
     } catch (e) {
       if (e.caducada) salir(true); else { renderCuenta(); setNube('mal'); }
     }
@@ -402,8 +470,7 @@
           { p_codigo: $('eClase').value, p_alias: $('eAlias').value, p_pin: $('ePin').value });
         aplicarEstado(r);
         $('entrada').classList.add('hidden'); $('ePin').value = '';
-        let i = 0; while (i + 1 < LEVELS.length && unlocked(i + 1) && prog[LEVELS[i].id]) i++;
-        selectLevel(i);
+        irA('#mundos');
         log(`¡Hola, ${cuenta.alias}! Tu progreso se guarda automáticamente.`, 'info');
         vaciar();
       } catch (err) { $('eErr').textContent = err.message; }
@@ -418,6 +485,7 @@
   configurarNube();
   if (!unlocked(li)) li = 0;
   selectLevel(li);
+  ruta();
   if (NUBE) { if (cuenta) refrescar(); else mostrarEntrada(); }
   requestAnimationFrame(render);
   if (typeof loadPyodide === 'undefined') {

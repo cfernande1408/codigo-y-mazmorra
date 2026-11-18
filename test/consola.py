@@ -29,6 +29,7 @@ async def main():
             pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
             await pg.goto('http://localhost:8791/')
             await pg.wait_for_function("!document.getElementById('run').disabled", timeout=90000)
+            await pg.evaluate("location.hash = '#nivel-1'"); await pg.wait_for_selector('#juego:not([hidden])')
             await orden(pg, 'heroe.derecha()')
             await orden(pg, 'heroe.derecha()')
             await pg.screenshot(path=str(SHOTS / 'c1_dos_pasos.png'))
@@ -48,7 +49,7 @@ async def main():
             await pg.click('#mStay'); await pg.click('#run')
             await pg.wait_for_selector('#mStay', timeout=20000)
             # variables entre órdenes (nivel 5)
-            await pg.click('#mStay'); await pg.check('#profe'); await pg.click('#levels [data-n="5"]')
+            await pg.click('#mStay'); await pg.check('#profe'); await pg.evaluate("location.hash = '#nivel-4'"); await pg.wait_for_timeout(300)
             for c in ['clave = heroe.leer()', 'clave', 'heroe.derecha(2)', 'heroe.decir(clave)', 'heroe.derecha(4)']:
                 await orden(pg, c)
             await pg.wait_for_selector('#mStay', timeout=15000)
