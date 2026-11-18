@@ -167,7 +167,7 @@
     const L = LEVELS[li], g = [];
     if (L.goals.includes('gemas')) g.push(`<li>💎 Recoge las ${s.gems.length} gemas</li>`);
     if (L.goals.includes('salida')) g.push('<li>🌀 Llega a la salida</li>');
-    g.push('<li>🧱 No te choques</li>');
+    g.push('<li>❤️ 3 vidas: cada choque quita una</li>');
     if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} rejas</li>`);
     const vs = Object.keys(s.vars || {});
     if (vs.length) g.push(`<li>🎲 Variables ya creadas: ${vs.map(v => '<code>' + esc(v) + '</code>').join(', ')}</li>`);
@@ -175,7 +175,7 @@
     $('goals').innerHTML = g.join('');
   }
   function newPreview() {
-    SIM = crearPartida(LEVELS[li]); vivo = false;
+    SIM = crearPartida(LEVELS[li]); vivo = false; $('avisoMapa').hidden = true;
     view.base = view.prev = snap(SIM); view.playing = false; view.frames = [];
     arte.prepara(SIM, dpr);
     renderGoals(SIM);
@@ -243,7 +243,9 @@
     const [kind, , name, msg, vjson] = res;
     if (kind === 'ok') revisar(SIM, leerVars(vjson));
     const nuevos = SIM.frames.slice(desde);
-    if (kind === 'ok' && !(SIM.over && SIM.over.type === 'fail')) {
+    const choco = nuevos.some(f => f.bump);
+    if (choco && !(SIM.over && SIM.over.type === 'fail')) nuevos.push(Object.assign({}, nuevos[nuevos.length - 1], { dur: 0, say: null, bump: null, log: { text: 'Esa orden no se ha apuntado en el editor porque te has chocado.', kind: 'muted' } }));
+    if (kind === 'ok' && !choco && !(SIM.over && SIM.over.type === 'fail')) {
       if (ed.value && !ed.value.endsWith('\n')) ed.value += '\n';
       ed.value += cmd.trim() + '\n'; ed.scrollTop = ed.scrollHeight; onEdit();
       store.set(codeKey(LEVELS[li].id), ed.value);
@@ -266,22 +268,9 @@
     else if (e.key === 'ArrowDown') { e.preventDefault(); hIdx = Math.min(historial.length, hIdx + 1); e.target.value = historial[hIdx] || ''; }
   });
 
-  // repite en silencio lo apuntado en el editor para volver al punto anterior al fallo
-  function reponer() {
-    const datos = SIM.datos;
-    SIM = crearPartida(LEVELS[li], datos); view.playing = false; view.frames = [];
-    arte.prepara(SIM, dpr);
-    colaRespuestas = respuestasSesion.slice();
-    try {
-      const fn = py.globals.get('_vivo_reponer'); const r = fn(ed.value, extra()); r.destroy(); fn.destroy();
-    } catch (e) { newPreview(); return; }
-    colaRespuestas = [];
-    if (SIM.over) { newPreview(); return; }
-    vivo = true; SIM.frames = []; view.base = view.prev = snap(SIM);
-  }
-
   function frameStart(f) {
     if (f.log) log(f.log.text, f.log.kind);
+    if (f.bump && f.vidas > 0) aviso(f.log ? f.log.text : '¡Ay!', 'error');
     arte.evento(view.prev, f);
   }
   function tick(now) {
@@ -317,21 +306,24 @@
       openModal(h, false);
       $('mNext').onclick = () => { closeModal(); irA(last ? '#mundos' : '#nivel-' + mu.ids[k + 1]); };
       $('mStay').onclick = closeModal;
-    } else {
+    } else if (o.suave) {
+      // el programa ha terminado (error o no ha llegado): aviso sin bloquear
       enviar(L.id, false, 0, lastCode);
-      let h = `<div class="ico">💥</div><h2>¡Ups!</h2><p>${esc(o.msg)}</p>`;
+      aviso(o.msg, 'error');
+    } else {
+      // sin vidas
+      enviar(L.id, false, 0, lastCode);
+      let h = `<div class="ico">💔</div><h2>¡Sin vidas!</h2><p>${esc(o.msg)}</p>`;
       if (L.random) h += '<p class="small">Recuerda: este mapa cambia en cada partida. Tu código tiene que funcionar en cualquier caso.</p>';
-      if (desdeConsola) {
-        h += '<p class="small">La última orden no se ha apuntado en el editor.</p><div class="mbtns"><button class="btn" id="mZero">Empezar de cero</button><button class="btn gold" id="mRetry">Volver a donde estaba</button></div>';
-        openModal(h, true);
-        $('mRetry').onclick = () => { closeModal(); reponer(); $('replIn').focus(); };
-        $('mZero').onclick = () => { closeModal(); newPreview(); $('replIn').focus(); };
-      } else {
-        h += '<div class="mbtns"><button class="btn gold" id="mRetry">Volver a intentarlo</button></div>';
-        openModal(h, true);
-        $('mRetry').onclick = () => { closeModal(); newPreview(); ed.focus(); };
-      }
+      h += '<div class="mbtns"><button class="btn gold" id="mRetry">Volver a intentarlo</button></div>';
+      openModal(h, true);
+      $('mRetry').onclick = () => { closeModal(); newPreview(); (desdeConsola ? $('replIn') : ed).focus(); };
     }
+  }
+  let avisoT = 0;
+  function aviso(texto, tipo) {
+    const a = $('avisoMapa'); a.textContent = texto; a.className = 'aviso-mapa ' + (tipo || ''); a.hidden = false;
+    clearTimeout(avisoT); avisoT = setTimeout(() => { a.hidden = true; }, 6000);
   }
   function openModal(html, fail) { const b = $('mbox'); b.className = 'mbox' + (fail ? ' fail' : ''); b.innerHTML = html; $('modal').classList.remove('hidden'); }
   function closeModal() { $('modal').classList.add('hidden'); }

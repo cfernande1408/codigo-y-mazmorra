@@ -8,8 +8,12 @@ el progreso de cada alumno.
 - **Vista lateral estilo cómic**: el palacio cortado en sección sobre un
   atardecer con ciudad en parallax, escaleras, rejas, antorchas y un
   héroe animado que corre, trepa y ataca.
+- **Órdenes como funciones** (`derecha()`, `atacar("Grumo")`, `decir(x)`…),
+  sin objetos, igual que `print()`.
 - **Consola directa**: cada orden se ejecuta al momento y se apunta en el
   editor; con «Ejecutar» se lanza el programa entero.
+- **3 vidas**: chocarse quita una vida pero el juego sigue; los errores de
+  Python se avisan sin bloquear la partida.
 - **18 niveles en dos capítulos**:
   - *Capítulo 1 · Variables, tipos y operadores* (RA1): instrucciones,
     números, textos, variables, constantes, operadores matemáticos,

@@ -46,7 +46,7 @@ async function falla(p, re) { try { await p; } catch (e) { assert.match(e.messag
   const ana2 = await rpc('alumno_entrar', { p_codigo: clase.codigo, p_alias: 'ANA', p_pin: '1234' });
   assert.ok(ana2.token && ana2.token !== ana.token); ok('entrar con alias en otras mayúsculas');
 
-  await rpc('alumno_ejecucion', { p_token: ana.token, p_nivel: 1, p_superado: false, p_estrellas: 0, p_codigo: 'heroe.arriba()' });
+  await rpc('alumno_ejecucion', { p_token: ana.token, p_nivel: 1, p_superado: false, p_estrellas: 0, p_codigo: 'arriba()' });
   await rpc('alumno_ejecucion', { p_token: ana.token, p_nivel: 1, p_superado: true, p_estrellas: 1, p_codigo: 'SOL1' });
   await rpc('alumno_ejecucion', { p_token: ana.token, p_nivel: 1, p_superado: false, p_estrellas: 0, p_codigo: 'roto' });
   await rpc('alumno_ejecucion', { p_token: ana.token, p_nivel: 2, p_superado: true, p_estrellas: 2, p_codigo: 'SOL2' });

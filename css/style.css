@@ -195,3 +195,7 @@ nav .cap:first-child{padding-left:0}
 header .volver{white-space:nowrap}
 
 .notas th.grupo{color:var(--c);border-bottom:2px solid var(--c);font-size:11px;white-space:nowrap;padding:6px 4px}
+
+.aviso-mapa{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:88%;background:#fff4dc;color:#24102b;border:3px solid #24102b;border-radius:14px;padding:8px 14px;font:800 14px Nunito,system-ui,sans-serif;box-shadow:0 6px 0 rgba(0,0,0,.35);animation:pop .2s ease-out;text-align:center;line-height:1.35}
+.aviso-mapa.error{background:#ffd6dc}
+.aviso-mapa.ok{background:#d9ffe6}

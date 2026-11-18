@@ -6,26 +6,26 @@ const respuestas = [];
 const api = G.makeApi(() => SIM, { pedir: () => respuestas.length ? respuestas.shift() : null });
 
 const SOL = {
-  celda: `heroe.derecha()\nheroe.derecha()\nheroe.abajo()\nheroe.abajo()\nheroe.derecha()\nheroe.derecha()`,
-  gemas: `heroe.derecha(7)\nheroe.abajo(2)\nheroe.izquierda(7)`,
-  guardias: `heroe.derecha()\nheroe.atacar("Grumo")\nheroe.atacar("Grumo")\nheroe.derecha(4)\nheroe.atacar("Babos")\nheroe.atacar("Babos")\nheroe.derecha(3)`,
-  escalones: `pasos = 3\nheroe.derecha(pasos)\nheroe.abajo()\nheroe.derecha(pasos)\nheroe.abajo()\nheroe.derecha(pasos)`,
-  clave: `clave = heroe.leer()\nheroe.derecha(2)\nheroe.decir(clave)\nheroe.derecha(4)`,
-  constantes: `ANCHO = 4\nALTO = 2\nheroe.derecha(ANCHO)\nheroe.arriba(ALTO)\nheroe.derecha(ANCHO)`,
-  tesoro: `total = oro * cofres\nheroe.derecha()\nheroe.decir(total)\nheroe.derecha(2)\nheroe.decir(total // ladrones)\nheroe.derecha(2)\nheroe.decir(total % ladrones)\nheroe.derecha(2)`,
-  palabras: `hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""\nheroe.derecha()\nheroe.decir("Hola, " + guardian)\nheroe.derecha(2)\nheroe.decir("ja" * veces)\nheroe.derecha(2)\nheroe.decir(hechizo)\nheroe.derecha(2)`,
-  roto: `pasos = 3\nheroe.derecha(pasos)\n\ngemas = 3\nmensaje = "Llevo " + str(gemas) + " gemas"\nheroe.decir(mensaje)\n\nheroe.derecha(pasos + 1)\nprint("¡Fuera!")`,
-  placa: `numero = int(heroe.leer())\nheroe.derecha(numero)\nheroe.decir(numero * 2)\nheroe.derecha(2)`,
-  guardian: `pasos = int(input("¿Cuántos pasos? "))\nheroe.derecha(pasos)\nnombre = input("¿Cómo te llamas? ")\nheroe.decir("Soy " + nombre)\nheroe.derecha(2)`,
-  verdad: `heroe.derecha()\nheroe.decir(numero > 10)\nheroe.derecha(2)\nheroe.decir(numero % 2 == 0)\nheroe.derecha(2)\nheroe.decir(numero > 10 and numero % 2 == 0)\nheroe.derecha(2)`,
-  caracol: `for i in range(4):\n    heroe.derecha(2)\n    heroe.abajo()`,
-  sinfin: `while heroe.hay_camino("derecha"):\n    heroe.derecha()\nheroe.abajo()`,
-  emboscada: `for i in range(8):\n    enemigo = heroe.enemigo_cercano()\n    if enemigo:\n        heroe.atacar(enemigo)\n    heroe.derecha()`,
-  tozudos: `for i in range(8):\n    while heroe.enemigo_cercano():\n        heroe.atacar(heroe.enemigo_cercano())\n    heroe.derecha()`,
-  columnas: `def vuelta():\n    heroe.derecha(2)\n    heroe.abajo(2)\n    heroe.izquierda(2)\n    heroe.arriba(2)\n\nfor i in range(3):\n    vuelta()\n    heroe.derecha(4)`,
-  potencias: `heroe.derecha()\nheroe.decir(base ** exponente)\nheroe.derecha(2)\nheroe.decir(base + extra * 2)\nheroe.derecha(2)\nheroe.decir((base + extra) * 2)\nheroe.derecha(2)`,
-  roto2: `ALTO = 2\nheroe.derecha(2)\nheroe.arriba(ALTO)\n\npasos = int("3")\nheroe.derecha(pasos)`,
-  laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not heroe.en_salida():\n    dcha = (mirando + 1) % 4\n    if heroe.hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif heroe.hay_camino(direcciones[mirando]):\n        pass\n    elif heroe.hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    heroe.mover(direcciones[mirando])`,
+  celda: `derecha()\nderecha()\nabajo()\nabajo()\nderecha()\nderecha()`,
+  gemas: `derecha(7)\nabajo(2)\nizquierda(7)`,
+  guardias: `derecha()\natacar("Grumo")\natacar("Grumo")\nderecha(4)\natacar("Babos")\natacar("Babos")\nderecha(3)`,
+  escalones: `pasos = 3\nderecha(pasos)\nabajo()\nderecha(pasos)\nabajo()\nderecha(pasos)`,
+  clave: `clave = leer()\nderecha(2)\ndecir(clave)\nderecha(4)`,
+  constantes: `ANCHO = 4\nALTO = 2\nderecha(ANCHO)\narriba(ALTO)\nderecha(ANCHO)`,
+  tesoro: `total = oro * cofres\nderecha()\ndecir(total)\nderecha(2)\ndecir(total // ladrones)\nderecha(2)\ndecir(total % ladrones)\nderecha(2)`,
+  palabras: `hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""\nderecha()\ndecir("Hola, " + guardian)\nderecha(2)\ndecir("ja" * veces)\nderecha(2)\ndecir(hechizo)\nderecha(2)`,
+  roto: `pasos = 3\nderecha(pasos)\n\ngemas = 3\nmensaje = "Llevo " + str(gemas) + " gemas"\ndecir(mensaje)\n\nderecha(pasos + 1)\nprint("¡Fuera!")`,
+  placa: `numero = int(leer())\nderecha(numero)\ndecir(numero * 2)\nderecha(2)`,
+  guardian: `pasos = int(input("¿Cuántos pasos? "))\nderecha(pasos)\nnombre = input("¿Cómo te llamas? ")\ndecir("Soy " + nombre)\nderecha(2)`,
+  verdad: `derecha()\ndecir(numero > 10)\nderecha(2)\ndecir(numero % 2 == 0)\nderecha(2)\ndecir(numero > 10 and numero % 2 == 0)\nderecha(2)`,
+  caracol: `for i in range(4):\n    derecha(2)\n    abajo()`,
+  sinfin: `while hay_camino("derecha"):\n    derecha()\nabajo()`,
+  emboscada: `for i in range(8):\n    enemigo = enemigo_cercano()\n    if enemigo:\n        atacar(enemigo)\n    derecha()`,
+  tozudos: `for i in range(8):\n    while enemigo_cercano():\n        atacar(enemigo_cercano())\n    derecha()`,
+  columnas: `def vuelta():\n    derecha(2)\n    abajo(2)\n    izquierda(2)\n    arriba(2)\n\nfor i in range(3):\n    vuelta()\n    derecha(4)`,
+  potencias: `derecha()\ndecir(base ** exponente)\nderecha(2)\ndecir(base + extra * 2)\nderecha(2)\ndecir((base + extra) * 2)\nderecha(2)`,
+  roto2: `ALTO = 2\nderecha(2)\narriba(ALTO)\n\npasos = int("3")\nderecha(pasos)`,
+  laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not en_salida():\n    dcha = (mirando + 1) % 4\n    if hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif hay_camino(direcciones[mirando]):\n        pass\n    elif hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    mover(direcciones[mirando])`,
 };
 
 (async () => {
@@ -51,32 +51,35 @@ const SOL = {
   }
   const lv = c => G.LEVELS.find(l => l.clave === c);
   const caso = (titulo, id, code, esperado) => {
-    const s = run(lv(id), code), todo = s.over.msg + ' / ' + logs(s).join(' / ');
+    const s = run(lv(id), code), todo = s.over.type + ': ' + s.over.msg + ' / ' + logs(s).join(' / ');
     const bien = esperado.test(todo); if (!bien) ok = false;
     console.log(`${bien ? '✓' : '✗'} [${titulo}] ${s.over.type}: ${todo.slice(0, 160)}`);
   };
-  caso('nombre mal', 'celda', 'héroe.derecha()', /heroe: en minúsculas/);
-  caso('sin dos puntos', 'caracol', 'for i in range(3)\n    heroe.derecha()', /dos puntos/);
-  caso('pared', 'celda', 'heroe.arriba()', /piedra|pared/);
+  caso('mayúscula en la orden', 'celda', 'Derecha()', /«Derecha».*«derecha»/);
+  caso('paréntesis olvidados', 'celda', 'derecha', /faltan los paréntesis/);
+  caso('un choque no acaba el juego', 'celda', 'arriba()\n' + SOL.celda, /^win:.*Te quedan 2 vidas/);
+  caso('tres choques: sin vidas', 'celda', 'arriba()\narriba()\narriba()\nderecha()', /sin vidas/);
+  caso('sin dos puntos', 'caracol', 'for i in range(3)\n    derecha()', /dos puntos/);
+  caso('pared', 'celda', 'arriba()', /piedra|pared/);
   caso('bucle', 'celda', 'while True:\n    x = 1', /bucle infinito/);
-  caso('variable sin crear (4)', 'escalones', 'heroe.derecha(3)\nheroe.abajo()\nheroe.derecha(3)\nheroe.abajo()\nheroe.derecha(3)', /variable pasos/);
-  caso('constante en minúsculas (6)', 'constantes', 'ancho = 4\nALTO = 2\nheroe.derecha(ancho)\nheroe.arriba(ALTO)\nheroe.derecha(ancho)', /MAYÚSCULAS/);
-  caso('división con / (7)', 'tesoro', 'total = oro * cofres\nheroe.derecha()\nheroe.decir(total)\nheroe.derecha(2)\nheroe.decir(total / ladrones)', /decimal|abre/);
-  caso('saludo sin coma (8)', 'palabras', 'heroe.derecha()\nheroe.decir("Hola " + guardian)', /exactamente/);
+  caso('variable sin crear (4)', 'escalones', 'derecha(3)\nabajo()\nderecha(3)\nabajo()\nderecha(3)', /variable pasos/);
+  caso('constante en minúsculas (6)', 'constantes', 'ancho = 4\nALTO = 2\nderecha(ancho)\narriba(ALTO)\nderecha(ancho)', /MAYÚSCULAS/);
+  caso('división con / (7)', 'tesoro', 'total = oro * cofres\nderecha()\ndecir(total)\nderecha(2)\ndecir(total / ladrones)', /decimal|abre/);
+  caso('saludo sin coma (8)', 'palabras', 'derecha()\ndecir("Hola " + guardian)', /exactamente/);
   caso('código roto: sintaxis (9)', 'roto', lv('roto').starter, /comillas no están cerradas \(línea 10\)/);
   caso('código roto: nombre (9)', 'roto', lv('roto').starter.replace('print("¡Fuera!)', 'print("¡Fuera!")'), /«paso».*«pasos»/);
   caso('código roto: tipos (9)', 'roto', lv('roto').starter.replace('print("¡Fuera!)', 'print("¡Fuera!")').replace('(paso)', '(pasos)'), /str\(\)/);
-  caso('sin int() al leer (10)', 'placa', 'n = heroe.leer()\nheroe.derecha(n)', /texto .* int\(\)/);
-  caso('texto repetido (10)', 'placa', 'n = heroe.leer()\nheroe.derecha(int(n))\nheroe.decir(n * 2)', /repetido un texto/);
+  caso('sin int() al leer (10)', 'placa', 'n = leer()\nderecha(n)', /texto .* int\(\)/);
+  caso('texto repetido (10)', 'placa', 'n = leer()\nderecha(int(n))\ndecir(n * 2)', /repetido un texto/);
   caso('int() de letras', 'placa', 'x = int("hola")', /no puede convertir 'hola'/);
   caso('sin input (11)', 'guardian', '', /no has llegado|input/);
-  caso('True a mano (12)', 'verdad', 'heroe.derecha()\nheroe.decir("true")', /mayúscula/);
+  caso('True a mano (12)', 'verdad', 'derecha()\ndecir("true")', /mayúscula/);
   caso('texto + número', 'celda', 'x = "a" + 3', /str\(\)/);
-  caso('potencia mal (9)', 'potencias', 'heroe.derecha()\nheroe.decir(base * exponente)', /\*\* ?|potencia/);
-  caso('prioridad (9)', 'potencias', 'heroe.derecha()\nheroe.decir(base ** exponente)\nheroe.derecha(2)\nheroe.decir((base + extra) * 2)', /prioridad/);
+  caso('potencia mal (9)', 'potencias', 'derecha()\ndecir(base * exponente)', /\*\* ?|potencia/);
+  caso('prioridad (9)', 'potencias', 'derecha()\ndecir(base ** exponente)\nderecha(2)\ndecir((base + extra) * 2)', /prioridad/);
   caso('roto2: sangría', 'roto2', lv('roto2').starter, /Sobran espacios .*línea 3/);
-  caso('roto2: mayúsculas', 'roto2', lv('roto2').starter.replace('  heroe', 'heroe'), /«alto».*«ALTO»/);
-  caso('roto2: int', 'roto2', lv('roto2').starter.replace('  heroe', 'heroe').replace('(alto)', '(ALTO)'), /no puede convertir 'tres'/);
+  caso('roto2: mayúsculas', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha'), /«alto».*«ALTO»/);
+  caso('roto2: int', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha').replace('(alto)', '(ALTO)'), /no puede convertir 'tres'/);
   caso('cuentas con texto', 'celda', 'x = "3" - 1', /cuentas con un texto/);
   console.log(ok ? 'TODO OK' : 'HAY FALLOS');
   process.exit(ok ? 0 : 1);

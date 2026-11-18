@@ -30,27 +30,28 @@ async def main():
             await pg.goto('http://localhost:8791/')
             await pg.wait_for_function("!document.getElementById('run').disabled", timeout=90000)
             await pg.evaluate("location.hash = '#nivel-1'"); await pg.wait_for_selector('#juego:not([hidden])')
-            await orden(pg, 'heroe.derecha()')
-            await orden(pg, 'heroe.derecha()')
+            await orden(pg, 'derecha()')
+            await orden(pg, 'derecha()')
             await pg.screenshot(path=str(SHOTS / 'c1_dos_pasos.png'))
-            await orden(pg, 'heroe.saltar()')
-            out = await pg.inner_text('#out'); assert 'no sabe hacer' in out, out
-            await orden(pg, 'heroe.derecha()')           # choca
-            await pg.wait_for_selector('#mZero')
+            await orden(pg, 'saltar()')
+            out = await pg.inner_text('#out'); assert 'no conoce el nombre «saltar»' in out, out
+            await orden(pg, 'derecha()')           # choca: pierde una vida y sigue donde estaba
+            await pg.wait_for_selector('#avisoMapa:not([hidden])')
+            assert await pg.locator('#modal:not(.hidden)').count() == 0
+            out = await pg.inner_text('#out'); assert 'Te quedan 2 vidas' in out and 'no se ha apuntado' in out, out
             await pg.screenshot(path=str(SHOTS / 'c2_choque.png'))
-            await pg.click('#mRetry')                     # vuelve a donde estaba
-            await orden(pg, 'heroe.abajo(2)')
-            await orden(pg, 'heroe.derecha(2)')
+            await orden(pg, 'abajo(2)')
+            await orden(pg, 'derecha(2)')
             await pg.wait_for_selector('#mStay', timeout=15000)
             code = await pg.input_value('#code')
-            assert code.splitlines()[1:] == ['heroe.derecha()', 'heroe.derecha()', 'heroe.abajo(2)', 'heroe.derecha(2)'], code
+            assert code.splitlines()[1:] == ['derecha()', 'derecha()', 'abajo(2)', 'derecha(2)'], code
             await pg.screenshot(path=str(SHOTS / 'c3_ganado.png'))
             # el programa apuntado funciona con Ejecutar
             await pg.click('#mStay'); await pg.click('#run')
             await pg.wait_for_selector('#mStay', timeout=20000)
             # variables entre órdenes (nivel 5)
             await pg.click('#mStay'); await pg.check('#profe'); await pg.evaluate("location.hash = '#nivel-4'"); await pg.wait_for_timeout(300)
-            for c in ['clave = heroe.leer()', 'clave', 'heroe.derecha(2)', 'heroe.decir(clave)', 'heroe.derecha(4)']:
+            for c in ['clave = leer()', 'clave', 'derecha(2)', 'decir(clave)', 'derecha(4)']:
                 await orden(pg, c)
             await pg.wait_for_selector('#mStay', timeout=15000)
             out = await pg.inner_text('#out'); assert "'" in out and 'se abre' in out, out

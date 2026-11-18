@@ -9,7 +9,7 @@ function crearArte(cv) {
   const LW = 960, LH = 540, T = 64, M = 56, INK = '#1e0b24';
   let dpr = 1, sim = null, W = 0, H = 0, s = 1, ox = 0, oy = 0;
   let capaFondo = null, capaNivel = null;
-  let fx = [], shake = 0, ultimo = 0, antorchas = [], placas = [], victoria = 0;
+  let fx = [], shake = 0, ultimo = 0, antorchas = [], placas = [], victoria = 0, perdida = 0;
 
   // ---------- utilidades ----------
   function hash(x, y, k) { let h = (x * 374761393 + y * 668265263 + (k || 0) * 2147483647) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
@@ -485,6 +485,7 @@ function crearArte(cv) {
       for (let j = 0; j < 22; j++) fx.push({ t: 'humo', x: ex + (Math.random() - .5) * 26, y: ey + (Math.random() - .5) * 30, vx: (Math.random() - .5) * 1.2, vy: -.4 - Math.random() * .9, v: 1, d: .018 + Math.random() * .01, r: 5 + Math.random() * 6, c: `hsla(${e.hue},45%,${30 + Math.random() * 25}%,.8)` });
       chispas(ex, ey, 10, ['#ffe14d', '#ffffff'], 4, .06); shake = Math.max(shake, 8);
     } });
+    if (c.vidas < p.vidas) { perdida = performance.now(); fx.push({ t: 'texto', s: '💔', x: hx, y: hy - 70, vx: 0, vy: -.7, v: 1, d: .016, c: '#ff4f6b' }); }
     if (c.bump) { shake = Math.max(shake, 9); chispas(hx + c.bump[0] * 26, hy - 30 + c.bump[1] * 26, 10, ['#ffe14d', '#ffffff'], 3, .1); }
     sim.doors.forEach((d, i) => { if (!(c.doors && c.doors[i] && !(p.doors && p.doors[i]))) return; const dx = d.x * T + T / 2, dy = sueloY(d.x, d.y); for (let i = 0; i < 10; i++) fx.push({ t: 'polvo', x: dx + (Math.random() - .5) * 46, y: dy - 2, vx: (Math.random() - .5) * 1.5, vy: -.3 - Math.random() * .5, v: 1, d: .02, r: 4 + Math.random() * 3, c: 'rgba(230,190,160,.6)' }); shake = Math.max(shake, 4); });
     if (c.end === 'win') {
@@ -498,7 +499,7 @@ function crearArte(cv) {
   function poseHeroe(p, c, k, playing) {
     if (!playing) {
       if (sim.over && sim.over.type === 'win') return { pose: 'win', ph: 0 };
-      if (sim.over && sim.over.type === 'fail' && /Pum|bloquea|cerrada|cartel/.test(sim.over.msg)) return { pose: 'stun', ph: 0 };
+      if (sim.over && sim.over.type === 'fail' && /vidas/.test(sim.over.msg)) return { pose: 'stun', ph: 0 };
       return { pose: 'idle', ph: 0 };
     }
     if (c.bump) return { pose: 'bump', ph: 0 };
@@ -517,7 +518,7 @@ function crearArte(cv) {
     cv.width = LW * dpr; cv.height = LH * dpr;
     if (!capaFondo || capaFondo.width !== LW * dpr) capaFondo = pintaFondo();
     capaNivel = pintaNivel();
-    fx = []; shake = 0; victoria = 0;
+    fx = []; shake = 0; victoria = 0; perdida = 0;
   }
   function pinta(now, st) {
     if (!sim) return;
@@ -565,10 +566,29 @@ function crearArte(cv) {
     pintaFx(dt);
     if (c.say && playing) bocadillo(fxp, fyp - 66, c.say);
     ctx.restore();
+    // destello rojo al perder una vida
+    const tp = perdida ? (performance.now() - perdida) / 600 : 2;
+    if (tp < 1) { const r = ctx.createRadialGradient(LW / 2, LH / 2, LH * .3, LW / 2, LH / 2, LW * .7); r.addColorStop(0, 'rgba(255,40,70,0)'); r.addColorStop(1, `rgba(255,40,70,${.45 * (1 - tp)})`); ctx.fillStyle = r; ctx.fillRect(0, 0, LW, LH); }
+    // vidas
+    const vidas = c.vidas != null ? c.vidas : 3, antes = p.vidas != null ? p.vidas : vidas;
+    for (let i = 0; i < 3; i++) {
+      const hx2 = 34 + i * 46, hy2 = 34, viva = i < vidas, rompiendo = !viva && i < antes && playing;
+      ctx.save(); ctx.translate(hx2, hy2); ctx.scale(1.5, 1.5);
+      if (rompiendo) { const e = 1 + Math.sin(Math.min(1, k) * Math.PI) * .5; ctx.scale(e, e); ctx.rotate((k - .5) * .6); }
+      else if (viva) { const lat = 1 + Math.max(0, Math.sin(now / 260 + i * .4)) * .06; ctx.scale(lat, lat); }
+      corazon(viva || rompiendo ? '#ff4f6b' : '#4a2a55', viva || rompiendo);
+      ctx.restore();
+    }
     // viñeta
     const v = ctx.createRadialGradient(LW / 2, LH / 2, LH * .45, LW / 2, LH / 2, LW * .72);
     v.addColorStop(0, 'rgba(26,8,40,0)'); v.addColorStop(1, 'rgba(26,8,40,.5)'); ctx.fillStyle = v; ctx.fillRect(0, 0, LW, LH);
   }
-  function limpia() { fx = []; shake = 0; victoria = 0; }
+  function corazon(col, brillo) {
+    ctx.beginPath(); ctx.moveTo(0, 9);
+    ctx.bezierCurveTo(-15, -1, -12, -15, 0, -7); ctx.bezierCurveTo(12, -15, 15, -1, 0, 9); ctx.closePath();
+    ctx.fillStyle = col; ctx.fill(); tinta(ctx, 2.6);
+    if (brillo) { ctx.fillStyle = 'rgba(255,255,255,.6)'; elipse(ctx, -5, -6, 3, 2); ctx.fill(); }
+  }
+  function limpia() { fx = []; shake = 0; victoria = 0; perdida = 0; }
   return { prepara, pinta, evento, limpia };
 }
