@@ -17,7 +17,15 @@
   let li = store.get('cym_lvl', 0); if (!(li >= 0 && li < LEVELS.length)) li = 0;
   let SIM = null, py = null, lastCode = '', particles = [], errLine = 0, vivo = false, desdeConsola = false;
   const view = { base: null, prev: null, frames: [], i: 0, start: 0, playing: false };
-  const api = makeApi(() => SIM);
+  // input(): pregunta con una ventana del navegador; al «volver a donde estaba» se reutilizan las respuestas
+  let colaRespuestas = [], respuestasSesion = [];
+  const api = makeApi(() => SIM, { pedir: msg => {
+    if (colaRespuestas.length) return colaRespuestas.shift();
+    let r = null; try { r = window.prompt(msg, ''); } catch (e) { r = null; }
+    if (r !== null) respuestasSesion.push(r);
+    return r;
+  } });
+  const extra = () => JSON.stringify(SIM.vars || {});
 
   // ---------- utilidades ----------
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -67,7 +75,8 @@
   function renderNav() {
     const nav = $('levels'); nav.innerHTML = '';
     LEVELS.forEach((L, i) => {
-      const b = document.createElement('button'); const ok = unlocked(i);
+      if (i === 0 || LEVELS[i - 1].cap !== L.cap) { const c = document.createElement('span'); c.className = 'cap'; c.textContent = 'Cap. ' + L.cap; c.title = CAPITULOS[L.cap]; nav.appendChild(c); }
+      const b = document.createElement('button'); const ok = unlocked(i); b.dataset.n = L.id;
       b.className = 'chip' + (i === li ? ' on' : '') + (ok ? '' : ' locked');
       const st = prog[L.id] || 0, max = L.maxLines ? 2 : 1;
       b.innerHTML = `<span class="n">${ok ? i + 1 : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
@@ -93,6 +102,9 @@
     if (L.goals.includes('gemas')) g.push(`<li>💎 Recoge las ${s.gems.length} gemas</li>`);
     if (L.goals.includes('salida')) g.push('<li>🌀 Llega a la salida</li>');
     g.push('<li>🧱 No te choques</li>');
+    if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} rejas</li>`);
+    const vs = Object.keys(s.vars || {});
+    if (vs.length) g.push(`<li>🎲 Variables ya creadas: ${vs.map(v => '<code>' + esc(v) + '</code>').join(', ')}</li>`);
     if (L.maxLines) g.push(`<li class="reto">★ Reto: ${L.maxLines} líneas de código o menos</li>`);
     $('goals').innerHTML = g.join('');
   }
@@ -105,7 +117,7 @@
   function selectLevel(i) {
     closeModal(); li = i; store.set('cym_lvl', i);
     const L = LEVELS[i];
-    $('lvlNum').textContent = `Nivel ${i + 1} de ${LEVELS.length}`;
+    $('lvlNum').textContent = `${CAPITULOS[L.cap]} · Nivel ${i + 1} de ${LEVELS.length}`;
     $('lvlTitle').textContent = L.title;
     $('tags').innerHTML = `<span class="tag">${esc(L.concept)}</span>` + (L.random ? '<span class="tag rnd">🎲 Cambia en cada partida</span>' : '');
     $('intro').innerHTML = L.intro; $('hint').innerHTML = L.hint; $('hintBox').open = false;
@@ -117,18 +129,22 @@
 
   // ---------- ejecución ----------
   function setRunning(r) { $('run').disabled = r || !py; $('replBtn').disabled = r || !py; $('run').textContent = r ? '… Ejecutando' : '▶ Ejecutar'; }
-  function run() {
-    if (!py || view.playing || (NUBE && !cuenta)) return;
+  let ejecutando = false;
+  async function run() {
+    if (!py || view.playing || ejecutando || (NUBE && !cuenta)) return;
+    ejecutando = true; setRunning(true);
     closeModal();
     const L = LEVELS[li], code = ed.value; lastCode = code; desdeConsola = false;
     store.set(codeKey(L.id), code);
     clearLog(); errLine = 0;
-    newPreview();
+    newPreview(); colaRespuestas = [];
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     let res;
-    try { const fn = py.globals.get('_run'); const r = fn(code); res = r.toJs(); r.destroy(); fn.destroy(); }
-    catch (e) { res = ['error', 0, 'Error', String(e && e.message || e)]; }
-    const [kind, line, name, msg] = res;
-    terminar(SIM, { kind, line, name, msg });
+    try { const fn = py.globals.get('_run'); const r = fn(code, extra()); res = r.toJs(); r.destroy(); fn.destroy(); }
+    catch (e) { res = ['error', 0, 'Error', String(e && e.message || e), '{}']; }
+    ejecutando = false;
+    const [kind, line, name, msg, vjson] = res;
+    terminar(SIM, { kind, line, name, msg, vars: leerVars(vjson) });
     if (kind !== 'ok' && line) { errLine = line; }
     updateGutter();
     view.frames = SIM.frames; view.i = 0; view.prev = view.base; view.start = performance.now(); view.playing = true;
@@ -143,7 +159,8 @@
     closeModal();
     if (!vivo || SIM.over) {
       if (SIM.over) newPreview();
-      py.runPython('_vivo_nuevo()'); vivo = true; errLine = 0;
+      const fn0 = py.globals.get('_vivo_nuevo'); fn0(extra()); fn0.destroy();
+      vivo = true; errLine = 0; respuestasSesion = []; colaRespuestas = [];
       const hayCodigo = ed.value.split('\n').some(l => l.trim() && !l.trim().startsWith('#'));
       if (hayCodigo) {
         ed.focus(); ed.select(); insertText('# Órdenes de la consola\n');
@@ -155,8 +172,9 @@
     const desde = SIM.frames.length;
     let res;
     try { const fn = py.globals.get('_vivo'); const r = fn(cmd); res = r.toJs(); r.destroy(); fn.destroy(); }
-    catch (e) { res = ['error', 0, 'Error', String(e && e.message || e)]; }
-    const [kind, , name, msg] = res;
+    catch (e) { res = ['error', 0, 'Error', String(e && e.message || e), '{}']; }
+    const [kind, , name, msg, vjson] = res;
+    if (kind === 'ok') revisar(SIM, leerVars(vjson));
     const nuevos = SIM.frames.slice(desde);
     if (kind === 'ok' && !(SIM.over && SIM.over.type === 'fail')) {
       if (ed.value && !ed.value.endsWith('\n')) ed.value += '\n';
@@ -183,10 +201,14 @@
 
   // repite en silencio lo apuntado en el editor para volver al punto anterior al fallo
   function reponer() {
-    newPreview();
+    const datos = SIM.datos;
+    SIM = crearPartida(LEVELS[li], datos); view.playing = false; view.frames = [];
+    arte.prepara(SIM, dpr);
+    colaRespuestas = respuestasSesion.slice();
     try {
-      const fn = py.globals.get('_vivo_reponer'); const r = fn(ed.value); r.destroy(); fn.destroy();
+      const fn = py.globals.get('_vivo_reponer'); const r = fn(ed.value, extra()); r.destroy(); fn.destroy();
     } catch (e) { newPreview(); return; }
+    colaRespuestas = [];
     if (SIM.over) { newPreview(); return; }
     vivo = true; SIM.frames = []; view.base = view.prev = snap(SIM);
   }

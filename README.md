@@ -10,10 +10,15 @@ el progreso de cada alumno.
   héroe animado que corre, trepa y ataca.
 - **Consola directa**: cada orden se ejecuta al momento y se apunta en el
   editor; con «Ejecutar» se lanza el programa entero.
-- **10 niveles**: secuencia, parámetros, strings, `for`, variables,
-  `while`, `if`, bucles anidados, funciones y un laberinto aleatorio.
-- **Mapas aleatorios** a partir del nivel 5 (salvo el 9): la solución no
-  se puede escribir a mano.
+- **18 niveles en dos capítulos**:
+  - *Capítulo 1 · Variables, tipos y operadores* (RA1): instrucciones,
+    números, textos, variables, constantes, operadores matemáticos,
+    bloques de texto, errores, conversiones con `int()`, `input()` y
+    comparaciones y operadores lógicos.
+  - *Capítulo 2 · Bucles, condiciones y funciones* (RA2): `for`,
+    `while`, `if`, bucles anidados, funciones y un laberinto aleatorio.
+- **Valores aleatorios** en muchos niveles (mapas, claves y variables que
+  cambian en cada partida): la solución no se puede escribir a mano.
 - **Errores de Python traducidos** al castellano, con la línea marcada.
 - **Cuentas de alumno** con código de clase + alias + PIN de 4 cifras
   (sin correo ni datos personales).

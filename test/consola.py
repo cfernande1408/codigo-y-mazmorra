@@ -48,7 +48,7 @@ async def main():
             await pg.click('#mStay'); await pg.click('#run')
             await pg.wait_for_selector('#mStay', timeout=20000)
             # variables entre órdenes (nivel 5)
-            await pg.click('#mStay'); await pg.check('#profe'); await pg.click('#levels button:nth-child(5)')
+            await pg.click('#mStay'); await pg.check('#profe'); await pg.click('#levels [data-n="5"]')
             for c in ['clave = heroe.leer()', 'clave', 'heroe.derecha(2)', 'heroe.decir(clave)', 'heroe.derecha(4)']:
                 await orden(pg, c)
             await pg.wait_for_selector('#mStay', timeout=15000)

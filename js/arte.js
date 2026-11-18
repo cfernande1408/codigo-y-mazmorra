@@ -243,7 +243,7 @@ function crearArte(cv) {
     elipse(ctx, cx, top + 6, 3.5, 3.5); ctx.fillStyle = '#ff4f8b'; ctx.fill(); tinta(ctx, 1.5);
     if (Math.random() < .12) fx.push({ t: 'chispa', x: cx + (Math.random() - .5) * 26, y: fl - 4, vx: 0, vy: -.5 - Math.random() * .7, v: 1, d: .014, r: 2, c: '#9ffff0' });
   }
-  function reja(x, y, sube) {
+  function reja(x, y, sube, etiqueta) {
     const px = x * T, cx = px + T / 2, fl = sueloY(x, y), top = y * T + 4, w = T - 12;
     const arco = () => { ctx.beginPath(); ctx.moveTo(cx - w / 2, fl); ctx.lineTo(cx - w / 2, top + 16); ctx.quadraticCurveTo(cx - w / 2, top, cx, top); ctx.quadraticCurveTo(cx + w / 2, top, cx + w / 2, top + 16); ctx.lineTo(cx + w / 2, fl); ctx.closePath(); };
     arco(); ctx.fillStyle = 'rgba(15,0,25,.55)'; ctx.fill();
@@ -255,7 +255,12 @@ function crearArte(cv) {
     for (let bx = cx - w / 2 + 6; bx < cx + w / 2; bx += 9) { poly(ctx, [[bx - 3, fl - 2], [bx + 3, fl - 2], [bx, fl + 4]]); ctx.fillStyle = '#8c8aa6'; ctx.fill(); tinta(ctx, 1.2); }
     ctx.restore();
     arco(); ctx.lineWidth = 6; ctx.strokeStyle = '#c98a3e'; ctx.stroke(); tinta(ctx, 2.2);
-    if (!sube) { elipse(ctx, cx, top + 10, 5, 5); ctx.fillStyle = '#2fc6b8'; ctx.fill(); tinta(ctx, 1.5); }
+    // placa con el símbolo de la pregunta
+    const et = etiqueta || '?';
+    ctx.font = '900 12px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+    const pw = Math.max(18, ctx.measureText(et).width + 10), pyy = y * T - 2;
+    rr(ctx, cx - pw / 2, pyy - 9, pw, 17, 5); ctx.fillStyle = sube >= 1 ? '#2fc6b8' : '#f2b544'; ctx.fill(); tinta(ctx, 2);
+    ctx.fillStyle = INK; ctx.fillText(et, cx, pyy + 3.5);
   }
   function placa(x, y, now) {
     const px = x * T, py = y * T, br = .55 + Math.sin(now / 400) * .25;
@@ -430,13 +435,15 @@ function crearArte(cv) {
   }
   function bocadillo(x, y, text) {
     ctx.font = '800 14px Nunito, system-ui, sans-serif'; ctx.textAlign = 'center';
-    let t = String(text); if (t.length > 34) t = t.slice(0, 33) + '…';
-    const w = ctx.measureText(t).width + 22, h = 28;
+    let lineas = String(text).split('\n');
+    if (lineas.length > 4) lineas = lineas.slice(0, 3).concat('…');
+    lineas = lineas.map(l => l.length > 34 ? l.slice(0, 33) + '…' : l);
+    const w = Math.max(...lineas.map(l => ctx.measureText(l).width)) + 22, h = 12 + lineas.length * 17;
     let bx = Math.max(-M + 6, Math.min(W + M - w - 6, x - w / 2)); const by = y - h - 10;
     ctx.beginPath(); ctx.moveTo(bx + 12, by); ctx.lineTo(bx + w - 12, by); ctx.quadraticCurveTo(bx + w, by, bx + w, by + 12); ctx.lineTo(bx + w, by + h - 12); ctx.quadraticCurveTo(bx + w, by + h, bx + w - 12, by + h);
     ctx.lineTo(x + 7, by + h); ctx.lineTo(x - 2, by + h + 10); ctx.lineTo(x - 5, by + h); ctx.lineTo(bx + 12, by + h); ctx.quadraticCurveTo(bx, by + h, bx, by + h - 12); ctx.lineTo(bx, by + 12); ctx.quadraticCurveTo(bx, by, bx + 12, by); ctx.closePath();
     ctx.fillStyle = '#fff4dc'; ctx.fill(); tinta(ctx, 2.6);
-    ctx.fillStyle = INK; ctx.fillText(t, bx + w / 2, by + 19);
+    ctx.fillStyle = INK; lineas.forEach((l, i) => ctx.fillText(l, bx + w / 2, by + 19 + i * 17));
   }
 
   // ---------- efectos ----------
@@ -479,7 +486,7 @@ function crearArte(cv) {
       chispas(ex, ey, 10, ['#ffe14d', '#ffffff'], 4, .06); shake = Math.max(shake, 8);
     } });
     if (c.bump) { shake = Math.max(shake, 9); chispas(hx + c.bump[0] * 26, hy - 30 + c.bump[1] * 26, 10, ['#ffe14d', '#ffffff'], 3, .1); }
-    if (c.doorOpen && !p.doorOpen && sim.door) { const dx = sim.door.x * T + T / 2, dy = sueloY(sim.door.x, sim.door.y); for (let i = 0; i < 10; i++) fx.push({ t: 'polvo', x: dx + (Math.random() - .5) * 46, y: dy - 2, vx: (Math.random() - .5) * 1.5, vy: -.3 - Math.random() * .5, v: 1, d: .02, r: 4 + Math.random() * 3, c: 'rgba(230,190,160,.6)' }); shake = Math.max(shake, 4); }
+    sim.doors.forEach((d, i) => { if (!(c.doors && c.doors[i] && !(p.doors && p.doors[i]))) return; const dx = d.x * T + T / 2, dy = sueloY(d.x, d.y); for (let i = 0; i < 10; i++) fx.push({ t: 'polvo', x: dx + (Math.random() - .5) * 46, y: dy - 2, vx: (Math.random() - .5) * 1.5, vy: -.3 - Math.random() * .5, v: 1, d: .02, r: 4 + Math.random() * 3, c: 'rgba(230,190,160,.6)' }); shake = Math.max(shake, 4); });
     if (c.end === 'win') {
       victoria = performance.now();
       const cols = ['#f2b544', '#2fc6b8', '#ff4f8b', '#fff4dc', '#c58bff'];
@@ -531,7 +538,7 @@ function crearArte(cv) {
     antorchas.forEach(([x, y], i) => llama(x, y, now, i));
     placas.forEach(([x, y]) => placa(x, y, now));
     if (sim.exit) salida(sim.exit.x, sim.exit.y, now);
-    if (sim.door) { const abre = c.doorOpen && !p.doorOpen ? ease(k) : (c.doorOpen ? 1 : 0); reja(sim.door.x, sim.door.y, abre); }
+    sim.doors.forEach((d, i) => { const co = c.doors && c.doors[i], po = p.doors && p.doors[i]; reja(d.x, d.y, co && !po ? ease(k) : (co ? 1 : 0), d.etiqueta); });
     (k < .6 ? p.gems : c.gems).forEach(g => { if (!g.taken) gema(g.x, g.y, now); });
     // héroe interpolado
     const ek = ease(k);

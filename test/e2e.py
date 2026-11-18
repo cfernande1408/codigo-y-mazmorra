@@ -72,7 +72,7 @@ async def main():
             await al2.click('#eBtn'); await al2.wait_for_selector('#cuenta:not([hidden])')
             assert 'nivel 2' in (await al2.inner_text('#lvlNum')).lower(), 'debía abrir el nivel 2'
             locked = await al2.eval_on_selector_all('#levels .chip.locked', 'e => e.length')
-            assert locked == 8, locked
+            assert locked == 16, locked
             # el profe desbloquea todo
             await prof.click('#desb'); await prof.wait_for_timeout(500)
             await al2.reload(); await al2.wait_for_timeout(1500)
