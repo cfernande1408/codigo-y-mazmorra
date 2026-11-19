@@ -1,0 +1,50 @@
+# Publica la web en GitHub Pages:
+#   main            -> https://<usuario>.github.io/codigo-y-mazmorra/
+#   estilo-<nombre> -> https://<usuario>.github.io/codigo-y-mazmorra/<nombre>/
+name: Publicar web
+
+on:
+  push:
+    branches: [main, "estilo-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Montar la web con todos los estilos
+        run: |
+          mkdir _site
+          git archive origin/main | tar -x -C _site
+          for b in $(git branch -r --format='%(refname:short)' | grep '^origin/estilo-'); do
+            n="${b#origin/estilo-}"
+            mkdir -p "_site/$n"
+            git archive "$b" | tar -x -C "_site/$n"
+          done
+          find _site -depth -type d \( -name test -o -name .github \) -exec rm -rf {} +
+          ls _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

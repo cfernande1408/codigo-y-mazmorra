@@ -66,9 +66,16 @@ sesión del alumno o del profesor.
 
 ### 3. Publicar (GitHub Pages)
 
-**Settings → Pages → Build and deployment → Deploy from a branch →
-`main` / `(root)` → Save**. En un par de minutos estará en
-`https://<usuario>.github.io/codigo-y-mazmorra/`.
+**Settings → Pages → Build and deployment → Source: GitHub Actions**.
+El flujo `.github/workflows/pages.yml` publica la rama `main` y además cada
+rama `estilo-*` en su propia carpeta:
+
+- `main` → `https://<usuario>.github.io/codigo-y-mazmorra/`
+- `estilo-ruinas` → `https://<usuario>.github.io/codigo-y-mazmorra/ruinas/`
+- `estilo-palacio` → `…/palacio/`, `estilo-acuarela` → `…/acuarela/`
+
+Se vuelve a publicar solo con cada push a `main` (o desde **Actions → Publicar
+web → Run workflow**).
 
 ### 4. En clase
 
