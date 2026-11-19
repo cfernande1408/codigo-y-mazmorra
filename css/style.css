@@ -212,3 +212,86 @@ header .volver{white-space:nowrap}
 .pj.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(247,189,69,.3)}
 .pj canvas{width:150px;height:159px;border-radius:11px;display:block}
 #mundos.bloqueado{opacity:.4;pointer-events:none;filter:grayscale(.4)}
+
+/* =====================================================================
+   Estilo táctico: azul marino, rojo de acento, letra estrecha en
+   mayúsculas y esquinas cortadas. Sobrescribe lo de arriba.
+   ===================================================================== */
+:root{--bg:#0f1923;--panel:#16212d;--panel2:#1d2a38;--line:#2b3a4b;--text:#ece8e1;--muted:#8d9aa8;--gold:#ff4655;--teal:#2ee6d6;--red:#ff4655;--violet:#2ee6d6;--code:#0a121a;--cut:12px}
+html,body{font-family:Barlow,system-ui,sans-serif}
+body{background:linear-gradient(120deg,rgba(255,70,85,.07) 0,transparent 35%),repeating-linear-gradient(90deg,rgba(236,232,225,.025) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,rgba(236,232,225,.025) 0 1px,transparent 1px 48px),var(--bg)}
+header{background:rgba(15,25,35,.92);border-bottom:2px solid var(--red)}
+.brand h1,.card h3,.lvl-head h2,.mbox h2,.home-cab h2,.mundo h3,.elige h3,.cab h2,.stat b,.chip{font-family:"Barlow Condensed",system-ui,sans-serif;text-transform:uppercase;letter-spacing:1px}
+.brand h1{color:var(--text);font-weight:700;text-shadow:none;font-size:28px}
+.brand h1 em{color:var(--red);text-shadow:none}
+.card,.mundo,.elige,.ebox,.mbox,.stat,.pj{border-radius:0;clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)))}
+.card h3{color:var(--text);font-weight:700;font-size:18px;border-left:3px solid var(--red);padding-left:8px}
+.lvl-head h2{font-weight:700;font-size:30px}
+.lvl-num{color:var(--red)}
+.tag{border-radius:0;background:rgba(46,230,214,.1);font-family:"Barlow Condensed",sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.tag.rnd{background:rgba(255,70,85,.1);color:var(--red);border-color:rgba(255,70,85,.4)}
+.chip{border-radius:0;font-weight:700}
+.chip .st{color:var(--red)}
+.chip.on{background:var(--red);border-color:var(--red);box-shadow:none}
+.chip.on .st,.chip.on .st i{color:var(--text)}
+.canvas-wrap{border-radius:0;border:0;box-shadow:0 0 0 1px var(--line),0 12px 30px rgba(0,0,0,.45)}
+.btn{font-family:"Barlow Condensed",system-ui,sans-serif;text-transform:uppercase;letter-spacing:1px;font-weight:700;border-radius:0}
+.btn.primary{background:var(--red);border-color:var(--red);box-shadow:none;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.gold{background:var(--text);border-color:var(--text);color:var(--bg);box-shadow:none}
+.speed,.speed button{border-radius:0;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase}
+.speed button.on{background:var(--red);color:var(--text)}
+.editor,.repl,#out div,.goals li,.spell,.mlist li,.tabs,.tabs button,.campo input,.nueva input,.clase-btn,.tabla-wrap,.mission pre,.hint pre,code,.codigo-grande{border-radius:0}
+summary{color:var(--teal)}
+.goals li.reto{border-color:rgba(255,70,85,.45);color:var(--red)}
+.mbox{background:linear-gradient(#1b2836,#121c27)}
+.mbox h2{color:var(--text);font-weight:700}
+.mbox.fail h2{color:var(--red)}
+.bigstars{color:var(--red);text-shadow:none}
+.bigstars i{color:#2b3a4b}
+.home-cab h2{color:var(--text);font-weight:700;font-size:40px;text-shadow:none}
+.home-cab h2::after{content:"";display:block;width:64px;height:4px;background:var(--red);margin-top:6px}
+.ra-titulo{font-family:"Barlow Condensed",sans-serif;font-size:15px}
+.ra-titulo b{border-radius:0;background:var(--red);border-color:var(--red)}
+.mundo{border-radius:0}
+.mundo h3{font-weight:700;font-size:26px}
+.mundo .mini{background:#16212d}
+.mundo .chapa,.mundo .hecho{border-radius:0;border:0;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:1px}
+.mundo .chapa{background:var(--bg);color:var(--text);border-left:3px solid var(--red)}
+.mundo .hecho{background:var(--red);color:var(--text)}
+.mundo .barra,.mundo .barra i{border-radius:0}
+.mundo .prog b{color:var(--text)}
+.elige h3{color:var(--text);font-weight:700;font-size:28px}
+.elige.falta{border-color:var(--red);box-shadow:none}
+.elige.falta p{color:var(--red)}
+.pj{border-width:2px;font-family:"Barlow Condensed",sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:2px;font-weight:700}
+.pj.on{border-color:var(--red);box-shadow:none;background:#25141c}
+.pj canvas{border-radius:0}
+.aviso-mapa{border-radius:0;background:var(--bg);color:var(--text);border:0;border-left:4px solid var(--teal);font-family:Barlow,sans-serif}
+.aviso-mapa.error{background:var(--bg);border-left-color:var(--red)}
+.aviso-mapa.ok{background:var(--bg);border-left-color:var(--teal)}
+.entrada{background:radial-gradient(900px 500px at 50% 0,#24324c 0,var(--bg) 70%)}
+.tabs button.on{background:var(--red)}
+.campo input:focus{border-color:var(--red)}
+.cuenta .nube{border-radius:0}
+.celda{border-radius:0}
+.celda.si{background:rgba(46,230,214,.14);color:var(--teal)}
+.spell .new{background:var(--red);color:var(--text);border-radius:0}
+
+/* ---------- taller del agente ---------- */
+.elige{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr) auto;align-items:start;gap:22px}
+@media (max-width:1000px){.elige{grid-template-columns:1fr}}
+.elige-txt .pjs{margin:14px 0 0;gap:10px}
+.elige-txt .pj{padding:4px 4px 6px;font-size:16px}
+.elige-txt .pj canvas{width:112px;height:119px}
+.taller{display:flex;flex-direction:column;gap:9px;padding-top:4px}
+.taller .fila{display:grid;grid-template-columns:78px 1fr;align-items:center;gap:10px}
+.taller .et{font:700 13px "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.taller .ops{display:flex;flex-wrap:wrap;gap:6px}
+.taller .mu{width:28px;height:28px;padding:0;border:2px solid var(--line);background:var(--m);cursor:pointer;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));transition:transform .1s}
+.taller .mu:hover{transform:translateY(-2px)}
+.taller .mu.on{border-color:var(--text);box-shadow:inset 0 0 0 2px var(--bg)}
+.taller .op{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:600 14px "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:1px;padding:5px 11px;cursor:pointer}
+.taller .op:hover{border-color:var(--teal)}
+.taller .op.on{background:var(--red);border-color:var(--red)}
+.vista canvas{width:200px;height:212px;display:block;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
