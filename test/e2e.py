@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PYO = ROOT / 'test' / 'node_modules' / 'pyodide'
 SHOTS = pathlib.Path(os.environ.get('SHOTS', '/tmp/e2e')); SHOTS.mkdir(exist_ok=True)
-SOL1 = "derecha(2)\nabajo(2)\nderecha(2)\n"
+SOL1 = "derecha = 2\nabajo = 2\nderecha = 2\n"
 
 async def pyodide_local(route):
     f = PYO / route.request.url.split('/full/')[1].split('?')[0]
@@ -54,7 +54,7 @@ async def main():
             await al.wait_for_selector('#mNext', timeout=20000)
             await al.screenshot(path=str(SHOTS / 'a2_ganado.png'))
             await al.click('#mNext')
-            await al.fill('#code', 'derecha(9)\n'); await al.click('#run')
+            await al.fill('#code', 'derecha = 9\n'); await al.click('#run')
             await al.wait_for_selector('#avisoMapa:not([hidden])', timeout=20000)
             await al.wait_for_timeout(800)
             assert 'Guardado' in await al.inner_text('#nubeEstado')
@@ -63,7 +63,7 @@ async def main():
             assert '✗ 1' in await prof.inner_text('table.notas')
             await prof.screenshot(path=str(SHOTS / 'p2_tabla.png'))
             await prof.click('.celda.si'); await prof.wait_for_selector('.mbox pre')
-            assert 'derecha(2)' in await prof.inner_text('.mbox')
+            assert 'derecha = 2' in await prof.inner_text('.mbox')
             await prof.screenshot(path=str(SHOTS / 'p3_codigo.png'))
             await prof.click('[data-cerrar]')
 
