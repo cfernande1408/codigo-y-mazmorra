@@ -79,7 +79,8 @@ async def main():
             assert '1/2 niveles' in await al2.inner_text('[data-mundo="1"]')
             await al2.click('[data-pj="viajero"]')
             await al2.click('[data-mundo="1"]')
-            assert 'nivel 2' in (await al2.inner_text('#lvlNum')).lower(), 'debía abrir el nivel 2'
+            await al2.wait_for_function("document.getElementById('lvlNum').textContent.toLowerCase().includes('nivel 2')", timeout=8000)
+            t2 = (await al2.inner_text('#lvlNum')).lower(); assert 'nivel 2' in t2, 'debía abrir el nivel 2: ' + t2
             await al2.evaluate("location.hash = '#mundo-2'"); await al2.wait_for_timeout(300)
             locked = await al2.eval_on_selector_all('#levels .chip.locked', 'e => e.length')
             assert locked == 2, locked
