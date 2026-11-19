@@ -666,6 +666,20 @@ function crearArte(cv) {
       ctx.restore();
     }
   }
+  // miniboss: un bug grande con cartel, vidas = preguntas que quedan y su pregunta en un globo
+  function jefe(d, paso, alpha, golpe, now, habla) {
+    const J = d.jefe, fx0 = d.x * T + T / 2, fy0 = sueloY(d.x, d.y), n = J.pasos.length;
+    ctx.save(); ctx.translate(fx0, fy0); ctx.scale(1.5, 1.5);
+    enemigo({ name: J.nombre, hue: 0, max: n, x: d.x }, 0, 0, -1, now, alpha, golpe, n - paso, false);
+    ctx.restore();
+    if (!habla || alpha < 1 || paso >= n) return;
+    const txt = J.pasos[paso].corta || '?';
+    ctx.font = `700 15px ${FUENTE}`; ctx.textAlign = 'center';
+    const w = ctx.measureText(txt).width + 22, bx = Math.min(W + M - w - 4, fx0 + 10 - w / 2), by = fy0 - 162 + Math.sin(now / 400) * 2;
+    corte(ctx, bx, by, w, 24, 6); ctx.fillStyle = CREMA; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = ROJO; ctx.stroke();
+    poly(ctx, [[fx0 - 4, by + 24], [fx0 + 6, by + 24], [fx0 + 2, by + 32]]); ctx.fillStyle = CREMA; ctx.fill();
+    ctx.fillStyle = NAVY; ctx.fillText(txt, bx + w / 2, by + 17);
+  }
   function bocadillo(x, y, text) {
     ctx.font = '600 14px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
     let lineas = String(text).split('\n');
@@ -726,7 +740,16 @@ function crearArte(cv) {
     } });
     if (c.vidas < p.vidas) { perdida = performance.now(); fx.push({ t: 'texto', s: '-1 VIDA', x: hx, y: hy - 74, vx: 0, vy: -.7, v: 1, d: .016, c: ROJO }); }
     if (c.bump) { shake = Math.max(shake, 7); chispas(hx + c.bump[0] * 26, hy - 30 + c.bump[1] * 26, 8, ['#ffd27a', '#ffffff'], 3, .1); }
-    sim.doors.forEach((d, i) => { if (!(c.doors && c.doors[i] && !(p.doors && p.doors[i]))) return; const dx = d.x * T + T / 2, dy = sueloY(d.x, d.y); for (let j = 0; j < 14; j++) fx.push({ t: 'pixel', x: dx + (Math.random() - .5) * 46, y: dy - Math.random() * 50, vx: (Math.random() - .5) * 1.2, vy: -.2 - Math.random() * .6, v: 1, d: .02, r: 2 + Math.random() * 2, c: j % 2 ? ROJO : '#ffb3ba' }); shake = Math.max(shake, 3); });
+    sim.doors.forEach((d, i) => {
+      if (!d.jefe) return;
+      const dx = d.x * T + T / 2, dy = sueloY(d.x, d.y) - 34, pc = (c.pasos && c.pasos[i]) || 0, pp = (p.pasos && p.pasos[i]) || 0;
+      if (pc > pp) { chispas(dx, dy, 14, ['#ffffff', ROJO, CIAN], 3.6, .1); fx.push({ t: 'texto', s: '¡Correcto!', x: dx, y: dy - 50, vx: 0, vy: -.8, v: 1, d: .018, c: CIAN }); shake = Math.max(shake, 5); }
+      if (c.doors && c.doors[i] && !(p.doors && p.doors[i])) {
+        for (let j = 0; j < 60; j++) fx.push({ t: 'pixel', x: dx + (Math.random() - .5) * 60, y: dy + (Math.random() - .5) * 40, vx: (Math.random() - .5) * 5, vy: -1 - Math.random() * 3, v: 1.2, d: .014, g: .05, r: 2.5 + Math.random() * 4, c: [ROJO, '#ffffff', CIAN, '#2b3042'][j % 4] });
+        fx.push({ t: 'anillo', x: dx, y: dy, vx: 0, vy: 0, v: 1, d: .03, r: 12, c: ROJO }); shake = Math.max(shake, 10);
+      }
+    });
+    sim.doors.forEach((d, i) => { if (d.jefe || !(c.doors && c.doors[i] && !(p.doors && p.doors[i]))) return; const dx = d.x * T + T / 2, dy = sueloY(d.x, d.y); for (let j = 0; j < 14; j++) fx.push({ t: 'pixel', x: dx + (Math.random() - .5) * 46, y: dy - Math.random() * 50, vx: (Math.random() - .5) * 1.2, vy: -.2 - Math.random() * .6, v: 1, d: .02, r: 2 + Math.random() * 2, c: j % 2 ? ROJO : '#ffb3ba' }); shake = Math.max(shake, 3); });
     if (c.end === 'win') {
       victoria = performance.now();
       const cols = [ROJO, CREMA, CIAN, '#ffd27a'];
@@ -787,7 +810,7 @@ function crearArte(cv) {
     luces(now); parpadeos(now);
     placas.forEach(([x, y]) => placa(x, y, now));
     if (sim.exit) salida(sim.exit.x, sim.exit.y, now);
-    sim.doors.forEach((d, i) => { const co = c.doors && c.doors[i], po = p.doors && p.doors[i]; reja(d.x, d.y, co && !po ? ease(k) : (co ? 1 : 0), d.etiqueta); });
+    sim.doors.forEach((d, i) => { const co = c.doors && c.doors[i], po = p.doors && p.doors[i]; if (!d.jefe) reja(d.x, d.y, co && !po ? ease(k) : (co ? 1 : 0), d.etiqueta); });
     (k < .6 ? p.gems : c.gems).forEach(g => { if (!g.taken) gema(g.x, g.y, now); });
     // héroe interpolado
     const ek = ease(k);
@@ -804,6 +827,13 @@ function crearArte(cv) {
       // si hay otro bug pegado, alterna la altura del cartel para que no se pisen
       const sube = e.x % 2 === 1 && c.enemies.some(o => o !== e && o.hp > 0 && o.y === e.y && Math.abs(o.x - e.x) === 1);
       dib.push({ z: e.y + .001 * e.x, f: () => enemigo(e, e.x * T + T / 2, sueloY(e.x, e.y), dir, now, alpha, hit ? k : -1, k < .3 ? pe.hp : e.hp, sube) });
+    });
+    sim.doors.forEach((d, i) => {
+      if (!d.jefe) return;
+      const co = c.doors && c.doors[i], po = p.doors && p.doors[i]; if (co && po) return;
+      const pc = (c.pasos && c.pasos[i]) || 0, pp = (p.pasos && p.pasos[i]) || 0;
+      const alpha = co ? Math.max(0, 1 - k * 1.6) : 1, golpe = pc > pp ? k : -1;
+      dib.push({ z: d.y + .002, f: () => jefe(d, pc, alpha, golpe, now, !co) });
     });
     dib.push({ z: hyC + .5, f: () => heroe(fxp, fyp, c.facing || 1, ph.pose, ph.ph, k, now) });
     dib.sort((a, b) => a.z - b.z).forEach(d => d.f());

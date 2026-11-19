@@ -92,7 +92,7 @@
       const b = document.createElement('button'); const ok = unlocked(i); b.dataset.n = L.id;
       b.className = 'chip' + (i === li ? ' on' : '') + (ok ? '' : ' locked');
       const st = prog[L.id] || 0, max = L.maxLines ? 2 : 1;
-      b.innerHTML = `<span class="n">${ok ? k + 1 : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
+      b.innerHTML = `<span class="n">${ok ? (L.clave.startsWith('jefe') ? '👾' : k + 1) : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
       b.title = `${k + 1}. ${L.title} · ${L.concept}`;
       b.onclick = () => { if (!ok) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; } irA('#nivel-' + L.id); };
       nav.appendChild(b);
@@ -224,7 +224,8 @@
     if (L.goals.includes('gemas')) g.push(`<li>💎 Recoge las ${s.gems.length} gemas</li>`);
     if (L.goals.includes('salida')) g.push('<li>🌀 Llega a la salida</li>');
     g.push('<li>❤️ 3 vidas: cada choque quita una</li>');
-    if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} barreras</li>`);
+    if (s.doors.some(d => d.jefe)) g.push(`<li>👾 Vence al miniboss: contesta bien a sus ${s.doors.find(d => d.jefe).jefe.pasos.length} preguntas</li>`);
+    else if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} barreras</li>`);
     const vs = Object.keys(s.vars || {});
     if (vs.length) g.push(`<li>🎲 Variables ya creadas: ${vs.map(v => '<code>' + esc(v) + '</code>').join(', ')}</li>`);
     if (L.maxLines) g.push(`<li class="reto">★ Reto: ${L.maxLines} líneas de código o menos</li>`);

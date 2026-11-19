@@ -91,7 +91,7 @@ const LEVELS = [
   },
   {
     clave: 'clave', title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
-    nuevos: ["leer", "decir"],
+    nuevos: ["leer"],
     intro: `<p>La barrera solo se abre si dices la contraseña de la placa. Pero <b>la contraseña cambia cada vez que ejecutas</b>, así que no puedes copiarla a mano. Guárdala en una variable:</p><pre>clave = leer()</pre><p>Luego úsala con <code>decir(clave)</code>. Ahí va sin comillas: es el nombre de la variable, no un texto.</p>`,
     hint: `La placa está justo encima de ti. Lee, avanza 2 hasta la barrera, di la clave y avanza 4.`,
     starter: `clave = leer()\nprint(clave)\n`,
@@ -277,7 +277,7 @@ const LEVELS = [
     hint: `Escribe las cuentas tal cual en Python y deja que él las calcule: <code>decir(base + extra * 2)</code>. Fíjate en que las dos últimas barreras dan resultados distintos.`,
     starter: `print(base, exponente, extra)\nderecha()\n`,
     make: () => {
-      const base = rnd(2, 5), exponente = rnd(2, 3), extra = rnd(2, 6);
+      const base = rnd(3, 5), exponente = rnd(2, 3), extra = rnd(2, 6); // con base 2 y exponente 2, 2*2 == 2**2
       const r1 = base ** exponente, r2 = base + extra * 2, r3 = (base + extra) * 2;
       return pasilloPuertas([
         { respuesta: String(r1), etiqueta: '**', pista: t => String(t) === String(base * exponente) ? `Has dicho ${t}: eso es base * exponente. La potencia es **.` : 'Esta barrera pide base ** exponente.' },
@@ -296,23 +296,121 @@ const LEVELS = [
   }
 ];
 
+// ---------- minibosses: al final de cada mundo, preguntas sobre tipos ----------
+const TIPOS = {
+  str: { nombres: ['str', 'string', 'texto', 'cadena'], pista: 'Piensa: ¿lleva comillas?' },
+  int: { nombres: ['int', 'entero', 'integer'], pista: 'Piensa: es un número sin decimales.' },
+  float: { nombres: ['float', 'decimal'], pista: 'Piensa: es un número con decimales.' },
+  bool: { nombres: ['bool', 'boolean', 'booleano'], pista: 'Piensa: solo puede valer True o False.' }
+};
+// pregunta «¿de qué tipo es…?»: vale "str", "string", "texto"… o type(x)
+function pideTipo(esperado, deQue) {
+  return {
+    pregunta: `¿Y de qué tipo es ${deQue}?`, corta: '¿De qué tipo es?',
+    valida: t => {
+      const r = t.trim().toLowerCase().replace(/^<class '(\w+)'>$/, '$1');
+      if (TIPOS[esperado].nombres.includes(r)) return true;
+      const otro = Object.keys(TIPOS).find(k => TIPOS[k].nombres.includes(r));
+      return otro ? `¡No! No es ${otro}. ${TIPOS[esperado].pista}` : `Dime el nombre del tipo entre comillas, por ejemplo decir("int"). Los tipos que conoces: str, int, float y bool.`;
+    }
+  };
+}
+const noVar = (n, ej) => `Primero crea la variable ${n}: ${ej}`;
+function nivelJefe(nombre, pasos, extra) {
+  return () => Object.assign({ map: ['##########', '#H.....DS#', '##########'], enemies: [], doors: [{ etiqueta: '!', jefe: { nombre, pasos, fin: extra && extra.fin } }] }, extra && extra.datos ? extra.datos() : {});
+}
+const JEFES = [
+  {
+    clave: 'jefe1', mundo: 'Primeros pasos', title: "Miniboss: el Portero", concept: "Textos (str)", goals: ["salida"], maxLines: null,
+    nuevos: ["decir"],
+    intro: `<p>El <b>Portero</b> no te deja pasar si no le dices tu nombre. Para hablar se usa <code>decir()</code>, y un nombre es un <b>texto</b>: va <b>entre comillas</b>.</p><pre>decir("Carlos")</pre><p>Luego te preguntará <b>de qué tipo</b> es lo que le has dicho. En Python cada valor tiene un tipo:</p><pre>"Carlos"   str    (texto: lleva comillas)\n16         int    (número entero)\n1.75       float  (número con decimales)\nTrue       bool   (verdadero o falso)</pre><p>Contesta también con <code>decir()</code>, por ejemplo <code>decir("int")</code>.</p>`,
+    hint: `<pre>derecha(5)\ndecir("Carlos")\ndecir("str")\nderecha(2)</pre>`,
+    starter: `derecha(5)\n`,
+    make: nivelJefe('Portero', [
+      { pregunta: '¿Cómo te llamas?', corta: '¿Cómo te llamas?', valida: (t, tipo) => tipo !== 'str' ? 'Un nombre es un texto: ponlo entre comillas, decir("Ana").' : !t.trim() ? 'No has dicho nada.' : /^\d+$/.test(t.trim()) ? 'Eso es un número entre comillas. ¡Dime tu nombre!' : true },
+      pideTipo('str', 'tu nombre')
+    ])
+  },
+  {
+    clave: 'jefe2', title: "Miniboss: la Guardiana", concept: "Números enteros (int)", goals: ["salida"], maxLines: null,
+    intro: `<p>La <b>Guardiana</b> quiere saber tu edad, pero solo se fía de lo que guardas en una <b>variable</b>. Crea la variable <code>edad</code> con tu edad (es un número: <b>sin comillas</b>) y díselo:</p><pre>edad = 16\ndecir(edad)</pre><p>Después te preguntará de qué tipo es.</p>`,
+    hint: `<pre>edad = 16\nderecha(5)\ndecir(edad)\ndecir("int")\nderecha(2)</pre>`,
+    starter: `edad = \nderecha(5)\n`,
+    make: nivelJefe('Guardiana', [
+      { pregunta: 'Crea la variable edad con tu edad y dímela.', corta: '¿Tu edad?', valida: (t, tipo, V) => !V.edad ? noVar('edad', 'edad = 16') : V.edad.t === 'str' ? 'edad tiene comillas, así que es un texto. Quítaselas: edad = 16' : V.edad.t !== 'int' ? 'La edad es un número entero, sin decimales: edad = 16' : t !== String(V.edad.v) ? 'Dime la variable, sin comillas: decir(edad)' : true },
+      pideTipo('int', 'tu edad')
+    ])
+  },
+  {
+    clave: 'jefe3', title: "Miniboss: el Eco", concept: "Unir textos", goals: ["salida"], maxLines: null,
+    intro: `<p>El <b>Eco</b> repite todo lo que oye. Crea una variable <code>nombre</code> y otra <code>saludo</code> que una <code>"Hola, "</code> con tu nombre usando <code>+</code>:</p><pre>nombre = "Carlos"\nsaludo = "Hola, " + nombre\ndecir(saludo)</pre><p>Luego te hará una pregunta trampa sobre tipos. Fíjate bien en las comillas.</p>`,
+    hint: `<pre>nombre = "Carlos"\nsaludo = "Hola, " + nombre\nderecha(5)\ndecir(saludo)\ndecir("str")\nderecha(2)</pre>Aunque dentro haya un número, si va entre comillas es un texto.`,
+    starter: `nombre = \nsaludo = \nderecha(5)\n`,
+    make: nivelJefe('Eco', [
+      { pregunta: 'Crea nombre y saludo = "Hola, " + nombre, y dime el saludo.', corta: '¿Tu saludo?', valida: (t, tipo, V) => !V.nombre ? noVar('nombre', 'nombre = "Carlos"') : !V.saludo ? noVar('saludo', 'saludo = "Hola, " + nombre') : V.saludo.v !== 'Hola, ' + V.nombre.v ? `saludo vale «${V.saludo.v}», pero tenía que ser «Hola, ${V.nombre.v}». Ojo con la coma y el espacio.` : t !== V.saludo.v ? 'Dime la variable saludo: decir(saludo)' : true },
+      pideTipo('str', '"7" (con comillas)')
+    ])
+  },
+  {
+    clave: 'jefe4', title: "Miniboss: la Calculadora", concept: "Decimales (float)", goals: ["salida"], maxLines: null,
+    intro: `<p>La <b>Calculadora</b> quiere repartir 7 gemas entre 2. Guarda en la variable <code>media</code> el resultado de <code>7 / 2</code> y díselo:</p><pre>media = 7 / 2\ndecir(media)</pre><p>Con <code>/</code> el resultado tiene decimales. ¿De qué tipo será?</p>`,
+    hint: `<pre>media = 7 / 2\nderecha(5)\ndecir(media)\ndecir("float")\nderecha(2)</pre><code>7 // 2</code> daría 3 (sin decimales), pero la Calculadora quiere el resultado exacto.`,
+    starter: `media = \nderecha(5)\n`,
+    make: nivelJefe('Calculadora', [
+      { pregunta: 'Guarda 7 / 2 en la variable media y dímela.', corta: '¿7 / 2?', valida: (t, tipo, V) => !V.media ? noVar('media', 'media = 7 / 2') : V.media.t === 'int' ? `media vale ${V.media.v}: has perdido los decimales. Usa / en vez de //.` : V.media.t !== 'float' || V.media.v !== 3.5 ? 'media tiene que ser el resultado de 7 / 2.' : t !== String(V.media.v) ? 'Dime la variable media: decir(media)' : true },
+      pideTipo('float', 'media')
+    ])
+  },
+  {
+    clave: 'jefe5', title: "Miniboss: el Interrogador", concept: "input() devuelve str", goals: ["salida"], maxLines: null,
+    intro: `<p>El <b>Interrogador</b> hace dos preguntas. Primero pregunta tu edad con <code>input()</code> y guárdala en <code>edad</code>:</p><pre>edad = input("¿Cuántos años tienes? ")</pre><p>Te preguntará de qué tipo es lo que devuelve <code>input()</code>. Después tendrás que <b>convertirla</b> en número con <code>int()</code> y decírsela.</p>`,
+    hint: `<pre>edad = input("¿Cuántos años tienes? ")\nderecha(5)\ndecir("str")\nedad = int(edad)\ndecir(edad)\nderecha(2)</pre>input() siempre devuelve texto, aunque escribas un número.`,
+    starter: `edad = input("¿Cuántos años tienes? ")\nderecha(5)\n`,
+    make: nivelJefe('Interrogador', [
+      Object.assign(pideTipo('str', 'lo que devuelve input()'), { pregunta: 'Pregunta tu edad con input(). ¿De qué tipo es lo que devuelve?' }),
+      { pregunta: 'Ahora conviértela con int() y dímela.', corta: '¿Tu edad en número?', valida: (t, tipo, V, s) => s.preguntas < 1 ? 'Tienes que preguntar la edad con input().' : tipo === 'str' ? 'Eso sigue siendo un texto. Conviértelo: edad = int(edad)' : tipo !== 'int' ? 'Quiero un número entero: int(edad).' : true }
+    ])
+  },
+  {
+    clave: 'jefe6', title: "Miniboss: el Gran Bug", concept: "Mezclar tipos", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>El <b>Gran Bug</b> quiere oír <code>Tengo … años</code> con el número de la variable <code>edad</code>, que ya existe y cambia en cada partida. El programa de abajo da error: ejecútalo, lee el error y arréglalo.</p><p>No se puede unir un texto con un número con <code>+</code>. Convierte el número con <code>str()</code>.</p>`,
+    hint: `<pre>decir("Tengo " + str(edad) + " años")\ndecir("int")</pre>`,
+    starter: `derecha(5)\ndecir("Tengo " + edad + " años")\n`,
+    make: () => { const edad = rnd(12, 19); return nivelJefe('Gran Bug', [
+      { pregunta: 'Dime "Tengo … años" usando la variable edad.', corta: '¿Cuántos tienes?', valida: (t, tipo) => t === `Tengo ${edad} años` ? true : t.includes(String(edad)) ? `Casi: tiene que ser exactamente «Tengo ${edad} años», con los espacios.` : 'Usa la variable edad: "Tengo " + str(edad) + " años"' },
+      pideTipo('int', 'la variable edad')
+    ], { datos: () => ({ vars: { edad } }) })(); }
+  },
+  {
+    clave: 'jefe8', title: "Miniboss: el Juez", concept: "Verdadero o falso (bool)", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>El <b>Juez</b> solo acepta verdades. La variable <code>numero</code> ya existe y cambia en cada partida. Guarda en <code>mayor</code> si <code>numero</code> es mayor que 10 y díselo:</p><pre>mayor = numero > 10\ndecir(mayor)</pre><p>Una comparación da <code>True</code> o <code>False</code>. ¿De qué tipo es eso?</p>`,
+    hint: `<pre>mayor = numero > 10\nderecha(5)\ndecir(mayor)\ndecir("bool")\nderecha(2)</pre>`,
+    starter: `mayor = \nderecha(5)\n`,
+    make: () => { const numero = rnd(3, 20); return nivelJefe('Juez', [
+      { pregunta: 'Guarda en mayor si numero es mayor que 10 y dímelo.', corta: '¿numero > 10?', valida: (t, tipo, V) => !V.mayor ? noVar('mayor', 'mayor = numero > 10') : V.mayor.t !== 'bool' ? 'mayor tiene que ser una comparación: numero > 10 (sin comillas).' : V.mayor.v !== (numero > 10) ? 'Esa comparación no es la que te pido: numero > 10' : t !== String(V.mayor.v === true ? 'True' : 'False') ? 'Dime la variable mayor: decir(mayor)' : true },
+      pideTipo('bool', 'mayor')
+    ], { datos: () => ({ vars: { numero } }) })(); }
+  }
+];
+JEFES.forEach(j => { delete j.mundo; LEVELS.push(j); });
+
 // ---------- mundos: cada uno es un tema con sus niveles ----------
 const MUNDOS = [
-  { id: 1, ra: 1, titulo: 'Primeros pasos', tema: 'Instrucciones y números', color: '#2fc6b8', icono: '👣', niveles: ['celda', 'gemas'],
+  { id: 1, ra: 1, titulo: 'Primeros pasos', tema: 'Instrucciones y números', color: '#2fc6b8', icono: '👣', niveles: ['celda', 'gemas', 'jefe1'],
     desc: 'Tus primeras órdenes en Python: moverte por la base sin chocarte.' },
-  { id: 2, ra: 1, titulo: 'Variables y constantes', tema: 'Guardar valores con nombre', color: '#f2b544', icono: '📦', niveles: ['escalones', 'clave', 'constantes'],
+  { id: 2, ra: 1, titulo: 'Variables y constantes', tema: 'Guardar valores con nombre', color: '#f2b544', icono: '📦', niveles: ['escalones', 'clave', 'constantes', 'jefe2'],
     desc: 'Guarda valores con un nombre, léelos de las placas y escribe constantes en MAYÚSCULAS.' },
-  { id: 3, ra: 1, titulo: 'Textos', tema: 'Strings y bloques de texto', color: '#ff4f8b', icono: '📜', niveles: ['guardias', 'palabras'],
+  { id: 3, ra: 1, titulo: 'Textos', tema: 'Strings y bloques de texto', color: '#ff4f8b', icono: '📜', niveles: ['guardias', 'palabras', 'jefe3'],
     desc: 'Comillas, unir y repetir textos y bloques de varias líneas.' },
-  { id: 4, ra: 1, titulo: 'Operadores', tema: 'Aritméticos, comparaciones y lógicos', color: '#c58bff', icono: '➗', niveles: ['tesoro', 'potencias', 'verdad'],
+  { id: 4, ra: 1, titulo: 'Operadores', tema: 'Aritméticos, comparaciones y lógicos', color: '#c58bff', icono: '➗', niveles: ['tesoro', 'potencias', 'verdad', 'jefe4'],
     desc: 'Cuentas con + - * / // % **, prioridad, comparaciones y and.' },
-  { id: 5, ra: 1, titulo: 'Entrada y conversiones', tema: 'input(), int() y str()', color: '#5ec8ff', icono: '⌨️', niveles: ['placa', 'guardian'],
+  { id: 5, ra: 1, titulo: 'Entrada y conversiones', tema: 'input(), int() y str()', color: '#5ec8ff', icono: '⌨️', niveles: ['placa', 'guardian', 'jefe5'],
     desc: 'Pregunta a quien juega y convierte textos en números.' },
-  { id: 6, ra: 1, titulo: 'Errores', tema: 'Leer y arreglar errores', color: '#ff7a3d', icono: '🐞', niveles: ['roto', 'roto2'],
+  { id: 6, ra: 1, titulo: 'Errores', tema: 'Leer y arreglar errores', color: '#ff7a3d', icono: '🐞', niveles: ['roto', 'roto2', 'jefe6'],
     desc: 'Programas rotos: lee el mensaje de error, encuentra la línea y arréglalo.' },
   { id: 7, ra: 2, titulo: 'Bucles', tema: 'for y while', color: '#7be07b', icono: '🔁', niveles: ['caracol', 'sinfin'],
     desc: 'Repite órdenes sin copiar y pegar.' },
-  { id: 8, ra: 2, titulo: 'Condiciones', tema: 'if y bucles anidados', color: '#ffd35a', icono: '🔀', niveles: ['emboscada', 'tozudos'],
+  { id: 8, ra: 2, titulo: 'Condiciones', tema: 'if y bucles anidados', color: '#ffd35a', icono: '🔀', niveles: ['emboscada', 'tozudos', 'jefe8'],
     desc: 'Decide qué hacer según lo que encuentres.' },
   { id: 9, ra: 2, titulo: 'Funciones y algoritmos', tema: 'def y el laberinto', color: '#9fa8ff', icono: '🧩', niveles: ['columnas', 'laberinto'],
     desc: 'Crea tus propias órdenes y escapa del laberinto.' }
@@ -320,7 +418,11 @@ const MUNDOS = [
 (function ordenarNiveles() {
   const orden = MUNDOS.flatMap(m => m.niveles);
   LEVELS.sort((a, b) => orden.indexOf(a.clave) - orden.indexOf(b.clave));
-  LEVELS.forEach((L, i) => { L.id = i + 1; L.mundo = MUNDOS.find(m => m.niveles.includes(L.clave)).id; });
+  // ids fijos: el progreso guardado va por id, así que un nivel nuevo
+  // recibe un id nuevo aunque se juegue en medio
+  const IDS = ['celda', 'gemas', 'escalones', 'clave', 'constantes', 'guardias', 'palabras', 'tesoro', 'potencias', 'verdad', 'placa', 'guardian',
+    'roto', 'roto2', 'caracol', 'sinfin', 'emboscada', 'tozudos', 'columnas', 'laberinto', 'jefe1', 'jefe2', 'jefe3', 'jefe4', 'jefe5', 'jefe6', 'jefe8'];
+  LEVELS.forEach(L => { L.nuevos = L.nuevos || []; L.id = IDS.indexOf(L.clave) + 1; L.mundo = MUNDOS.find(m => m.niveles.includes(L.clave)).id; });
   MUNDOS.forEach(m => { m.ids = m.niveles.map(c => LEVELS.find(L => L.clave === c).id); });
 })();
 
@@ -376,7 +478,7 @@ function crearPartida(level, datos) {
 
 function snap(s, extra) {
   return Object.assign({ hx: s.hero.x, hy: s.hero.y, facing: s.facing, enemies: s.enemies.map(e => ({ ...e })),
-    gems: s.gems.map(g => ({ ...g })), doors: s.doors.map(d => d.open), vidas: s.vidas, dur: 1 }, extra || {});
+    gems: s.gems.map(g => ({ ...g })), doors: s.doors.map(d => d.open), pasos: s.doors.map(d => d.paso || 0), vidas: s.vidas, dur: 1 }, extra || {});
 }
 function enemyAt(s, x, y) { return s.enemies.find(e => e.hp > 0 && e.x === x && e.y === y); }
 function doorAt(s, x, y) { return s.doors.find(d => d.x === x && d.y === y); }
@@ -420,6 +522,7 @@ function revisar(s, vars) {
   else fin(s, 'win', '¡Lo has conseguido!');
 }
 function puertaAcepta(d, t) { return d.valida ? d.valida(t) : t === d.respuesta; }
+function leeTipos(json) { const o = {}; try { const r = JSON.parse(json || '{}'); for (const k in r) o[k] = { v: r[k][0], t: r[k][1] }; } catch (e) { } return o; }
 
 function makeApi(getSim, opciones) {
   const opc = opciones || {};
@@ -462,12 +565,22 @@ function makeApi(getSim, opciones) {
       e.hp--;
       push(s, { attack: { x: e.x, y: e.y }, dur: 1.2, log: e.hp === 0 ? { text: `Has derrotado a ${e.name}.`, kind: 'info' } : null });
     },
-    decir(t) {
+    decir(t, tipo, varsJson) {
       const s = getSim(); if (s.over) return;
       push(s, { say: t, dur: 1.4 });
       const d = s.doors.find(d => !d.open && pegado(s, d));
       if (!d) return;
       if (d.x !== s.hero.x) s.facing = Math.sign(d.x - s.hero.x);
+      if (d.jefe) {
+        // miniboss: varias preguntas seguidas; cada una devuelve true o una pista
+        const J = d.jefe, i = d.paso || 0, r = J.pasos[i].valida(String(t), tipo || 'str', leeTipos(varsJson), s);
+        if (r === true) {
+          d.paso = i + 1;
+          if (d.paso >= J.pasos.length) { d.open = true; push(s, { dur: 1.2, log: { text: `${J.nombre}: ${J.fin || '¡Me rindo! Puedes pasar.'}`, kind: 'info' } }); }
+          else push(s, { dur: .8, log: { text: `${J.nombre}: ¡Correcto! ${J.pasos[d.paso].pregunta}`, kind: 'info' } });
+        } else push(s, { dur: .6, log: { text: `${J.nombre}: ${r}`, kind: 'warn' } });
+        return;
+      }
       if (puertaAcepta(d, t)) { d.open = true; push(s, { dur: 1, log: { text: '¡La barrera se abre!', kind: 'info' } }); }
       else push(s, { dur: 0.6, log: { text: d.pista ? d.pista(t) : 'La barrera no se abre: esa no es la respuesta.', kind: 'warn' } });
     },
@@ -608,7 +721,9 @@ class Heroe:
         juego.atacar(nombre)
         self._chk()
     def decir(self, texto=""):
-        juego.decir(str(texto))
+        # además del texto, el tipo de lo que se dice y las variables del
+        # programa: los minibosses comprueban tipos
+        juego.decir(str(texto), type(texto).__name__, _vars_tipos(sys._getframe(1).f_globals))
         self._chk()
     def leer(self):
         r = juego.leer()
@@ -662,6 +777,15 @@ def _linea(e):
             ln = tb.tb_lineno
         tb = tb.tb_next
     return ln
+
+def _vars_tipos(ns):
+    out = {}
+    for k, v in ns.items():
+        if k.startswith("_") or k in _OCULTOS:
+            continue
+        if isinstance(v, (bool, int, float, str)):
+            out[k] = [v, type(v).__name__]
+    return json.dumps(out)
 
 def _variables(ns):
     out = {}

@@ -25,6 +25,13 @@ const SOL = {
   columnas: `def vuelta():\n    derecha(2)\n    abajo(2)\n    izquierda(2)\n    arriba(2)\n\nfor i in range(3):\n    vuelta()\n    derecha(4)`,
   potencias: `derecha()\ndecir(base ** exponente)\nderecha(2)\ndecir(base + extra * 2)\nderecha(2)\ndecir((base + extra) * 2)\nderecha(2)`,
   roto2: `ALTO = 2\nderecha(2)\narriba(ALTO)\n\npasos = int("3")\nderecha(pasos)`,
+  jefe1: `derecha(5)\ndecir("Carlos")\ndecir("str")\nderecha(2)`,
+  jefe2: `edad = 16\nderecha(5)\ndecir(edad)\ndecir("int")\nderecha(2)`,
+  jefe3: `nombre = "Carlos"\nsaludo = "Hola, " + nombre\nderecha(5)\ndecir(saludo)\ndecir("str")\nderecha(2)`,
+  jefe4: `media = 7 / 2\nderecha(5)\ndecir(media)\ndecir(type(media))\nderecha(2)`,
+  jefe5: `edad = input("¿Cuántos años tienes? ")\nderecha(5)\ndecir("str")\nedad = int(edad)\ndecir(edad)\nderecha(2)`,
+  jefe6: `derecha(5)\ndecir("Tengo " + str(edad) + " años")\ndecir("int")\nderecha(2)`,
+  jefe8: `mayor = numero > 10\nderecha(5)\ndecir(mayor)\ndecir("bool")\nderecha(2)`,
   laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not en_salida():\n    dcha = (mirando + 1) % 4\n    if hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif hay_camino(direcciones[mirando]):\n        pass\n    elif hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    mover(direcciones[mirando])`,
 };
 
@@ -35,6 +42,7 @@ const SOL = {
   py.runPython(G.PRELUDE);
   const run = (lvl, code) => {
     SIM = G.crearPartida(lvl);
+    if (lvl.clave === 'jefe5') { respuestas.length = 0; respuestas.push('16'); }
     if (lvl.clave === 'guardian') { respuestas.length = 0; respuestas.push(String(SIM.doors[0].x - 2), 'Ana'); }
     const fn = py.globals.get('_run'); const r = fn(code, JSON.stringify(SIM.vars)); const a = r.toJs(); r.destroy(); fn.destroy();
     G.terminar(SIM, { kind: a[0], line: a[1], name: a[2], msg: a[3], vars: G.leerVars(a[4]) });
@@ -55,6 +63,13 @@ const SOL = {
     const bien = esperado.test(todo); if (!bien) ok = false;
     console.log(`${bien ? '✓' : '✗'} [${titulo}] ${s.over.type}: ${todo.slice(0, 160)}`);
   };
+  caso('jefe: número en vez de nombre', 'jefe1', 'derecha(5)\ndecir(16)', /entre comillas/);
+  caso('jefe: tipo equivocado', 'jefe1', 'derecha(5)\ndecir("Ana")\ndecir("int")', /No es int/);
+  caso('jefe: edad con comillas', 'jefe2', 'edad = "16"\nderecha(5)\ndecir(edad)', /es un texto/);
+  caso('jefe: sin variable', 'jefe2', 'derecha(5)\ndecir(16)', /crea la variable edad/);
+  caso('jefe: // pierde decimales', 'jefe4', 'media = 7 // 2\nderecha(5)\ndecir(media)', /decimales/);
+  caso('jefe: input sin convertir', 'jefe5', 'edad = input("?")\nderecha(5)\ndecir("str")\ndecir(edad)', /sigue siendo un texto/);
+  caso('jefe: str + int', 'jefe6', 'derecha(5)\ndecir("Tengo " + edad + " años")', /TypeError|texto|número/i);
   caso('mayúscula en la orden', 'celda', 'Derecha()', /«Derecha».*«derecha»/);
   caso('paréntesis olvidados', 'celda', 'derecha', /faltan los paréntesis/);
   caso('un choque no acaba el juego', 'celda', 'arriba()\n' + SOL.celda, /^win:.*Te quedan 2 vidas/);
