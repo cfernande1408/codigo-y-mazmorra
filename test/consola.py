@@ -50,12 +50,12 @@ async def main():
             # el programa apuntado funciona con Ejecutar
             await pg.click('#mStay'); await pg.click('#run')
             await pg.wait_for_selector('#mStay', timeout=20000)
-            # variables entre órdenes (nivel 5)
-            await pg.click('#mStay'); await pg.check('#profe'); await pg.evaluate("location.hash = '#nivel-4'"); await pg.wait_for_timeout(300)
-            for c in ['clave = placa', 'clave', 'derecha = 2', 'respuesta = clave', 'derecha = 4']:
+            # variables entre órdenes (nivel de los escalones)
+            await pg.click('#mStay'); await pg.check('#profe'); await pg.evaluate("location.hash = '#nivel-3'"); await pg.wait_for_timeout(300)
+            for c in ['pasos = 3', 'pasos', 'derecha = pasos', 'abajo = 1', 'derecha = pasos', 'abajo = 1', 'derecha = pasos']:
                 await orden(pg, c)
             await pg.wait_for_selector('#mStay', timeout=15000)
-            out = await pg.inner_text('#out'); assert "'" in out and 'se abre' in out, out
+            out = await pg.inner_text('#out'); assert '3' in out, out
             await b.close()
     finally:
         srv.terminate()

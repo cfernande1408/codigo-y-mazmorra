@@ -10,7 +10,6 @@ const SOL = {
   gemas: `derecha = 7\nabajo = 2\nizquierda = 7`,
   guardias: `derecha = 1\natacar = "SyntaxError"\natacar = "SyntaxError"\nderecha = 4\natacar = "NameError"\natacar = "NameError"\nderecha = 3`,
   escalones: `pasos = 3\nderecha = pasos\nabajo = 1\nderecha = pasos\nabajo = 1\nderecha = pasos`,
-  clave: `clave = placa\nderecha = 2\nrespuesta = clave\nderecha = 4`,
   constantes: `ANCHO = 4\nALTO = 2\nderecha = ANCHO\narriba = ALTO\nderecha = ANCHO`,
   tesoro: `total = oro * cofres\nderecha = 1\nrespuesta = total\nderecha = 2\nrespuesta = total // ladrones\nderecha = 2\nrespuesta = total % ladrones\nderecha = 2`,
   palabras: `hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""\nderecha = 1\nrespuesta = "Hola, " + guardian\nderecha = 2\nrespuesta = "ja" * veces\nderecha = 2\nrespuesta = hechizo\nderecha = 2`,
@@ -45,6 +44,8 @@ const SOL = {
   puerto: `if 0 <= puerto <= 65535:\n    if puerto < 1024:\n        tipo_puerto = "sistema"\n    else:\n        tipo_puerto = "usuario"\nelse:\n    tipo_puerto = "no existe"\nderecha = 3\nrespuesta = tipo_puerto\nderecha = 4`,
   laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not en_salida:\n    dcha = (mirando + 1) % 4\n    if hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif hay_camino(direcciones[mirando]):\n        pass\n    elif hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    mover = direcciones[mirando]`
 };
+// la contraseña del nivel clave se elige al cargar: hay que escribirla a mano
+SOL.clave = `clave = "${G.LEVELS.find(l => l.clave === 'clave').make().signo}"\nderecha = 2\nrespuesta = clave\nderecha = 4`;
 
 (async () => {
   const py = await loadPyodide();
@@ -80,7 +81,9 @@ const SOL = {
   caso('bool en los pasos', 'celda', 'derecha = True', /bool/);
   caso('pasos negativos', 'celda', 'derecha = -2', /1 o más/);
   caso('función en vez de variable', 'celda', 'derecha(2)', /no usamos funciones.*derecha = 3/);
-  caso('variable del juego', 'clave', 'placa = "x"', /variable del juego/);
+  caso('variable del juego', 'termometro', 'en_salida = 3', /variable del juego/);
+  caso('placa a mano', 'clave', 'clave = placa', /escríbelo tú entre comillas/);
+  caso('clave con comillas de más', 'clave', 'clave = "x"\nderecha = 2\nrespuesta = "clave"', /quita las comillas/);
   caso('placa sin placa', 'celda', 'x = placa', /no hay ninguna placa/);
   caso('atacar sin comillas', 'guardias', 'derecha = 1\natacar = SyntaxError', /NameError|no conoce/);
   // minibosses

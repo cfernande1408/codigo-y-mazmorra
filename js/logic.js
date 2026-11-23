@@ -1,6 +1,9 @@
 // ===== Código y Mazmorra · lógica del juego (sin DOM) =====
 const NOMBRES = ["SyntaxError","NameError","TypeError","ValueError","IndexError","KeyError","AttributeError","ImportError","OverflowError","EOFError","Bug","Typo"];
 const CLAVES = ["abracadabra","calabaza","murcielago","tostada","kraken","pimiento","bigote","pepinillo","zanahoria","catapulta","macarrones","escarabajo"];
+// la contraseña del nivel «clave» se elige al abrir el juego y no cambia entre
+// ejecuciones: hay que leerla y escribirla a mano (cada ordenador tiene la suya)
+const CLAVE_SESION = CLAVES[Math.floor(Math.random() * CLAVES.length)];
 const MAX_FRAMES = 1200;
 const VIDAS = 3;
 
@@ -90,12 +93,12 @@ const LEVELS = [
     }
   },
   {
-    clave: 'clave', title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
-    nuevos: ["placa", "respuesta"],
-    intro: `<p>La barrera solo se abre con la contraseña que pone la <b>placa</b> (la pantalla de la pared, encima de tu agente), y la contraseña <b>cambia cada vez que ejecutas</b>. El juego guarda lo que pone en una variable que ya existe: <code>placa</code>. Cópiala en una variable tuya.</p><p>Para contestar a la barrera, guarda lo que quieras decirle en la variable <code>respuesta</code> cuando estés a su lado:</p><pre>respuesta = "hola"</pre><p>Si lo que guardas es otra variable, va sin comillas: es un nombre, no un texto.</p>`,
-    hint: `<code>placa</code> ya es una variable: no tienes que copiar la contraseña a mano.`,
-    starter: `clave = placa\nprint(clave)\n`,
-    make: () => { const pw = CLAVES[rnd(0, CLAVES.length - 1)]; return { map: ["#########", "#C#######", "#H..D..S#", "#########"], enemies: [], signo: pw, doors: [{ respuesta: pw, etiqueta: '?' }] }; }
+    clave: 'clave', title: "La puerta con clave", concept: "Variables de texto (str)", goals: ["salida"], maxLines: 4,
+    nuevos: ["respuesta"],
+    intro: `<p>La barrera solo se abre con la contraseña que pone la <b>placa</b>: la pantalla de la pared, encima de tu agente. Léela y guárdala en una variable llamada <code>clave</code>. Una contraseña es un <b>texto</b>, así que va <b>entre comillas</b>:</p><pre>clave = "..."</pre><p>Para contestar a la barrera, guarda lo que quieras decirle en la variable <code>respuesta</code> cuando estés a su lado. Ahí puedes usar tu variable: los nombres de variable van <b>sin comillas</b>.</p>`,
+    hint: `Entre comillas va el texto tal cual; sin comillas, el nombre de una variable.`,
+    starter: `# Lee la placa y guarda la contraseña en la variable clave\n`,
+    make: () => ({ map: ["#########", "#C#######", "#H..D..S#", "#########"], enemies: [], signo: CLAVE_SESION, placaAMano: true, doors: [{ respuesta: CLAVE_SESION, etiqueta: '?', pista: t => t === 'clave' ? 'Le has dicho la palabra «clave», no lo que guarda la variable: quita las comillas.' : t.toLowerCase() === CLAVE_SESION ? 'Casi: fíjate en las mayúsculas.' : 'Esa no es la contraseña: revisa lo que pone la placa, letra a letra.' }] })
   },
   {
     clave: 'constantes', title: "Las constantes de la base", concept: "Constantes", goals: ["salida"], maxLines: 5,
@@ -160,7 +163,7 @@ const LEVELS = [
   },
   {
     clave: 'placa', title: "La placa de los pasos", concept: "Conversiones: int()", goals: ["salida"], maxLines: 4, random: true,
-    nuevos: ["int", "str"],
+    nuevos: ["placa", "int", "str"],
     intro: `<p>La placa (la pantalla de la pared) dice cuántos pasos hay hasta la barrera, pero la variable <code>placa</code> siempre es un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Con <code>derecha = placa</code> el juego se queja. Para usarlo como número hay que <b>convertirlo</b>: <code>int("4")</code> da <code>4</code>.</p><p>Avanza ese número de pasos y contesta a la barrera con <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
     hint: `Prueba <code>print(type(placa))</code>. ¿Cómo se convierte un texto en número?`,
     starter: `print(placa, type(placa))\n`,
@@ -608,7 +611,7 @@ function hueOf(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCode
 function crearPartida(level, datos) {
   const d = datos || level.make(); const map = d.map; const h = map.length, w = map[0].length;
   const s = { w, h, tiles: [], hero: null, facing: 1, enemies: [], gems: [], doors: [], sign: null, exit: null,
-    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, oculta: !!d.oculta, paneles: d.paneles || [], comprobar: level.comprobar || null,
+    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, oculta: !!d.oculta, placaAMano: !!d.placaAMano, paneles: d.paneles || [], comprobar: level.comprobar || null,
     preguntas: 0, valores: {}, vidas: VIDAS, goals: level.goals, frames: [], over: null, datos: d };
   let ei = 0;
   const specs = d.doors || [];
@@ -753,6 +756,7 @@ function makeApi(getSim, opciones) {
       s.valores[nombre] = { v: String(v), t: tipo, nuevo: true };
       escuchar(s, nombre);
     },
+    placa_a_mano() { return !!getSim().placaAMano; },
     hay_auto(k) { const s = getSim(); return k === 'placa' ? s.sign != null || !!s.signText : true; },
     auto(k) {
       const s = getSim();
@@ -895,6 +899,8 @@ class _Mundo(dict):
     # derecha, abajo… el agente se mueve; en atacar, golpea; cualquier
     # otro valor puede ser lo que espera una barrera o un miniboss.
     def __getitem__(self, k):
+        if k == "placa" and juego.placa_a_mano():
+            raise ErrorHeroe("Aquí la placa no se lee con código: mira lo que pone en la pantalla y escríbelo tú entre comillas, por ejemplo clave = \"hola\".")
         if k in _AUTO and juego.hay_auto(k):
             v = juego.auto(k)
             if k == "placa":
