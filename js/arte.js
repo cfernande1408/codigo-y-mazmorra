@@ -154,6 +154,7 @@ function crearArte(cv) {
         if (ab(0, -1) || ab(-1, 0) || ab(1, 0) || ab(-1, -1) || ab(1, -1)) t = 1;
         else if ((ab(0, 1) || ab(-1, 1) || ab(1, 1)) && debajo) t = 1;
         else if (debajo) t = 2;
+        if (tile(x, y) === 'C') t = 1; // la placa se ve siempre
         fila.push(t);
       }
       forma.push(fila);
@@ -405,9 +406,19 @@ function crearArte(cv) {
     corte(ctx, px + 9, py + 12, T - 18, T - 24, 6); ctx.fillStyle = '#2b3047'; ctx.fill(); linea(ctx, 1.8);
     corte(ctx, px + 13, py + 16, T - 26, T - 32, 4); ctx.fillStyle = '#0d2530'; ctx.fill();
     ctx.save(); ctx.beginPath(); ctx.rect(px + 13, py + 16, T - 26, T - 32); ctx.clip();
-    ctx.fillStyle = CIAN;
-    for (let i = 0; i < 5; i++) { const ly = py + 18 + ((i * 6 + now / 120) % 30); ctx.fillRect(px + 17, ly, (T - 34) * (.4 + hash(i, x, 9) * .6), 2); }
+    const txt = sim.signText ? String(sim.signText) : '';
+    if (txt) {
+      // lo que pone la placa (lo mismo que guarda la variable placa)
+      let f = 15; ctx.font = `700 ${f}px "JetBrains Mono", monospace`;
+      while (f > 8 && ctx.measureText(txt).width > T - 30) { f--; ctx.font = `700 ${f}px "JetBrains Mono", monospace`; }
+      ctx.textAlign = 'center'; ctx.fillStyle = CIAN; ctx.fillText(txt, px + T / 2, py + T / 2 + f * .35);
+      ctx.fillStyle = 'rgba(46,230,214,.12)'; ctx.fillRect(px + 13, py + 16 + ((now / 40) % (T - 32)), T - 26, 2);
+    } else {
+      ctx.fillStyle = CIAN;
+      for (let i = 0; i < 5; i++) { const ly = py + 18 + ((i * 6 + now / 120) % 30); ctx.fillRect(px + 17, ly, (T - 34) * (.4 + hash(i, x, 9) * .6), 2); }
+    }
     ctx.restore();
+    ctx.font = `700 11px ${FUENTE}`; ctx.textAlign = 'center'; ctx.fillStyle = NAVY; ctx.fillText('PLACA', px + T / 2, py + 10);
     ctx.fillStyle = ROJO; ctx.fillRect(px + 9, py + T - 15, 12, 3);
   }
   function gema(x, y, now) {

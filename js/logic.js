@@ -92,7 +92,7 @@ const LEVELS = [
   {
     clave: 'clave', title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["placa", "respuesta"],
-    intro: `<p>La barrera solo se abre con la contraseña de la placa, y la contraseña <b>cambia cada vez que ejecutas</b>. El juego la deja en una variable que ya existe: <code>placa</code>. Cópiala en una variable tuya.</p><p>Para contestar a la barrera, guarda lo que quieras decirle en la variable <code>respuesta</code> cuando estés a su lado:</p><pre>respuesta = "hola"</pre><p>Si lo que guardas es otra variable, va sin comillas: es un nombre, no un texto.</p>`,
+    intro: `<p>La barrera solo se abre con la contraseña que pone la <b>placa</b> (la pantalla de la pared, encima de tu agente), y la contraseña <b>cambia cada vez que ejecutas</b>. El juego guarda lo que pone en una variable que ya existe: <code>placa</code>. Cópiala en una variable tuya.</p><p>Para contestar a la barrera, guarda lo que quieras decirle en la variable <code>respuesta</code> cuando estés a su lado:</p><pre>respuesta = "hola"</pre><p>Si lo que guardas es otra variable, va sin comillas: es un nombre, no un texto.</p>`,
     hint: `<code>placa</code> ya es una variable: no tienes que copiar la contraseña a mano.`,
     starter: `clave = placa\nprint(clave)\n`,
     make: () => { const pw = CLAVES[rnd(0, CLAVES.length - 1)]; return { map: ["#########", "#C#######", "#H..D..S#", "#########"], enemies: [], signo: pw, doors: [{ respuesta: pw, etiqueta: '?' }] }; }
@@ -161,7 +161,7 @@ const LEVELS = [
   {
     clave: 'placa', title: "La placa de los pasos", concept: "Conversiones: int()", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["int", "str"],
-    intro: `<p>La placa dice cuántos pasos hay hasta la barrera, pero <code>placa</code> siempre es un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Con <code>derecha = placa</code> el juego se queja. Para usarlo como número hay que <b>convertirlo</b>: <code>int("4")</code> da <code>4</code>.</p><p>Avanza ese número de pasos y contesta a la barrera con <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
+    intro: `<p>La placa (la pantalla de la pared) dice cuántos pasos hay hasta la barrera, pero la variable <code>placa</code> siempre es un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Con <code>derecha = placa</code> el juego se queja. Para usarlo como número hay que <b>convertirlo</b>: <code>int("4")</code> da <code>4</code>.</p><p>Avanza ese número de pasos y contesta a la barrera con <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
     hint: `Prueba <code>print(type(placa))</code>. ¿Cómo se convierte un texto en número?`,
     starter: `print(placa, type(placa))\n`,
     make: () => {
@@ -410,7 +410,7 @@ const NIVELES_RA2 = [
   {
     clave: 'semaforo', title: "El cruce", concept: "if / else", goals: ["salida"], maxLines: 6, random: true,
     nuevos: ["si"],
-    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. La placa dice cuál: <code>"arriba"</code> o <code>"abajo"</code>, y cambia en cada partida. Tu programa tiene que <b>decidir</b>. Así se escribe una decisión:</p><pre>if clave == "abre":\n    print("Pasa")\nelse:\n    print("Fuera")</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
+    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. Te lo dice la <b>placa</b>: la pantalla de la pared, justo encima de tu agente. Pone <code>"arriba"</code> o <code>"abajo"</code> y cambia en cada partida. El juego guarda lo que pone en la variable <code>placa</code>, que ya existe: pruébalo con <code>print(placa)</code>. Tu programa tiene que <b>decidir</b>. Así se escribe una decisión:</p><pre>if clave == "abre":\n    print("Pasa")\nelse:\n    print("Fuera")</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
     hint: `Para comparar se usa <code>==</code>. Revisa los dos puntos y la sangría.`,
     starter: `print(placa)\nderecha = 2\n`,
     make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
@@ -497,6 +497,50 @@ const NIVELES_RA2 = [
 ];
 NIVELES_RA2.forEach(L => LEVELS.push(L));
 
+const NIVELES_IF = [
+  {
+    clave: 'alarma', title: "La alarma del disco", concept: "if (sin else) y sangría", goals: ["salida"], maxLines: 4, random: true,
+    nuevos: ["si"],
+    intro: `<p>Antes de salir de la sala de servidores hay que mirar el disco. La variable <code>uso</code> (el % de disco ocupado) ya existe y cambia en cada partida. <b>Solo si</b> el uso es del 90 % o más, tienes que dar la alarma guardando <code>True</code> en la variable <code>alarma</code>. Si no, no se avisa.</p><pre>if condición:\n    esto solo pasa si es True\nesto pasa siempre</pre><p>Lo que va <b>sangrado</b> (4 espacios) depende del <code>if</code>. Lo que vuelve al margen se ejecuta siempre.</p>`,
+    hint: `¿Moverte hasta la salida depende del disco? Entonces no va dentro del <code>if</code>.`,
+    starter: `print("Uso del disco:", uso, "%")\nderecha = 7\n`,
+    comprobar: v => v.uso >= 90 ? (v.alarma === true ? [] : [`el disco estaba al ${v.uso} %: tenías que dar la alarma (alarma = True).`]) : (v.alarma === true ? [`el disco estaba al ${v.uso} %: no había que dar la alarma.`] : []),
+    make: () => { const uso = [90, 90, rnd(91, 99), rnd(91, 99), 89, rnd(20, 88), rnd(20, 88)][rnd(0, 6)]; return { map: ['##########', '#H......S#', '##########'], enemies: [], vars: { uso } }; }
+  },
+  {
+    clave: 'ifroto', title: "El if roto", concept: "Errores típicos del if", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>Este programa tendría que decidir el camino según lo que pone la placa (la pantalla de la pared), como en el cruce, pero alguien lo ha escrito con prisa y tiene <b>5 errores</b>. Ejecútalo, lee el error, arregla esa línea y vuelve a ejecutar.</p><p>Python te dice un error cada vez: el primero que encuentra.</p>`,
+    hint: `Repasa: mayúsculas, dos puntos, <code>=</code> o <code>==</code>, qué lleva el <code>else</code> y la sangría.`,
+    starter: `# Este programa tiene 5 errores. Ejecútalo y arréglalos uno a uno.\nderecha = 2\nIf placa = "arriba"\n    arriba = 2\nelse placa == "abajo":\nabajo = 2\nderecha = 4\n`,
+    make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
+  },
+  {
+    clave: 'cargador', title: "El cargador", concept: "El orden de los elif", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>La barrera quiere saber cómo está tu batería. La variable <code>bateria</code> (en %) ya existe y cambia en cada partida:</p><pre>80 o más        "alta"\n30 o más        "media"\n10 o más        "baja"\nmenos de 10     "critica"</pre><p>El programa de abajo parece correcto, pero muchas veces contesta mal. Pruébalo varias veces. Recuerda: Python entra <b>solo en la primera</b> condición que se cumple.</p>`,
+    hint: `Con 85, ¿cuál es la primera condición que da True?`,
+    starter: `print("Batería:", bateria, "%")\nif bateria >= 10:\n    estado = "baja"\nelif bateria >= 30:\n    estado = "media"\nelif bateria >= 80:\n    estado = "alta"\nelse:\n    estado = "critica"\n\nderecha = 3\nrespuesta = estado\nderecha = 4\n`,
+    make: () => {
+      const bateria = [80, 30, 10, 9, rnd(81, 100), rnd(31, 79), rnd(11, 29), rnd(0, 8)][rnd(0, 7)];
+      const ok = bateria >= 80 ? 'alta' : bateria >= 30 ? 'media' : bateria >= 10 ? 'baja' : 'critica';
+      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { bateria },
+        doors: [{ etiqueta: '%', valida: t => t.replace('í', 'i') === ok, pista: t => ['alta', 'media', 'baja', 'critica', 'crítica'].includes(t) ? `con la batería al ${bateria} % no es «${t}». Revisa el orden de las condiciones.` : `tiene que ser "alta", "media", "baja" o "critica".` }] };
+    }
+  },
+  {
+    clave: 'puerto', title: "El puerto", concept: "Rangos e if dentro de if", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>La barrera te pregunta por el <code>puerto</code> (ya existe y cambia en cada partida). Los puertos válidos van del 0 al 65535, y los menores de 1024 son del sistema:</p><pre>0 a 1023          "sistema"\n1024 a 65535      "usuario"\nfuera de 0-65535  "no existe"</pre><p>Un rango se puede escribir en una sola comparación, como en mates: <code>0 &lt;= x &lt;= 100</code>. Y dentro de un <code>if</code> puede ir otro <code>if</code>: su bloque lleva 8 espacios.</p>`,
+    hint: `Primero mira si el puerto existe; solo si existe, mira si es del sistema o de usuario.`,
+    starter: `print("Puerto:", puerto)\nderecha = 3\n`,
+    make: () => {
+      const puerto = [0, 22, 80, 443, 1023, 1024, 8080, 65535, 65536, 70000, -1][rnd(0, 10)];
+      const ok = puerto < 0 || puerto > 65535 ? 'no existe' : puerto < 1024 ? 'sistema' : 'usuario';
+      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { puerto },
+        doors: [{ etiqueta: ':', respuesta: ok, pista: t => ['sistema', 'usuario', 'no existe'].includes(t) ? `el puerto ${puerto} no es de «${t}». Ojo con los límites: 1023, 1024 y 65535.` : `tiene que ser "sistema", "usuario" o "no existe".` }] };
+    }
+  }
+];
+NIVELES_IF.forEach(L => LEVELS.push(L));
+
 // ---------- mundos: cada uno es un tema con sus niveles ----------
 const MUNDOS = [
   { id: 1, ra: 1, titulo: 'Primeros pasos', tema: 'Instrucciones y números', color: '#2fc6b8', icono: '👣', niveles: ['celda', 'gemas', 'jefe1'],
@@ -511,7 +555,7 @@ const MUNDOS = [
     desc: 'Pregunta a quien juega y convierte textos en números.' },
   { id: 6, ra: 1, titulo: 'Errores', tema: 'Leer y arreglar errores', color: '#ff7a3d', icono: '🐞', niveles: ['roto', 'roto2', 'jefe6'],
     desc: 'Programas rotos: lee el mensaje de error, encuentra la línea y arréglalo.' },
-  { id: 7, ra: 2, titulo: 'Condiciones', tema: 'if, elif, else, and, or, not', color: '#ffd35a', icono: '🔀', niveles: ['semaforo', 'termometro', 'escudo', 'jefe8'],
+  { id: 7, ra: 2, titulo: 'Condiciones', tema: 'if, else, elif, and/or, rangos y if anidados', color: '#ffd35a', icono: '🔀', niveles: ['alarma', 'semaforo', 'ifroto', 'termometro', 'cargador', 'escudo', 'puerto', 'jefe8'],
     desc: 'Tu programa decide qué camino tomar según lo que valgan las variables.' },
   { id: 8, ra: 2, titulo: 'Bucles', tema: 'for, range, while y bucles con if', color: '#7be07b', icono: '🔁', niveles: ['caracol', 'contador', 'bateria', 'sinfin', 'ruta', 'emboscada', 'tozudos', 'jefe7'],
     desc: 'Repite sin copiar y pegar: for, range, while, recorrer textos y decidir en cada vuelta.' },
@@ -525,7 +569,7 @@ const MUNDOS = [
   // recibe un id nuevo aunque se juegue en medio
   const IDS = ['celda', 'gemas', 'escalones', 'clave', 'constantes', 'guardias', 'palabras', 'tesoro', 'potencias', 'verdad', 'placa', 'guardian',
     'roto', 'roto2', 'caracol', 'sinfin', 'emboscada', 'tozudos', 'columnas', 'laberinto', 'jefe1', 'jefe2', 'jefe3', 'jefe4', 'jefe5', 'jefe6', 'jefe8',
-    'semaforo', 'termometro', 'escudo', 'contador', 'bateria', 'ruta', 'jefe7'];
+    'semaforo', 'termometro', 'escudo', 'contador', 'bateria', 'ruta', 'jefe7', 'alarma', 'ifroto', 'cargador', 'puerto'];
   LEVELS.forEach(L => { L.nuevos = L.nuevos || []; L.id = IDS.indexOf(L.clave) + 1; L.mundo = MUNDOS.find(m => m.niveles.includes(L.clave)).id; });
   MUNDOS.forEach(m => { m.ids = m.niveles.map(c => LEVELS.find(L => L.clave === c).id); });
 })();
@@ -794,6 +838,7 @@ import sys
 import json
 import difflib
 import ast
+import re
 import juego
 
 class ErrorHeroe(Exception):
@@ -943,6 +988,12 @@ def _ejecutar(code, ns, modo):
     try:
         comp = compile(code, _FICHERO, modo)
     except SyntaxError as e:
+        texto = (e.text or "").strip()
+        m = re.match(r"(If|Elif|Else|While|For|In|Not|And|Or)\b", texto)
+        if m and type(e).__name__ == "SyntaxError":
+            return ["error", e.lineno or 0, "ErrorHeroe", "«" + m.group(1) + "» se escribe en minúscula: " + m.group(1).lower() + ". Python distingue mayúsculas de minúsculas.", _variables(ns)]
+        if re.match(r"else\s*[^\s:]", texto):
+            return ["error", e.lineno or 0, "ErrorHeroe", "else no lleva condición: se escribe solo «else:». Si quieres otra condición, usa elif.", _variables(ns)]
         return ["error", e.lineno or 0, type(e).__name__, e.msg or "", _variables(ns)]
     mal = _llamada_a_orden(code)
     if mal:
