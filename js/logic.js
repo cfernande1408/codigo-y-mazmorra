@@ -244,7 +244,7 @@ const LEVELS = [
     make: pasilloConGuardias(1, 3, 3, 5)
   },
   {
-    clave: 'columnas', title: "La escalera que crece", concept: "Funciones (def y return)", goals: ["gemas", "salida"], maxLines: 5,
+    clave: 'columnas', title: "La escalera del doble", concept: "Funciones (def y return)", goals: ["gemas", "salida"], maxLines: 5,
     nuevos: ["funciones"],
     intro: `<p>Cada tramo de esta escalera mide el doble que su número: el tramo 1 mide 2, el 2 mide 4 y el 3 mide 6. Crea tu propia <b>función</b> que calcule el doble de un número y te lo <b>devuelva</b> con <code>return</code>:</p><pre>def doble(n):\n    return n * 2</pre><p>Definirla no hace nada por sí solo. Hay que <b>llamarla</b> con un dato entre paréntesis, y lo que devuelve se puede guardar en una variable: <code>derecha = doble(3)</code>.</p>`,
     hint: `<pre>for n in range(1, 4):\n    derecha = doble(n)\n    abajo = 1</pre>`,
@@ -393,6 +393,110 @@ const JEFES = [
 ];
 JEFES.forEach(j => LEVELS.push(j));
 
+// ---------- condicionales y bucles ----------
+// bifurcación: un pasillo arriba y otro abajo; solo uno llega a la salida
+function bifurcacion(bueno, conPlaca) {
+  const g = blank(10, 7);
+  g[3][1] = 'H'; g[3][2] = '.'; for (let y = 1; y <= 5; y++) g[y][3] = '.';
+  for (const [dir, fila] of [['arriba', 1], ['abajo', 5]]) {
+    const fin = dir === bueno ? 7 : 6;
+    for (let x = 4; x <= fin; x++) g[fila][x] = '.';
+    if (dir === bueno) g[fila][7] = 'S';
+  }
+  if (conPlaca) g[2][1] = 'C';
+  return toRows(g);
+}
+const NIVELES_RA2 = [
+  {
+    clave: 'semaforo', title: "El cruce", concept: "if / else", goals: ["salida"], maxLines: 6, random: true,
+    nuevos: ["si"],
+    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. La placa dice cuál: <code>"arriba"</code> o <code>"abajo"</code>, y cambia en cada partida. Tu programa tiene que <b>decidir</b>:</p><pre>if placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
+    hint: `<pre>derecha = 2\nif placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4</pre>No te olvides de los dos puntos <code>:</code> después de la condición y del <code>else</code>.`,
+    starter: `print(placa)\nderecha = 2\n`,
+    make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
+  },
+  {
+    clave: 'termometro', title: "El termómetro", concept: "if / elif / else", goals: ["salida"], maxLines: 10, random: true,
+    intro: `<p>La variable <code>temperatura</code> ya existe y cambia en cada partida. Según lo que marque, la salida está en un pasillo distinto:</p><pre>menos de 15      arriba\nmás de 30        abajo\nentre 15 y 30    recto</pre><p>Con más de dos casos se encadenan condiciones con <code>elif</code> («si no, si…»):</p><pre>if temperatura < 15:\n    ...\nelif temperatura > 30:\n    ...\nelse:\n    ...</pre><p>Python mira las condiciones en orden y hace solo la primera que se cumple.</p>`,
+    hint: `Recto son <code>derecha = 6</code>. Arriba: <code>derecha = 2</code>, <code>arriba = 2</code> y <code>derecha = 4</code>. Abajo, igual pero con <code>abajo = 2</code>. Ojo: con 15 y con 30 hay que ir recto.`,
+    starter: `print("Temperatura:", temperatura)\n`,
+    make: () => {
+      const caso = rnd(0, 2), temperatura = caso === 0 ? rnd(-5, 14) : caso === 1 ? rnd(31, 42) : [15, 30, rnd(16, 29)][rnd(0, 2)];
+      const g = blank(10, 7);
+      g[3][1] = 'H'; for (let y = 1; y <= 5; y++) g[y][3] = '.';
+      [[1, 0], [3, 2], [5, 1]].forEach(([fila, c]) => { const fin = c === caso ? 7 : 6; for (let x = fila === 3 ? 2 : 4; x <= fin; x++) g[fila][x] = '.'; if (c === caso) g[fila][7] = 'S'; });
+      return { map: toRows(g), enemies: [], vars: { temperatura } };
+    }
+  },
+  {
+    clave: 'escudo', title: "El puente de energía", concept: "and, or, not", goals: ["salida"], maxLines: 7, random: true,
+    intro: `<p>El puente de arriba solo aguanta si llevas <b>escudo</b> <b>y</b> te queda <b>más de 50</b> de energía. Si no, tienes que bajar por el túnel. Las variables <code>escudo</code> (<code>True</code> o <code>False</code>) y <code>energia</code> (un número) ya existen y cambian en cada partida.</p><pre>and   las dos cosas tienen que ser True\nor    basta con que una sea True\nnot   le da la vuelta: not True es False</pre><p>Junta las dos condiciones en un solo <code>if</code>.</p>`,
+    hint: `<pre>derecha = 2\nif escudo and energia > 50:\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4</pre>`,
+    starter: `print("Escudo:", escudo, "Energía:", energia)\nderecha = 2\n`,
+    make: () => {
+      const escudo = Math.random() < .5, energia = Math.random() < .5 ? rnd(51, 100) : rnd(10, 50);
+      return { map: bifurcacion(escudo && energia > 50 ? 'arriba' : 'abajo', false), enemies: [], vars: { escudo, energia } };
+    }
+  },
+  {
+    clave: 'contador', title: "La escalera que crece", concept: "for con range(inicio, fin)", goals: ["gemas", "salida"], maxLines: 3,
+    intro: `<p>Cada tramo de esta escalera es un paso más largo que el anterior: 1, 2, 3 y 4. La variable del <code>for</code> va cambiando en cada vuelta, y la puedes usar:</p><pre>for i in range(1, 5):\n    print(i)</pre><p><code>range(1, 5)</code> da 1, 2, 3 y 4: empieza en el primer número y para <b>antes</b> del segundo.</p>`,
+    hint: `Dentro del bucle: <code>derecha = i</code> y <code>abajo = 1</code>.`,
+    starter: `for i in range(1, 5):\n    print(i)\n`,
+    make: () => {
+      const g = blank(14, 7); let x = 1, y = 1; g[y][x] = 'H';
+      for (let n = 1; n <= 4; n++) { for (let k = 0; k < n; k++) g[y][++x] = '.'; g[y][x] = 'g'; g[++y][x] = '.'; }
+      g[y][x] = 'S';
+      return { map: toRows(g), enemies: [] };
+    }
+  },
+  {
+    clave: 'bateria', title: "La batería", concept: "while con contador", goals: ["salida"], maxLines: 4, random: true,
+    intro: `<p>Tu batería tiene <code>energia</code> para unos pocos pasos (cambia en cada partida). Cada paso gasta 1. Avanza <b>mientras</b> te quede energía y, cuando llegue a 0, baja: la salida está justo debajo.</p><pre>while energia > 0:\n    derecha = 1\n    energia = energia - 1</pre><p>Si te olvidas de restar, la condición nunca deja de ser <code>True</code> y el bucle no acaba nunca.</p>`,
+    hint: `Después del bucle, ya sin sangría: <code>abajo = 1</code>.`,
+    starter: `print("Energía:", energia)\nwhile energia > 0:\n    derecha = 1\n`,
+    comprobar: v => v.energia === 0 ? [] : [`La batería tenía que acabar a 0, y energia vale ${JSON.stringify(v.energia)}. Réstale 1 en cada vuelta.`],
+    make: () => {
+      const energia = rnd(3, 8), g = blank(14, 4);
+      for (let x = 1; x <= 12; x++) g[1][x] = '.';
+      g[1][1] = 'H'; g[2][1 + energia] = 'S';
+      return { map: toRows(g), enemies: [], vars: { energia } };
+    }
+  },
+  {
+    clave: 'ruta', title: "La ruta secreta", concept: "for sobre un texto + if/elif", goals: ["salida"], maxLines: 7, random: true,
+    intro: `<p>La variable <code>ruta</code> es un texto con el camino, letra a letra, y cambia en cada partida:</p><pre>D   derecha\nA   arriba\nB   abajo (bajar)</pre><p>Un <code>for</code> puede recorrer un texto: en cada vuelta, la variable vale una letra.</p><pre>for letra in ruta:\n    print(letra)</pre><p>Dentro del bucle, decide con <code>if</code> / <code>elif</code> qué hacer con cada letra.</p>`,
+    hint: `<pre>for letra in ruta:\n    if letra == "D":\n        derecha = 1\n    elif letra == "A":\n        arriba = 1\n    else:\n        abajo = 1</pre>`,
+    starter: `print(ruta)\nfor letra in ruta:\n    print(letra)\n`,
+    make: () => {
+      let x = 1, y = 3, ruta = '', ult = '';
+      const celdas = [[x, y]];
+      for (let i = 0; i < 14; i++) {
+        let m = 'D';
+        if (ult !== '' && Math.random() < .45) { const op = []; if (y > 1 && ult !== 'B') op.push('A'); if (y < 5 && ult !== 'A') op.push('B'); if (op.length) m = op[rnd(0, op.length - 1)]; }
+        if (m === 'D') x++; else if (m === 'A') y--; else y++;
+        ruta += m; ult = m; celdas.push([x, y]);
+      }
+      if (ult !== 'D') { x++; ruta += 'D'; celdas.push([x, y]); }
+      const g = blank(x + 2, 7);
+      celdas.forEach(([a, b]) => g[b][a] = '.');
+      g[3][1] = 'H'; g[y][x] = 'S';
+      return { map: toRows(g), enemies: [], vars: { ruta } };
+    }
+  },
+  {
+    clave: 'jefe7', title: "Miniboss: el Repetidor", concept: "Acumular en un bucle", goals: ["salida"], maxLines: null, random: true,
+    intro: `<p>El <b>Repetidor</b> quiere la suma de todos los números del 1 hasta <code>n</code> (la variable <code>n</code> ya existe y cambia en cada partida). Con un bucle se va <b>acumulando</b>: empiezas en 0 y en cada vuelta sumas el número.</p><pre>suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i</pre><p>Haz la cuenta antes de acercarte. Luego te preguntará cuántas vueltas da un bucle: contesta con la variable <code>vueltas</code>.</p>`,
+    hint: `<pre>suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i\nderecha = 5\nvueltas = 7\nderecha = 2</pre><code>range(2, 9)</code> da 2, 3, 4, 5, 6, 7 y 8: siete números.`,
+    starter: `print("n vale", n)\nsuma = 0\n`,
+    make: () => { const n = rnd(5, 12); return nivelJefe('Repetidor', [
+      { var: 'suma', pregunta: `Suma los números del 1 al n y guárdalo en suma.`, corta: '¿suma?', valida: (v, t) => t !== 'int' ? 'suma tiene que ser un número entero.' : Number(v) === n * (n + 1) / 2 ? true : Number(v) === n * (n - 1) / 2 ? `Te has quedado corto: range(1, n) para antes de n. Usa range(1, n + 1).` : `suma vale ${v}, pero la suma del 1 al ${n} no es esa.` },
+      { var: 'vueltas', pregunta: '¿Cuántas vueltas da for i in range(2, 9)? Guárdalo en vueltas.', corta: '¿vueltas?', valida: (v, t) => t !== 'int' ? 'vueltas es un número entero, sin comillas.' : v === '7' ? true : v === '8' ? 'Casi: range para antes del 9.' : v === '9' ? 'No: empieza en 2 y para antes del 9.' : 'Cuenta los números que da range(2, 9).' }
+    ], { vars: { n } })(); }
+  }
+];
+NIVELES_RA2.forEach(L => LEVELS.push(L));
+
 // ---------- mundos: cada uno es un tema con sus niveles ----------
 const MUNDOS = [
   { id: 1, ra: 1, titulo: 'Primeros pasos', tema: 'Instrucciones y números', color: '#2fc6b8', icono: '👣', niveles: ['celda', 'gemas', 'jefe1'],
@@ -407,10 +511,10 @@ const MUNDOS = [
     desc: 'Pregunta a quien juega y convierte textos en números.' },
   { id: 6, ra: 1, titulo: 'Errores', tema: 'Leer y arreglar errores', color: '#ff7a3d', icono: '🐞', niveles: ['roto', 'roto2', 'jefe6'],
     desc: 'Programas rotos: lee el mensaje de error, encuentra la línea y arréglalo.' },
-  { id: 7, ra: 2, titulo: 'Bucles', tema: 'for y while', color: '#7be07b', icono: '🔁', niveles: ['caracol', 'sinfin'],
-    desc: 'Repite órdenes sin copiar y pegar.' },
-  { id: 8, ra: 2, titulo: 'Condiciones', tema: 'if y bucles anidados', color: '#ffd35a', icono: '🔀', niveles: ['emboscada', 'tozudos', 'jefe8'],
-    desc: 'Decide qué hacer según lo que encuentres.' },
+  { id: 7, ra: 2, titulo: 'Condiciones', tema: 'if, elif, else, and, or, not', color: '#ffd35a', icono: '🔀', niveles: ['semaforo', 'termometro', 'escudo', 'jefe8'],
+    desc: 'Tu programa decide qué camino tomar según lo que valgan las variables.' },
+  { id: 8, ra: 2, titulo: 'Bucles', tema: 'for, range, while y bucles con if', color: '#7be07b', icono: '🔁', niveles: ['caracol', 'contador', 'bateria', 'sinfin', 'ruta', 'emboscada', 'tozudos', 'jefe7'],
+    desc: 'Repite sin copiar y pegar: for, range, while, recorrer textos y decidir en cada vuelta.' },
   { id: 9, ra: 2, titulo: 'Funciones y algoritmos', tema: 'def y el laberinto', color: '#9fa8ff', icono: '🧩', niveles: ['columnas', 'laberinto'],
     desc: 'Crea tus propias órdenes y escapa del laberinto.' }
 ];
@@ -420,7 +524,8 @@ const MUNDOS = [
   // ids fijos: el progreso guardado va por id, así que un nivel nuevo
   // recibe un id nuevo aunque se juegue en medio
   const IDS = ['celda', 'gemas', 'escalones', 'clave', 'constantes', 'guardias', 'palabras', 'tesoro', 'potencias', 'verdad', 'placa', 'guardian',
-    'roto', 'roto2', 'caracol', 'sinfin', 'emboscada', 'tozudos', 'columnas', 'laberinto', 'jefe1', 'jefe2', 'jefe3', 'jefe4', 'jefe5', 'jefe6', 'jefe8'];
+    'roto', 'roto2', 'caracol', 'sinfin', 'emboscada', 'tozudos', 'columnas', 'laberinto', 'jefe1', 'jefe2', 'jefe3', 'jefe4', 'jefe5', 'jefe6', 'jefe8',
+    'semaforo', 'termometro', 'escudo', 'contador', 'bateria', 'ruta', 'jefe7'];
   LEVELS.forEach(L => { L.nuevos = L.nuevos || []; L.id = IDS.indexOf(L.clave) + 1; L.mundo = MUNDOS.find(m => m.niveles.includes(L.clave)).id; });
   MUNDOS.forEach(m => { m.ids = m.niveles.map(c => LEVELS.find(L => L.clave === c).id); });
 })();
@@ -440,6 +545,7 @@ const API_DOCS = {
   int: { sig: "int(texto)", ins: "int()", desc: "Convierte un texto en número entero: int(\"4\") → 4. También float() para decimales." },
   str: { sig: "str(numero)", ins: "str()", desc: "Convierte un número en texto para poder juntarlo con +." },
   input: { sig: 'input("pregunta")', ins: 'input("")', desc: "Pregunta a quien juega y devuelve lo que escribe, siempre como texto." },
+  si: { sig: "if condición:\n    ...\nelif …:\nelse:", ins: "if :\n    ", desc: "Hace lo sangrado solo si la condición es True. elif y else cubren los otros casos." },
   camino: { sig: "camino_derecha", ins: "camino_derecha", desc: "Variable del juego: True si puedes avanzar a la derecha. También camino_izquierda, camino_arriba y camino_abajo." },
   enemigo: { sig: "enemigo", ins: "enemigo", desc: "Variable del juego: el nombre del bug que tienes al lado, o None si no hay nadie." },
   funciones: { sig: "def nombre(dato):\n    return valor", ins: "def ():\n    return ", desc: "Crea tu propia función: recibe datos y devuelve un resultado con return." },

@@ -32,6 +32,13 @@ const SOL = {
   jefe5: `edad = input("¿Cuántos años tienes? ")\nderecha = 5\ntipo = "str"\nnumero = int(edad)\nderecha = 2`,
   jefe6: `derecha = 5\nfrase = "Tengo " + str(edad) + " años"\ntipo = "int"\nderecha = 2`,
   jefe8: `mayor = numero > 10\nderecha = 5\ntipo = "bool"\nderecha = 2`,
+  semaforo: `derecha = 2\nif placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4`,
+  termometro: `if temperatura < 15:\n    derecha = 2\n    arriba = 2\n    derecha = 4\nelif temperatura > 30:\n    derecha = 2\n    abajo = 2\n    derecha = 4\nelse:\n    derecha = 6`,
+  escudo: `derecha = 2\nif escudo and energia > 50:\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4`,
+  contador: `for i in range(1, 5):\n    derecha = i\n    abajo = 1`,
+  bateria: `while energia > 0:\n    derecha = 1\n    energia = energia - 1\nabajo = 1`,
+  ruta: `for letra in ruta:\n    if letra == "D":\n        derecha = 1\n    elif letra == "A":\n        arriba = 1\n    else:\n        abajo = 1`,
+  jefe7: `suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i\nderecha = 5\nvueltas = 7\nderecha = 2`,
   laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not en_salida:\n    dcha = (mirando + 1) % 4\n    if hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif hay_camino(direcciones[mirando]):\n        pass\n    elif hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    mover = direcciones[mirando]`
 };
 
@@ -105,6 +112,10 @@ const SOL = {
   caso('roto2: sangría', 'roto2', lv('roto2').starter, /Sobran espacios .*línea 3/);
   caso('roto2: mayúsculas', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha'), /«alto».*«ALTO»/);
   caso('roto2: int', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha').replace('= alto', '= ALTO'), /no puede convertir 'tres'/);
+  caso('if con = en vez de ==', 'semaforo', 'if placa = "arriba":\n    arriba = 2', /«==»/);
+  caso('termómetro con <= (borde)', 'termometro', '', /no has llegado/);
+  caso('batería sin restar', 'bateria', 'while energia > 0:\n    derecha = 1', /bucle infinito|pared|vidas/);
+  caso('repetidor: range corto', 'jefe7', 'suma = 0\nfor i in range(1, n):\n    suma = suma + i\nderecha = 5', /n \+ 1/);
   caso('cuentas con texto', 'celda', 'x = "3" - 1', /cuentas con un texto/);
   console.log(ok ? 'TODO OK' : 'HAY FALLOS');
   process.exit(ok ? 0 : 1);
