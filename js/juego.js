@@ -255,6 +255,30 @@
   // ---------- ejecución ----------
   function setRunning(r) { $('run').disabled = r || !py; $('replBtn').disabled = r || !py; $('run').textContent = r ? '… Ejecutando' : '▶ Ejecutar'; }
   let ejecutando = false;
+  // En los niveles aleatorios, ganar una partida no basta: el mismo código
+  // se prueba en silencio con otras partidas, para que no valga mirar el
+  // mapa y escribir los pasos a mano. Devuelve null o la partida que falla.
+  const PRUEBAS = 8;
+  function verifica(L, code) {
+    if (!L.random || /\binput\s*\(/.test(code)) return null;
+    const principal = SIM; let fallo = null;
+    try {
+      for (let i = 0; i < PRUEBAS && !fallo; i++) {
+        SIM = crearPartida(L);
+        let r2;
+        try { const fn = py.globals.get('_run'); const r = fn(code, extra()); r2 = r.toJs(); r.destroy(); fn.destroy(); }
+        catch (e) { r2 = ['error', 0, 'Error', String(e && e.message || e), '{}']; }
+        terminar(SIM, { kind: r2[0], line: r2[1], name: r2[2], msg: r2[3], vars: leerVars(r2[4]) });
+        if (!SIM.over || SIM.over.type !== 'win') fallo = SIM;
+      }
+    } finally { SIM = principal; }
+    if (!fallo) return null;
+    const py_ = v => v === true ? 'True' : v === false ? 'False' : JSON.stringify(v);
+    const datos = Object.entries(fallo.vars || {}).map(([k, v]) => `${k} = ${py_(v)}`);
+    if (fallo.signText) datos.unshift(`placa = ${JSON.stringify(fallo.signText)}`);
+    const por = fallo.over ? fallo.over.msg.replace(/^Has llegado, pero /, '') : 'no llega a la salida';
+    return `En esta partida ha salido bien, pero tu programa tiene que funcionar en todas. Lo he probado con otras partidas y falla${datos.length ? ' cuando ' + datos.join(', ') : ''}: ${por.replace(/^./, c => c.toLowerCase())}`;
+  }
   async function run() {
     if (!py || view.playing || ejecutando || (NUBE && !cuenta)) return;
     ejecutando = true; setRunning(true);
@@ -270,6 +294,13 @@
     ejecutando = false;
     const [kind, line, name, msg, vjson] = res;
     terminar(SIM, { kind, line, name, msg, vars: leerVars(vjson) });
+    if (SIM.over && SIM.over.type === 'win') {
+      const mal = verifica(L, code);
+      if (mal) {
+        SIM.over = { type: 'fail', msg: mal, suave: true };
+        const ult = SIM.frames[SIM.frames.length - 1]; ult.end = null; ult.log = { text: mal, kind: 'error' };
+      } else if (L.random && !/\binput\s*\(/.test(code)) SIM.verificado = true;
+    }
     if (kind !== 'ok' && line) { errLine = line; }
     updateGutter();
     view.frames = SIM.frames; view.i = 0; view.prev = view.base; view.start = performance.now(); view.playing = true;
@@ -345,6 +376,12 @@
   function finish() {
     setRunning(false);
     const L = LEVELS[li], o = SIM.over; if (!o) return;
+    if (o.type === 'win' && desdeConsola && L.random) {
+      // con la consola también: el programa apuntado tiene que valer siempre
+      const mal = verifica(L, ed.value);
+      if (mal) { o.type = 'fail'; o.msg = mal; o.suave = true; log(mal, 'error'); }
+      else SIM.verificado = !/\binput\s*\(/.test(ed.value);
+    }
     if (o.type === 'win') {
       const n = contarLineas(lastCode), reto = L.maxLines ? n <= L.maxLines : null;
       const stars = 1 + (reto ? 1 : 0), max = L.maxLines ? 2 : 1;
@@ -357,7 +394,7 @@
       if (L.maxLines) h += `<li class="${reto ? '' : 'no'}">${reto ? '★' : '☆'} Reto: ${L.maxLines} líneas o menos (tu código tiene ${n})</li>`;
       h += '</ul>';
       if (last && todo) h += `<p>Has terminado el mundo «${esc(mu.titulo)}». ¡A por el siguiente!</p>`;
-      if (L.random) h += `<p class="small">Este mapa es aleatorio: ejecútalo un par de veces más para comprobar que tu código funciona siempre.</p>`;
+      if (L.random) h += SIM.verificado ? `<p class="small">✔ Mapa aleatorio: he probado tu programa con ${PRUEBAS} partidas más y funciona en todas.</p>` : `<p class="small">Este mapa es aleatorio: ejecútalo un par de veces más para comprobar que tu código funciona siempre.</p>`;
       h += '<div class="mbtns">';
       h += last ? '<button class="btn gold" id="mNext">Elegir otro mundo 🏰</button>' : '<button class="btn gold" id="mNext">Siguiente nivel ▶</button>';
       h += '<button class="btn" id="mStay">Seguir aquí</button></div>';

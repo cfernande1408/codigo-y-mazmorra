@@ -395,47 +395,48 @@ JEFES.forEach(j => LEVELS.push(j));
 
 // ---------- condicionales y bucles ----------
 // bifurcación: un pasillo arriba y otro abajo; solo uno llega a la salida
-function bifurcacion(bueno, conPlaca) {
+// Los dos pasillos acaban en una compuerta igual; solo una es la salida y
+// no se ve cuál hasta llegar. Lo dicen las variables pared_arriba/pared_abajo.
+function bifurcacion(bueno) {
   const g = blank(10, 7);
   g[3][1] = 'H'; g[3][2] = '.'; for (let y = 1; y <= 5; y++) g[y][3] = '.';
   for (const [dir, fila] of [['arriba', 1], ['abajo', 5]]) {
-    const fin = dir === bueno ? 7 : 6;
-    for (let x = 4; x <= fin; x++) g[fila][x] = '.';
-    if (dir === bueno) g[fila][7] = 'S';
+    for (let x = 4; x <= 6; x++) g[fila][x] = '.';
+    g[fila][7] = dir === bueno ? 'S' : 'X';
   }
-  if (conPlaca) g[2][1] = 'C';
   return toRows(g);
 }
+const cruce = bueno => ({ map: bifurcacion(bueno), enemies: [], oculta: true, vars: { pared_arriba: bueno !== 'arriba', pared_abajo: bueno !== 'abajo' } });
 const NIVELES_RA2 = [
   {
     clave: 'semaforo', title: "El cruce", concept: "if / else", goals: ["salida"], maxLines: 6, random: true,
-    nuevos: ["si"],
-    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. Te lo dice la <b>placa</b>: la pantalla de la pared, justo encima de tu agente. Pone <code>"arriba"</code> o <code>"abajo"</code> y cambia en cada partida. El juego guarda lo que pone en la variable <code>placa</code>, que ya existe: pruébalo con <code>print(placa)</code>. Tu programa tiene que <b>decidir</b>. Así se escribe una decisión:</p><pre>if clave == "abre":\n    print("Pasa")\nelse:\n    print("Fuera")</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
-    hint: `Para comparar se usa <code>==</code>. Revisa los dos puntos y la sangría.`,
-    starter: `print(placa)\nderecha = 2\n`,
-    make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
+    nuevos: ["pared"],
+    intro: `<p>En el cruce hay dos pasillos, uno arriba y otro abajo. Los dos acaban en una compuerta y <b>solo una está abierta</b>, pero desde aquí no se ve cuál: cambia en cada partida.</p><p>El sensor de tu agente sí lo sabe y lo guarda en la variable <code>pared_arriba</code>: vale <code>True</code> si arriba está cerrado y <code>False</code> si está abierto. Tu programa tiene que <b>decidir</b>. Así se escribe una decisión:</p><pre>if clave == "abre":\n    print("Pasa")\nelse:\n    print("Fuera")</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»).</p>`,
+    hint: `Una variable que ya es True o False puede ir sola detrás del <code>if</code>.`,
+    starter: `print("¿Pared arriba?", pared_arriba)\nderecha = 2\n`,
+    make: () => cruce(Math.random() < .5 ? 'arriba' : 'abajo')
   },
   {
     clave: 'termometro', title: "El termómetro", concept: "if / elif / else", goals: ["salida"], maxLines: 10, random: true,
-    intro: `<p>La variable <code>temperatura</code> ya existe y cambia en cada partida. Según lo que marque, la salida está en un pasillo distinto:</p><pre>menos de 15      arriba\nmás de 30        abajo\nentre 15 y 30    recto</pre><p>Con más de dos casos se encadenan condiciones con <code>elif</code> («si no, si…»):</p><pre>if nota < 5:\n    print("Suspenso")\nelif nota < 7:\n    print("Aprobado")\nelse:\n    print("Notable o más")</pre><p>Python mira las condiciones en orden y hace solo la primera que se cumple.</p>`,
+    intro: `<p>La variable <code>temperatura</code> ya existe y cambia en cada partida. Hay tres pasillos con una compuerta al fondo, y según lo que marque el termómetro solo se abre una:</p><pre>menos de 15      arriba\nmás de 30        abajo\nentre 15 y 30    recto</pre><p>Con más de dos casos se encadenan condiciones con <code>elif</code> («si no, si…»):</p><pre>if nota < 5:\n    print("Suspenso")\nelif nota < 7:\n    print("Aprobado")\nelse:\n    print("Notable o más")</pre><p>Python mira las condiciones en orden y hace solo la primera que se cumple.</p>`,
     hint: `¿Qué pasa justo con 15 y con 30? Piensa si va <code>&lt;</code> o <code>&lt;=</code>.`,
     starter: `print("Temperatura:", temperatura)\n`,
     make: () => {
       const caso = rnd(0, 2), temperatura = caso === 0 ? rnd(-5, 14) : caso === 1 ? rnd(31, 42) : [15, 30, rnd(16, 29)][rnd(0, 2)];
       const g = blank(10, 7);
       g[3][1] = 'H'; for (let y = 1; y <= 5; y++) g[y][3] = '.';
-      [[1, 0], [3, 2], [5, 1]].forEach(([fila, c]) => { const fin = c === caso ? 7 : 6; for (let x = fila === 3 ? 2 : 4; x <= fin; x++) g[fila][x] = '.'; if (c === caso) g[fila][7] = 'S'; });
-      return { map: toRows(g), enemies: [], vars: { temperatura } };
+      [[1, 0], [3, 2], [5, 1]].forEach(([fila, c]) => { for (let x = fila === 3 ? 2 : 4; x <= 6; x++) g[fila][x] = '.'; g[fila][7] = c === caso ? 'S' : 'X'; });
+      return { map: toRows(g), enemies: [], oculta: true, vars: { temperatura } };
     }
   },
   {
     clave: 'escudo', title: "El puente de energía", concept: "and, or, not", goals: ["salida"], maxLines: 7, random: true,
-    intro: `<p>El puente de arriba solo aguanta si llevas <b>escudo</b> <b>y</b> te queda <b>más de 50</b> de energía. Si no, tienes que bajar por el túnel. Las variables <code>escudo</code> (<code>True</code> o <code>False</code>) y <code>energia</code> (un número) ya existen y cambian en cada partida.</p><pre>and   las dos cosas tienen que ser True\nor    basta con que una sea True\nnot   le da la vuelta: not True es False</pre><p>Junta las dos condiciones en un solo <code>if</code>.</p>`,
+    intro: `<p>El puente de arriba solo aguanta si llevas <b>escudo</b> <b>y</b> te queda <b>más de 50</b> de energía. Si no, tienes que bajar por el túnel. Desde fuera los dos caminos parecen iguales. Las variables <code>escudo</code> (<code>True</code> o <code>False</code>) y <code>energia</code> (un número) ya existen y cambian en cada partida.</p><pre>and   las dos cosas tienen que ser True\nor    basta con que una sea True\nnot   le da la vuelta: not True es False</pre><p>Junta las dos condiciones en un solo <code>if</code>.</p>`,
     hint: `Las dos condiciones tienen que cumplirse a la vez.`,
     starter: `print("Escudo:", escudo, "Energía:", energia)\nderecha = 2\n`,
     make: () => {
       const escudo = Math.random() < .5, energia = Math.random() < .5 ? rnd(51, 100) : rnd(10, 50);
-      return { map: bifurcacion(escudo && energia > 50 ? 'arriba' : 'abajo', false), enemies: [], vars: { escudo, energia } };
+      return { map: bifurcacion(escudo && energia > 50 ? 'arriba' : 'abajo'), enemies: [], oculta: true, vars: { escudo, energia } };
     }
   },
   {
@@ -509,10 +510,10 @@ const NIVELES_IF = [
   },
   {
     clave: 'ifroto', title: "El if roto", concept: "Errores típicos del if", goals: ["salida"], maxLines: null, random: true,
-    intro: `<p>Este programa tendría que decidir el camino según lo que pone la placa (la pantalla de la pared), como en el cruce, pero alguien lo ha escrito con prisa y tiene <b>5 errores</b>. Ejecútalo, lee el error, arregla esa línea y vuelve a ejecutar.</p><p>Python te dice un error cada vez: el primero que encuentra.</p>`,
+    intro: `<p>Este programa tendría que elegir el pasillo según <code>pared_arriba</code>, como en el cruce, pero alguien lo ha escrito con prisa y tiene <b>5 errores</b>. Ejecútalo, lee el error, arregla esa línea y vuelve a ejecutar.</p><p>Python te dice un error cada vez: el primero que encuentra.</p>`,
     hint: `Repasa: mayúsculas, dos puntos, <code>=</code> o <code>==</code>, qué lleva el <code>else</code> y la sangría.`,
-    starter: `# Este programa tiene 5 errores. Ejecútalo y arréglalos uno a uno.\nderecha = 2\nIf placa = "arriba"\n    arriba = 2\nelse placa == "abajo":\nabajo = 2\nderecha = 4\n`,
-    make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
+    starter: `# Este programa tiene 5 errores. Ejecútalo y arréglalos uno a uno.\nderecha = 2\nIf pared_arriba = True\n    abajo = 2\nelse pared_arriba == False:\narriba = 2\nderecha = 4\n`,
+    make: () => cruce(Math.random() < .5 ? 'arriba' : 'abajo')
   },
   {
     clave: 'cargador', title: "El cargador", concept: "El orden de los elif", goals: ["salida"], maxLines: null, random: true,
@@ -590,6 +591,7 @@ const API_DOCS = {
   str: { sig: "str(numero)", ins: "str()", desc: "Convierte un número en texto para poder juntarlo con +." },
   input: { sig: 'input("pregunta")', ins: 'input("")', desc: "Pregunta a quien juega y devuelve lo que escribe, siempre como texto." },
   si: { sig: "if condición:\n    ...\nelif …:\nelse:", ins: "if :\n    ", desc: "Hace lo sangrado solo si la condición es True. elif y else cubren los otros casos." },
+  pared: { sig: "pared_arriba", ins: "pared_arriba", desc: "Variable del sensor: True si el pasillo de arriba está cerrado. También pared_abajo." },
   camino: { sig: "camino_derecha", ins: "camino_derecha", desc: "Variable del juego: True si puedes avanzar a la derecha. También camino_izquierda, camino_arriba y camino_abajo." },
   enemigo: { sig: "enemigo", ins: "enemigo", desc: "Variable del juego: el nombre del bug que tienes al lado, o None si no hay nadie." },
   funciones: { sig: "def nombre(dato):\n    return valor", ins: "def ():\n    return ", desc: "Crea tu propia función: recibe datos y devuelve un resultado con return." },
@@ -606,7 +608,7 @@ function hueOf(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCode
 function crearPartida(level, datos) {
   const d = datos || level.make(); const map = d.map; const h = map.length, w = map[0].length;
   const s = { w, h, tiles: [], hero: null, facing: 1, enemies: [], gems: [], doors: [], sign: null, exit: null,
-    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, comprobar: level.comprobar || null,
+    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, oculta: !!d.oculta, comprobar: level.comprobar || null,
     preguntas: 0, valores: {}, vidas: VIDAS, goals: level.goals, frames: [], over: null, datos: d };
   let ei = 0;
   const specs = d.doors || [];
@@ -625,6 +627,7 @@ function crearPartida(level, datos) {
         s.doors.push(dd);
       }
       else if (c === 'C') { t = 'C'; s.sign = { x, y }; }
+      else if (c === 'X') t = 'X'; // compuerta cerrada (salida falsa)
       row.push(t);
     }
     s.tiles.push(row);
@@ -642,7 +645,7 @@ function dentro(s, x, y) { return x >= 0 && y >= 0 && x < s.w && y < s.h; }
 function libre(s, x, y) {
   if (!dentro(s, x, y)) return false;
   const t = s.tiles[y][x];
-  if (t === '#' || t === ' ' || t === 'C') return false;
+  if (t === '#' || t === ' ' || t === 'C' || t === 'X') return false;
   if (t === 'D' && !doorAt(s, x, y).open) return false;
   return !enemyAt(s, x, y);
 }
@@ -712,6 +715,7 @@ function makeApi(getSim, opciones) {
         const msg = e ? `¡${e.name} te bloquea el paso! Primero tienes que derrotarlo.`
           : t === 'D' ? (doorAt(s, nx, ny).jefe ? `${doorAt(s, nx, ny).jefe.nombre} no te deja pasar: contesta a su pregunta.` : 'La barrera está cerrada. Guarda la respuesta en la variable respuesta.')
           : t === 'C' ? 'Te has chocado con la placa.'
+          : t === 'X' ? 'Esa compuerta está cerrada: por aquí no era.'
           : dy ? '¡Pum! Por ahí no hay escalera: te has dado contra la piedra.'
           : '¡Pum! Te has chocado contra la pared.';
         // choque: pierde una vida y se queda donde estaba; el programa sigue

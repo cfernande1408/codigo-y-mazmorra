@@ -366,6 +366,23 @@ function crearArte(cv) {
     poly(ctx, [[cx - 7, fy], [cx + 7, fy], [cx, fy + 8]]); ctx.fillStyle = CIAN; ctx.fill(); linea(ctx, 1.4);
     if (Math.random() < .15) fx.push({ t: 'mota', x: cx + (Math.random() - .5) * 26, y: fl - 4, vx: 0, vy: -.6 - Math.random() * .5, v: 1, d: .015, r: 1.6, c: 'rgba(160,255,245,1)' });
   }
+  // compuerta al fondo de un pasillo: todas iguales hasta que se descubre
+  // cuál era la salida; entonces las falsas se ponen en rojo
+  function compuerta(x, y, now, falsa) {
+    const px = x * T, cx = px + T / 2, fl = sueloY(x, y), top = y * T + 4, w = T - 18, h = fl - top;
+    ctx.fillStyle = '#2b3047'; ctx.fillRect(cx - w / 2 - 5, top - 4, w + 10, h + 4);
+    ctx.fillStyle = '#545b78'; ctx.fillRect(cx - w / 2, top, w, h);
+    ctx.fillStyle = '#3f4560'; for (let yy = top + 6; yy < fl - 4; yy += 8) ctx.fillRect(cx - w / 2 + 2, yy, w - 4, 3);
+    ctx.fillStyle = '#f2c230'; ctx.fillRect(cx - w / 2, fl - 7, w, 4);
+    ctx.fillStyle = '#1e1f26'; for (let i = 0; i < 5; i++) ctx.fillRect(cx - w / 2 + 2 + i * 9, fl - 7, 4, 4);
+    ctx.beginPath(); ctx.rect(cx - w / 2 - 5, top - 4, w + 10, h + 4); linea(ctx, 1.8);
+    const col = falsa ? ROJO : '#f2c230', br = .6 + Math.sin(now / 350 + x) * .4;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = br;
+    const g = ctx.createRadialGradient(cx, top - 10, 1, cx, top - 10, 16); g.addColorStop(0, falsa ? 'rgba(255,70,85,.7)' : 'rgba(242,194,48,.7)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(cx - 16, top - 26, 32, 32); ctx.restore();
+    corte(ctx, cx - 11, top - 19, 22, 16, 4); ctx.fillStyle = NAVY; ctx.fill(); ctx.lineWidth = 1.4; ctx.strokeStyle = col; ctx.stroke();
+    ctx.font = `700 12px "JetBrains Mono", monospace`; ctx.textAlign = 'center'; ctx.fillStyle = col; ctx.fillText(falsa ? '✕' : '?', cx, top - 7);
+  }
   function reja(x, y, sube, etiqueta) {
     // barrera de energía entre dos postes; al abrirse se desvanece hacia abajo
     const px = x * T, cx = px + T / 2, fl = sueloY(x, y), top = y * T + 6, w = T - 16, now = performance.now();
@@ -835,7 +852,10 @@ function crearArte(cv) {
     ctx.drawImage(capaNivel, -M, -M, W + 2 * M, H + M + MB);
     luces(now); parpadeos(now);
     placas.forEach(([x, y]) => placa(x, y, now));
-    if (sim.exit) salida(sim.exit.x, sim.exit.y, now);
+    // salida oculta: hasta llegar, se ve como una compuerta más
+    const llega = sim.exit && c.hx === sim.exit.x && c.hy === sim.exit.y, ver = !sim.oculta || llega || victoria;
+    if (sim.exit) { if (ver) salida(sim.exit.x, sim.exit.y, now); else compuerta(sim.exit.x, sim.exit.y, now, false); }
+    sim.tiles.forEach((fila, y) => fila.forEach((t, x) => { if (t === 'X') compuerta(x, y, now, ver); }));
     sim.doors.forEach((d, i) => { const co = c.doors && c.doors[i], po = p.doors && p.doors[i]; if (!d.jefe) reja(d.x, d.y, co && !po ? ease(k) : (co ? 1 : 0), d.etiqueta); });
     (k < .6 ? p.gems : c.gems).forEach(g => { if (!g.taken) gema(g.x, g.y, now); });
     // héroe interpolado

@@ -32,7 +32,7 @@ const SOL = {
   jefe5: `edad = input("¿Cuántos años tienes? ")\nderecha = 5\ntipo = "str"\nnumero = int(edad)\nderecha = 2`,
   jefe6: `derecha = 5\nfrase = "Tengo " + str(edad) + " años"\ntipo = "int"\nderecha = 2`,
   jefe8: `mayor = numero > 10\nderecha = 5\ntipo = "bool"\nderecha = 2`,
-  semaforo: `derecha = 2\nif placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4`,
+  semaforo: `derecha = 2\nif pared_arriba:\n    abajo = 2\nelse:\n    arriba = 2\nderecha = 4`,
   termometro: `if temperatura < 15:\n    derecha = 2\n    arriba = 2\n    derecha = 4\nelif temperatura > 30:\n    derecha = 2\n    abajo = 2\n    derecha = 4\nelse:\n    derecha = 6`,
   escudo: `derecha = 2\nif escudo and energia > 50:\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4`,
   contador: `for i in range(1, 5):\n    derecha = i\n    abajo = 1`,
@@ -40,7 +40,7 @@ const SOL = {
   ruta: `for letra in ruta:\n    if letra == "D":\n        derecha = 1\n    elif letra == "A":\n        arriba = 1\n    else:\n        abajo = 1`,
   jefe7: `suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i\nderecha = 5\nvueltas = 7\nderecha = 2`,
   alarma: `if uso >= 90:\n    alarma = True\nderecha = 7`,
-  ifroto: `derecha = 2\nif placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4`,
+  ifroto: `derecha = 2\nif pared_arriba == True:\n    abajo = 2\nelse:\n    arriba = 2\nderecha = 4`,
   cargador: `if bateria >= 80:\n    estado = "alta"\nelif bateria >= 30:\n    estado = "media"\nelif bateria >= 10:\n    estado = "baja"\nelse:\n    estado = "critica"\nderecha = 3\nrespuesta = estado\nderecha = 4`,
   puerto: `if 0 <= puerto <= 65535:\n    if puerto < 1024:\n        tipo_puerto = "sistema"\n    else:\n        tipo_puerto = "usuario"\nelse:\n    tipo_puerto = "no existe"\nderecha = 3\nrespuesta = tipo_puerto\nderecha = 4`,
   laberinto: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1\nwhile not en_salida:\n    dcha = (mirando + 1) % 4\n    if hay_camino(direcciones[dcha]):\n        mirando = dcha\n    elif hay_camino(direcciones[mirando]):\n        pass\n    elif hay_camino(direcciones[(mirando + 3) % 4]):\n        mirando = (mirando + 3) % 4\n    else:\n        mirando = (mirando + 2) % 4\n    mover = direcciones[mirando]`
@@ -116,15 +116,16 @@ const SOL = {
   caso('roto2: sangría', 'roto2', lv('roto2').starter, /Sobran espacios .*línea 3/);
   caso('roto2: mayúsculas', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha'), /«alto».*«ALTO»/);
   caso('roto2: int', 'roto2', lv('roto2').starter.replace('  derecha', 'derecha').replace('= alto', '= ALTO'), /no puede convertir 'tres'/);
-  caso('if con = en vez de ==', 'semaforo', 'if placa = "arriba":\n    arriba = 2', /«==»/);
+  caso('if con = en vez de ==', 'semaforo', 'if pared_arriba = True:\n    abajo = 2', /«==»/);
   caso('termómetro con <= (borde)', 'termometro', '', /no has llegado/);
   caso('batería sin restar', 'bateria', 'while energia > 0:\n    derecha = 1', /bucle infinito|pared|vidas/);
   caso('repetidor: range corto', 'jefe7', 'suma = 0\nfor i in range(1, n):\n    suma = suma + i\nderecha = 5', /n \+ 1/);
   caso('if roto: mayúscula', 'ifroto', lv('ifroto').starter, /«If» se escribe en minúscula/);
   caso('if roto: = en vez de ==', 'ifroto', lv('ifroto').starter.replace('If', 'if'), /«==»/);
-  caso('if roto: dos puntos', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('placa = "arriba"', 'placa == "arriba"'), /dos puntos/);
-  caso('if roto: else con condición', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('placa = "arriba"', 'placa == "arriba":'), /else no lleva condición/);
-  caso('if roto: sangría', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('placa = "arriba"', 'placa == "arriba":').replace('else placa == "abajo":', 'else:'), /sangrada/);
+  caso('if roto: dos puntos', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('arriba = True', 'arriba == True'), /dos puntos/);
+  caso('if roto: else con condición', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('arriba = True', 'arriba == True:'), /else no lleva condición/);
+  caso('if roto: sangría', 'ifroto', lv('ifroto').starter.replace('If', 'if').replace('arriba = True', 'arriba == True:').replace('else pared_arriba == False:', 'else:'), /sangrada/);
+  caso('cruce: compuerta cerrada', 'semaforo', 'derecha = 2\nif pared_arriba:\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4', /compuerta está cerrada/);
   caso('alarma dentro del if', 'alarma', 'if uso >= 90:\n    alarma = True\n    derecha = 7', /^(win|fail)/);
   caso('cargador mal ordenado', 'cargador', lv('cargador').starter, /^(win|fail)/);
   caso('cuentas con texto', 'celda', 'x = "3" - 1', /cuentas con un texto/);
