@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PYO = ROOT / 'test' / 'node_modules' / 'pyodide'
 SHOTS = pathlib.Path(os.environ.get('SHOTS', '/tmp/e2e')); SHOTS.mkdir(exist_ok=True)
-SOL1 = "derecha(2)\nabajo(2)\nderecha(2)\n"
+SOL1 = "derecha = 2\nabajo = 2\nderecha = 2\n"
 
 async def pyodide_local(route):
     f = PYO / route.request.url.split('/full/')[1].split('?')[0]
@@ -54,7 +54,7 @@ async def main():
             await al.wait_for_selector('#mNext', timeout=20000)
             await al.screenshot(path=str(SHOTS / 'a2_ganado.png'))
             await al.click('#mNext')
-            await al.fill('#code', 'derecha(9)\n'); await al.click('#run')
+            await al.fill('#code', 'derecha = 9\n'); await al.click('#run')
             await al.wait_for_selector('#avisoMapa:not([hidden])', timeout=20000)
             await al.wait_for_timeout(800)
             assert 'Guardado' in await al.inner_text('#nubeEstado')
@@ -63,7 +63,7 @@ async def main():
             assert '✗ 1' in await prof.inner_text('table.notas')
             await prof.screenshot(path=str(SHOTS / 'p2_tabla.png'))
             await prof.click('.celda.si'); await prof.wait_for_selector('.mbox pre')
-            assert 'derecha(2)' in await prof.inner_text('.mbox')
+            assert 'derecha = 2' in await prof.inner_text('.mbox')
             await prof.screenshot(path=str(SHOTS / 'p3_codigo.png'))
             await prof.click('[data-cerrar]')
 
@@ -76,13 +76,14 @@ async def main():
             await al2.fill('#eClase', codigo.lower()); await al2.fill('#eAlias', 'dragón 7'); await al2.fill('#ePin', '1234')
             await al2.click('#eBtn'); await al2.wait_for_selector('#cuenta:not([hidden])')
             await al2.wait_for_selector('#home:not([hidden])')
-            assert '1/2 niveles' in await al2.inner_text('[data-mundo="1"]')
+            assert '1/3 niveles' in await al2.inner_text('[data-mundo="1"]')
             await al2.click('[data-pj="viajero"]')
             await al2.click('[data-mundo="1"]')
-            assert 'nivel 2' in (await al2.inner_text('#lvlNum')).lower(), 'debía abrir el nivel 2'
+            await al2.wait_for_function("document.getElementById('lvlNum').textContent.toLowerCase().includes('nivel 2')", timeout=8000)
+            t2 = (await al2.inner_text('#lvlNum')).lower(); assert 'nivel 2' in t2, 'debía abrir el nivel 2: ' + t2
             await al2.evaluate("location.hash = '#mundo-2'"); await al2.wait_for_timeout(300)
             locked = await al2.eval_on_selector_all('#levels .chip.locked', 'e => e.length')
-            assert locked == 2, locked
+            assert locked == 3, locked
             # el profe desbloquea todo
             await prof.click('#desb'); await prof.wait_for_timeout(500)
             await al2.reload(); await al2.wait_for_timeout(1500)

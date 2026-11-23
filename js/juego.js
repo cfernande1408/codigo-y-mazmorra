@@ -92,7 +92,7 @@
       const b = document.createElement('button'); const ok = unlocked(i); b.dataset.n = L.id;
       b.className = 'chip' + (i === li ? ' on' : '') + (ok ? '' : ' locked');
       const st = prog[L.id] || 0, max = L.maxLines ? 2 : 1;
-      b.innerHTML = `<span class="n">${ok ? k + 1 : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
+      b.innerHTML = `<span class="n">${ok ? (L.clave.startsWith('jefe') ? '👾' : k + 1) : '🔒'}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(Math.max(0, max - st))}</i></span>`;
       b.title = `${k + 1}. ${L.title} · ${L.concept}`;
       b.onclick = () => { if (!ok) { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; } irA('#nivel-' + L.id); };
       nav.appendChild(b);
@@ -101,18 +101,59 @@
 
   // ---------- página de inicio y rutas (#mundos, #mundo-N, #nivel-N) ----------
   let miniaturas = false;
+  // ---- agente: dos aspectos de partida y un taller para personalizarlo ----
   const retratos = [...document.querySelectorAll('#elige .pj')].map(b => ({ b, quien: b.dataset.pj, arte: crearArte(b.querySelector('canvas')) }));
-  retratos.forEach(r => r.b.onclick = () => { store.set(ns() + 'pj', r.quien); renderHome(); });
+  const vistaPj = crearArte($('pjVista'));
+  const igual = (a, b) => ['piel', 'peinado', 'pelo', 'chaqueta', 'acento', 'extra'].every(k => a[k] === b[k]);
+  let refrescoMinis = null;
+  function guardaAspecto(nuevo) {
+    const habia = !!elegido();
+    store.set(ns() + 'pj', nuevo);
+    if (!habia) { renderHome(); return; }
+    actualizaElige();
+    // las miniaturas de los mundos se repintan cuando deja de tocar opciones
+    clearTimeout(refrescoMinis); refrescoMinis = setTimeout(renderHome, 700);
+  }
+  retratos.forEach(r => r.b.onclick = () => guardaAspecto(aspectoDe(r.quien)));
+  const FILAS = [
+    ['piel', 'Piel', ASPECTO.piel.map((c, i) => [i, '', c[0]])],
+    ['peinado', 'Peinado', ASPECTO.peinado.map(([v, n]) => [v, n])],
+    ['pelo', 'Pelo', Object.entries(ASPECTO.pelo).map(([v, c]) => [v, '', c[0]])],
+    ['chaqueta', 'Chaqueta', Object.entries(ASPECTO.chaqueta).map(([v, c]) => [v, '', c[0]])],
+    ['acento', 'Color', Object.entries(ASPECTO.acento).map(([v, c]) => [v, '', c])],
+    ['extra', 'Extra', ASPECTO.extra.map(([v, n]) => [v, n])]
+  ];
+  const taller = $('taller');
+  FILAS.forEach(([clave, titulo, ops]) => {
+    const fila = document.createElement('div'); fila.className = 'fila';
+    fila.innerHTML = `<span class="et">${titulo}</span>`;
+    const caja = document.createElement('div'); caja.className = 'ops';
+    ops.forEach(([v, nombre, color]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.dataset.clave = clave; b.dataset.v = v;
+      b.className = color ? 'mu' : 'op'; b.title = nombre || v;
+      if (color) b.style.setProperty('--m', color); else b.textContent = nombre;
+      b.onclick = () => guardaAspecto(Object.assign(aspectoDe(elegido() || 'viajera'), { [clave]: v }));
+      caja.appendChild(b);
+    });
+    fila.appendChild(caja); taller.appendChild(fila);
+  });
   function pintaRetratos(now) {
     if (vista !== 'home') return;
-    const sel = elegido();
-    retratos.forEach(r => r.arte.retrato(now, r.quien, dpr, sel === r.quien));
+    const sel = elegido(), act = sel && aspectoDe(sel);
+    retratos.forEach(r => r.arte.retrato(now, r.quien, dpr, act && igual(act, aspectoDe(r.quien))));
+    vistaPj.retrato(now, act || 'viajera', dpr, !!act);
+  }
+  function actualizaElige() {
+    const sel = elegido(), act = aspectoDe(sel || 'viajera');
+    retratos.forEach(r => r.b.classList.toggle('on', !!sel && igual(act, aspectoDe(r.quien))));
+    taller.querySelectorAll('button').forEach(b => b.classList.toggle('on', !!sel && String(act[b.dataset.clave]) === b.dataset.v));
+    $('elige').classList.toggle('falta', !sel);
+    $('eligeAviso').textContent = sel ? 'Este es tu agente. Cambia lo que quieras: se guarda solo.' : 'Antes de empezar, elige un agente o móntate el tuyo.';
   }
   function renderHome() {
     const sel = elegido();
-    retratos.forEach(r => r.b.classList.toggle('on', sel === r.quien));
-    $('elige').classList.toggle('falta', !sel);
-    $('eligeAviso').textContent = sel ? `Juegas con ${sel === 'viajera' ? 'la viajera' : 'el viajero'}. Lo puedes cambiar cuando quieras.` : 'Antes de empezar, elige con quién quieres jugar.';
+    actualizaElige();
     $('mundos').classList.toggle('bloqueado', !sel);
     const cont = $('mundos'); cont.innerHTML = '';
     [1, 2].forEach(ra => {
@@ -183,7 +224,8 @@
     if (L.goals.includes('gemas')) g.push(`<li>💎 Recoge las ${s.gems.length} gemas</li>`);
     if (L.goals.includes('salida')) g.push('<li>🌀 Llega a la salida</li>');
     g.push('<li>❤️ 3 vidas: cada choque quita una</li>');
-    if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} rejas</li>`);
+    if (s.doors.some(d => d.jefe)) g.push(`<li>👾 Vence al miniboss: contesta bien a sus ${s.doors.find(d => d.jefe).jefe.pasos.length} preguntas</li>`);
+    else if (s.doors.length > 1) g.push(`<li>🔒 Abre las ${s.doors.length} barreras</li>`);
     const vs = Object.keys(s.vars || {});
     if (vs.length) g.push(`<li>🎲 Variables ya creadas: ${vs.map(v => '<code>' + esc(v) + '</code>').join(', ')}</li>`);
     if (L.maxLines) g.push(`<li class="reto">★ Reto: ${L.maxLines} líneas de código o menos</li>`);
