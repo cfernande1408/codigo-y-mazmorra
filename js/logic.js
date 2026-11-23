@@ -426,7 +426,7 @@ const NIVELES_RA2 = [
       const g = blank(10, 7);
       g[3][1] = 'H'; for (let y = 1; y <= 5; y++) g[y][3] = '.';
       [[1, 0], [3, 2], [5, 1]].forEach(([fila, c]) => { for (let x = fila === 3 ? 2 : 4; x <= 6; x++) g[fila][x] = '.'; g[fila][7] = c === caso ? 'S' : 'X'; });
-      return { map: toRows(g), enemies: [], oculta: true, vars: { temperatura } };
+      return { map: toRows(g), enemies: [], oculta: true, vars: { temperatura }, paneles: [{ x: 2, y: 3, titulo: 'TEMPERATURA', valor: `${temperatura} °C`, barra: (temperatura + 5) / 50, alerta: temperatura < 15 || temperatura > 30 }] };
     }
   },
   {
@@ -436,7 +436,7 @@ const NIVELES_RA2 = [
     starter: `print("Escudo:", escudo, "Energía:", energia)\nderecha = 2\n`,
     make: () => {
       const escudo = Math.random() < .5, energia = Math.random() < .5 ? rnd(51, 100) : rnd(10, 50);
-      return { map: bifurcacion(escudo && energia > 50 ? 'arriba' : 'abajo'), enemies: [], oculta: true, vars: { escudo, energia } };
+      return { map: bifurcacion(escudo && energia > 50 ? 'arriba' : 'abajo'), enemies: [], oculta: true, vars: { escudo, energia }, paneles: [{ x: 2, y: 3, titulo: 'ESCUDO · ENERGÍA', valor: `${escudo ? 'True' : 'False'} · ${energia}`, barra: energia / 100, alerta: !escudo || energia <= 50 }] };
     }
   },
   {
@@ -506,7 +506,7 @@ const NIVELES_IF = [
     hint: `¿Moverte hasta la salida depende del disco? Entonces no va dentro del <code>if</code>.`,
     starter: `print("Uso del disco:", uso, "%")\nderecha = 7\n`,
     comprobar: v => v.uso >= 90 ? (v.alarma === true ? [] : [`el disco estaba al ${v.uso} %: tenías que dar la alarma (alarma = True).`]) : (v.alarma === true ? [`el disco estaba al ${v.uso} %: no había que dar la alarma.`] : []),
-    make: () => { const uso = [90, 90, rnd(91, 99), rnd(91, 99), 89, rnd(20, 88), rnd(20, 88)][rnd(0, 6)]; return { map: ['##########', '#H......S#', '##########'], enemies: [], vars: { uso } }; }
+    make: () => { const uso = [90, 90, rnd(91, 99), rnd(91, 99), 89, rnd(20, 88), rnd(20, 88)][rnd(0, 6)]; return { map: ['##########', '#H......S#', '##########'], enemies: [], vars: { uso }, paneles: [{ x: 4, y: 1, titulo: 'DISCO', valor: `${uso} %`, barra: uso / 100, alerta: uso >= 90, servidor: true }] }; }
   },
   {
     clave: 'ifroto', title: "El if roto", concept: "Errores típicos del if", goals: ["salida"], maxLines: null, random: true,
@@ -523,7 +523,7 @@ const NIVELES_IF = [
     make: () => {
       const bateria = [80, 30, 10, 9, rnd(81, 100), rnd(31, 79), rnd(11, 29), rnd(0, 8)][rnd(0, 7)];
       const ok = bateria >= 80 ? 'alta' : bateria >= 30 ? 'media' : bateria >= 10 ? 'baja' : 'critica';
-      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { bateria },
+      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { bateria }, paneles: [{ x: 3, y: 1, titulo: 'BATERÍA', valor: `${bateria} %`, barra: bateria / 100, alerta: bateria < 10 }],
         doors: [{ etiqueta: '%', valida: t => t.replace('í', 'i') === ok, pista: t => ['alta', 'media', 'baja', 'critica', 'crítica'].includes(t) ? `con la batería al ${bateria} % no es «${t}». Revisa el orden de las condiciones.` : `tiene que ser "alta", "media", "baja" o "critica".` }] };
     }
   },
@@ -535,7 +535,7 @@ const NIVELES_IF = [
     make: () => {
       const puerto = [0, 22, 80, 443, 1023, 1024, 8080, 65535, 65536, 70000, -1][rnd(0, 10)];
       const ok = puerto < 0 || puerto > 65535 ? 'no existe' : puerto < 1024 ? 'sistema' : 'usuario';
-      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { puerto },
+      return { map: ['##########', '#H...D..S#', '##########'], enemies: [], vars: { puerto }, paneles: [{ x: 3, y: 1, titulo: 'PUERTO', valor: String(puerto) }],
         doors: [{ etiqueta: ':', respuesta: ok, pista: t => ['sistema', 'usuario', 'no existe'].includes(t) ? `el puerto ${puerto} no es de «${t}». Ojo con los límites: 1023, 1024 y 65535.` : `tiene que ser "sistema", "usuario" o "no existe".` }] };
     }
   }
@@ -608,7 +608,7 @@ function hueOf(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCode
 function crearPartida(level, datos) {
   const d = datos || level.make(); const map = d.map; const h = map.length, w = map[0].length;
   const s = { w, h, tiles: [], hero: null, facing: 1, enemies: [], gems: [], doors: [], sign: null, exit: null,
-    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, oculta: !!d.oculta, comprobar: level.comprobar || null,
+    signText: d.signo != null ? String(d.signo) : (d.password || ''), vars: d.vars || {}, oculta: !!d.oculta, paneles: d.paneles || [], comprobar: level.comprobar || null,
     preguntas: 0, valores: {}, vidas: VIDAS, goals: level.goals, frames: [], over: null, datos: d };
   let ei = 0;
   const specs = d.doors || [];

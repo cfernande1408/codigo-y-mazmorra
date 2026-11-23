@@ -368,6 +368,35 @@ function crearArte(cv) {
   }
   // compuerta al fondo de un pasillo: todas iguales hasta que se descubre
   // cuál era la salida; entonces las falsas se ponen en rojo
+  // pantalla holográfica con un dato del nivel (uso del disco, batería…)
+  function panel(P, now) {
+    const cx = P.x * T + T / 2, fl = sueloY(P.x, P.y), col = P.alerta ? ROJO : CIAN, rgb = P.alerta ? '255,70,85' : '46,230,214';
+    if (P.servidor) {
+      // armario de servidores debajo de la pantalla
+      ctx.fillStyle = '#2b3047'; ctx.fillRect(cx - 13, fl - 30, 26, 30);
+      ctx.fillStyle = '#1d2133'; for (let i = 0; i < 4; i++) ctx.fillRect(cx - 10, fl - 27 + i * 7, 20, 5);
+      for (let i = 0; i < 4; i++) { ctx.fillStyle = (now / 200 + i * 3) % 4 < 2 ? col : '#3a3f5c'; ctx.fillRect(cx + 5, fl - 26 + i * 7, 3, 2); }
+      ctx.beginPath(); ctx.rect(cx - 13, fl - 30, 26, 30); linea(ctx, 1.6);
+    } else { ctx.fillStyle = '#3a4058'; ctx.fillRect(cx - 1.5, fl - 40, 3, 40); ctx.fillRect(cx - 8, fl - 3, 16, 3); }
+    ctx.font = `700 19px "JetBrains Mono", monospace`;
+    const anchoValor = ctx.measureText(P.valor).width; ctx.font = `700 11px ${FUENTE}`;
+    const w = Math.max(84, anchoValor + 22, ctx.measureText(P.titulo).width + 30); h = P.barra != null ? 52 : 44, bx = cx - w / 2, by = fl - (P.servidor ? 36 : 44) - h - 4 + Math.sin(now / 600) * 1.5;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(cx, by + h / 2, 4, cx, by + h / 2, w * .8); g.addColorStop(0, `rgba(${rgb},.28)`); g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g; ctx.fillRect(cx - w, by - 20, w * 2, h + 40);
+    ctx.fillStyle = `rgba(${rgb},.35)`; poly(ctx, [[cx - 6, by + h], [cx + 6, by + h], [cx + 2, by + h + 10], [cx - 2, by + h + 10]]); ctx.fill();
+    ctx.restore();
+    corte(ctx, bx, by, w, h, 7); ctx.fillStyle = 'rgba(15,25,35,.9)'; ctx.fill(); ctx.lineWidth = 1.6; ctx.strokeStyle = col; ctx.stroke();
+    ctx.fillStyle = col; ctx.fillRect(bx, by, 3, h - 7);
+    ctx.textAlign = 'center'; ctx.font = `700 11px ${FUENTE}`; ctx.fillStyle = 'rgba(236,232,225,.75)'; ctx.fillText(P.titulo, cx, by + 13);
+    ctx.font = `700 19px "JetBrains Mono", monospace`; ctx.fillStyle = col; ctx.fillText(P.valor, cx, by + 33);
+    if (P.barra != null) {
+      const k = Math.max(0, Math.min(1, P.barra));
+      ctx.fillStyle = 'rgba(236,232,225,.12)'; ctx.fillRect(bx + 10, by + h - 12, w - 20, 5);
+      ctx.fillStyle = col; ctx.fillRect(bx + 10, by + h - 12, (w - 20) * k, 5);
+    }
+    if (P.alerta && (now / 400) % 2 < 1) { ctx.font = `700 12px ${FUENTE}`; ctx.fillStyle = ROJO; ctx.fillText('▲', bx + w - 10, by + 13); }
+  }
   function compuerta(x, y, now, falsa) {
     const px = x * T, cx = px + T / 2, fl = sueloY(x, y), top = y * T + 4, w = T - 18, h = fl - top;
     ctx.fillStyle = '#2b3047'; ctx.fillRect(cx - w / 2 - 5, top - 4, w + 10, h + 4);
@@ -852,6 +881,7 @@ function crearArte(cv) {
     ctx.drawImage(capaNivel, -M, -M, W + 2 * M, H + M + MB);
     luces(now); parpadeos(now);
     placas.forEach(([x, y]) => placa(x, y, now));
+    (sim.paneles || []).forEach(P => panel(P, now));
     // salida oculta: hasta llegar, se ve como una compuerta más
     const llega = sim.exit && c.hx === sim.exit.x && c.hy === sim.exit.y, ver = !sim.oculta || llega || victoria;
     if (sim.exit) { if (ver) salida(sim.exit.x, sim.exit.y, now); else compuerta(sim.exit.x, sim.exit.y, now, false); }
