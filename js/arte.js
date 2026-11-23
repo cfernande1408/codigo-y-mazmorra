@@ -8,21 +8,25 @@
 // Opciones para montar el agente (las usa también la página de inicio)
 const ASPECTO = {
   piel: [['#f6d5bc', '#d9ad92'], ['#f2c7a5', '#d39a7c'], ['#d9a882', '#b9835f'], ['#c98e6a', '#a26b4d'], ['#9a6446', '#7a4a33'], ['#6b432f', '#523223']],
-  peinado: [['bob', 'Melena'], ['tupe', 'Tupé'], ['coleta', 'Coleta'], ['rapado', 'Rapado']],
+  cuerpo: [['chica', 'Chica'], ['chico', 'Chico']],
+  peinado: [['larga', 'Pelo largo'], ['bob', 'Media melena'], ['coleta', 'Coleta'], ['tupe', 'Tupé'], ['rapado', 'Rapado']],
   pelo: { negro: ['#202336', '#141626', '#3a3f5c'], castano: ['#4a2e22', '#2f1d16', '#6e4a38'], rubio: ['#e0b860', '#b98f3f', '#f5d88e'], pelirrojo: ['#c2552e', '#953d1f', '#e07a4f'], blanco: ['#e6e4ea', '#b9b6c2', '#ffffff'], rosa: ['#ff7fb0', '#d65a8c', '#ffb3d0'], azul: ['#3f6fe0', '#2a4fb0', '#7fa2ff'] },
   chaqueta: { navy: ['#2b3a55', '#1d2940'], crema: ['#d7d0c3', '#aea597'], negro: ['#2a2c35', '#191b22'], oliva: ['#56613f', '#3f482d'], burdeos: ['#6e2333', '#4f1824'], blanco: ['#f1efe9', '#cdc9c0'] },
   acento: { rojo: '#ff4655', cian: '#2ee6d6', amarillo: '#f2c230', violeta: '#a970ff', verde: '#4fdc7a', naranja: '#ff8a3d' },
   extra: [['nada', 'Nada'], ['gafas', 'Gafas'], ['gorro', 'Gorro'], ['cascos', 'Cascos'], ['mascara', 'Máscara']],
   presets: {
-    viajera: { nombre: 'Vega', piel: 1, peinado: 'bob', pelo: 'negro', chaqueta: 'navy', acento: 'rojo', extra: 'nada' },
-    viajero: { nombre: 'Orión', piel: 3, peinado: 'tupe', pelo: 'castano', chaqueta: 'crema', acento: 'cian', extra: 'gafas' }
+    viajera: { nombre: 'Vega', cuerpo: 'chica', piel: 1, peinado: 'larga', pelo: 'negro', chaqueta: 'navy', acento: 'rojo', extra: 'nada' },
+    viajero: { nombre: 'Orión', cuerpo: 'chico', piel: 3, peinado: 'tupe', pelo: 'castano', chaqueta: 'crema', acento: 'cian', extra: 'gafas' }
   }
 };
 // admite el nombre de un preset ('viajera') o un objeto con el aspecto
 function aspectoDe(q) {
   const base = ASPECTO.presets.viajera;
   if (typeof q === 'string') return Object.assign({}, ASPECTO.presets[q] || base);
-  return Object.assign({}, base, q || {});
+  const a = Object.assign({}, base, q || {});
+  // aspectos guardados antes de poder elegir cuerpo
+  if (q && !q.cuerpo) a.cuerpo = ['tupe', 'rapado'].includes(a.peinado) ? 'chico' : 'chica';
+  return a;
 }
 
 function crearArte(cv) {
@@ -431,7 +435,7 @@ function crearArte(cv) {
     const a = aspectoDe(q), A = ASPECTO;
     const piel = A.piel[a.piel] || A.piel[1], pelo = A.pelo[a.pelo] || A.pelo.negro, ch = A.chaqueta[a.chaqueta] || A.chaqueta.navy, ac = A.acento[a.acento] || ROJO;
     const clara = ['crema', 'blanco'].includes(a.chaqueta);
-    return { nombre: a.nombre || 'Agente', piel: piel[0], pielS: piel[1], pelo: pelo[0], peloS: pelo[1], peloL: pelo[2], peinado: a.peinado, extra: a.extra,
+    return { nombre: a.nombre || 'Agente', chica: a.cuerpo === 'chica', piel: piel[0], pielS: piel[1], pelo: pelo[0], peloS: pelo[1], peloL: pelo[2], peinado: a.peinado, extra: a.extra,
       chaqueta: ch[0], chaquetaS: ch[1], acento: ac, camiseta: clara ? '#1e2430' : CREMA, pantalon: clara ? '#2c3e3a' : '#3b3f4a', pantalonS: clara ? '#1f2d2a' : '#2a2d36',
       bota: '#1b1d24', suela: ac, guante: '#22252c', iris: '#3a2620', hoja: ac };
   }
@@ -487,7 +491,9 @@ function crearArte(cv) {
     // funda en el muslo
     rr(ctx, hip[0] - 9, hip[1], 5, 8, 1); ctx.fillStyle = '#16181f'; ctx.fill();
     // torso: chaqueta técnica angulosa con cuello alto
-    const torso = () => poly(ctx, [[sh[0] - 7, sh[1] + 1], [sh[0] - 4, sh[1] - 3], [sh[0] + 4, sh[1] - 3], [sh[0] + 7.5, sh[1] + 1.5], [sh[0] + 7, sh[1] + 9], [hip[0] + 6.5, hip[1] - 2], [hip[0] + 7.5, hip[1] + 2], [hip[0] - 7.5, hip[1] + 2], [hip[0] - 6.5, hip[1] - 2]]);
+    // la chica, con hombros y cintura más estrechos
+    const H1 = pj.chica ? .86 : 1, C1 = pj.chica ? .8 : 1;
+    const torso = () => poly(ctx, [[sh[0] - 7 * H1, sh[1] + 1], [sh[0] - 4, sh[1] - 3], [sh[0] + 4, sh[1] - 3], [sh[0] + 7.5 * H1, sh[1] + 1.5], [sh[0] + 7 * H1, sh[1] + 9], [hip[0] + 6.5 * C1, hip[1] - 2], [hip[0] + 7.5, hip[1] + 2], [hip[0] - 7.5, hip[1] + 2], [hip[0] - 6.5 * C1, hip[1] - 2]]);
     torso(); ctx.fillStyle = pj.chaqueta; ctx.fill();
     ctx.save(); torso(); ctx.clip();
     ctx.fillStyle = pj.chaquetaS; poly(ctx, [[sh[0] - 9, sh[1] - 4], [sh[0] - 2, sh[1] - 4], [hip[0] - 3, hip[1] + 3], [hip[0] - 9, hip[1] + 3]]); ctx.fill();
@@ -505,7 +511,13 @@ function crearArte(cv) {
     const aturdido = pose === 'stun', feliz = pose === 'win' || sonrie;
     // la cabeza un poco más grande que la real para que se lea bien en pequeño
     ctx.save(); ctx.translate(hx, hy + 8); ctx.scale(1.16, 1.16); ctx.translate(-hx, -(hy + 8));
-    if (pj.peinado === 'bob') { // melena por detrás con puntas de color
+    if (pj.peinado === 'larga') { // pelo largo que cae por la espalda, con puntas de color
+      const o = Math.sin(now / 300) * .6 + (run ? -1.5 : 0);
+      poly(ctx, [[hx - 1, hy - 10], [hx - 9.5, hy - 7], [hx - 11.5, hy + 3], [hx - 11 + o, hy + 14], [hx - 7 + o, hy + 17], [hx - 3, hy + 14], [hx - 2, hy + 6], [hx - 1, hy + 1]]);
+      ctx.fillStyle = pj.pelo; ctx.fill(); linea(ctx, 1.3);
+      ctx.fillStyle = pj.acento; poly(ctx, [[hx - 11.2 + o, hy + 11], [hx - 11 + o, hy + 14], [hx - 7 + o, hy + 17], [hx - 3.4, hy + 14], [hx - 4, hy + 11.5]]); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx - 8, hy - 2); ctx.lineTo(hx - 8.6 + o, hy + 10); linea(ctx, .9, pj.peloL);
+    } else if (pj.peinado === 'bob') { // melena por detrás con puntas de color
       poly(ctx, [[hx - 2, hy - 9], [hx - 9.5, hy - 6], [hx - 10.5, hy + 2], [hx - 9, hy + 8.5], [hx - 3.5, hy + 9], [hx - 1, hy + 2]]);
       ctx.fillStyle = pj.pelo; ctx.fill(); linea(ctx, 1.3);
       ctx.fillStyle = pj.acento; poly(ctx, [[hx - 10.2, hy + 5], [hx - 9, hy + 8.5], [hx - 3.5, hy + 9], [hx - 4, hy + 6.5]]); ctx.fill();
@@ -518,7 +530,7 @@ function crearArte(cv) {
     // cuello
     ctx.fillStyle = pj.pielS; ctx.fillRect(hx - 2.5, hy + 5, 5, 6);
     // cara de perfil: mandíbula marcada
-    const cara = () => poly(ctx, [[hx - 6.5, hy - 6], [hx + 5.5, hy - 7.5], [hx + 7.8, hy - 2.5], [hx + 8.2, hy - .5], [hx + 9.8, hy + 2.2], [hx + 8.2, hy + 3.3], [hx + 8.6, hy + 5], [hx + 7.6, hy + 6.4], [hx + 6.6, hy + 8.4], [hx + 2, hy + 9.2], [hx - 3.5, hy + 6], [hx - 6.5, hy + 2]]);
+    const cara = () => poly(ctx, [[hx - 6.5, hy - 6], [hx + 5.5, hy - 7.5], [hx + 7.8, hy - 2.5], [hx + 8.2, hy - .5], [hx + 9.8, hy + 2.2], [hx + 8.2, hy + 3.3], [hx + 8.6, hy + 5], [hx + 7.6, hy + 6.4], ...(pj.chica ? [[hx + 6.1, hy + 8.1], [hx + 2.6, hy + 8.7], [hx - 2.6, hy + 6.4]] : [[hx + 6.6, hy + 8.4], [hx + 2, hy + 9.2], [hx - 3.5, hy + 6]]), [hx - 6.5, hy + 2]]);
     cara(); ctx.fillStyle = pj.piel; ctx.fill();
     ctx.save(); cara(); ctx.clip();
     ctx.fillStyle = pj.pielS; poly(ctx, [[hx - 8, hy + 1], [hx + 1, hy + 4], [hx + 4, hy + 10], [hx - 8, hy + 10]]); ctx.fill();
@@ -532,19 +544,22 @@ function crearArte(cv) {
     else {
       poly(ctx, [[ex - 2.1, ey - .2], [ex + .2, ey - 1.3], [ex + 2.2, ey - .6], [ex + 1.4, ey + 1], [ex - 1, ey + 1]]); ctx.fillStyle = '#fbf7f1'; ctx.fill();
       elipse(ctx, ex + .9, ey, .95, 1.15); ctx.fillStyle = pj.iris; ctx.fill();
-      ctx.beginPath(); ctx.moveTo(ex - 2.4, ey - .3); ctx.lineTo(ex + .2, ey - 1.5); ctx.lineTo(ex + 2.5, ey - .7); linea(ctx, 1.1);
+      ctx.beginPath(); ctx.moveTo(ex - 2.4, ey - .3); ctx.lineTo(ex + .2, ey - 1.5); ctx.lineTo(ex + 2.5, ey - .7); linea(ctx, pj.chica ? 1.5 : 1.1);
+      if (pj.chica) { ctx.beginPath(); ctx.moveTo(ex - 2.2, ey - .4); ctx.lineTo(ex - 3.5, ey - 1.6); ctx.moveTo(ex - 1.2, ey - .8); ctx.lineTo(ex - 2, ey - 2.1); linea(ctx, 1); }
     }
     // ceja recta y seria
-    ctx.beginPath(); ctx.moveTo(ex - 2.4, ey - 2.9); ctx.lineTo(ex + 2.6, ey - (aturdido ? 2.2 : 3.4)); linea(ctx, 1.25, pj.peloS);
+    ctx.beginPath();
+    if (pj.chica) { ctx.moveTo(ex - 2.2, ey - 2.8); ctx.quadraticCurveTo(ex, ey - 4, ex + 2.6, ey - (aturdido ? 2.4 : 3.3)); linea(ctx, 1, pj.peloS); }
+    else { ctx.moveTo(ex - 2.4, ey - 2.9); ctx.lineTo(ex + 2.6, ey - (aturdido ? 2.2 : 3.4)); linea(ctx, 1.25, pj.peloS); }
     // boca
     ctx.beginPath();
     if (pj.extra === 'mascara') { /* tapada */ }
     else if (feliz) { ctx.moveTo(hx + 6.6, hy + 5); ctx.quadraticCurveTo(hx + 7.6, hy + 6.2, hx + 8.5, hy + 4.6); }
     else { ctx.moveTo(hx + 6.8, hy + 5.3); ctx.lineTo(hx + 8.4, hy + 5.1); }
-    linea(ctx, 1, '#6a3b30');
+    linea(ctx, pj.chica ? 1.4 : 1, pj.chica ? '#b8505e' : '#6a3b30');
     // pelo
     const P = pj.peinado;
-    if (P === 'bob') {
+    if (P === 'bob' || P === 'larga') {
       // corte bob con flequillo en diagonal
       poly(ctx, [[hx + 9, hy - 3.5], [hx + 8, hy - 8.5], [hx + 2, hy - 11.5], [hx - 5, hy - 10.5], [hx - 9.5, hy - 6], [hx - 6, hy - 3.5], [hx - 1.5, hy - 4.5], [hx - .5, hy + 1], [hx + 1.5, hy - 4], [hx + 4.5, hy - 3]]);
       ctx.fillStyle = pj.pelo; ctx.fill(); linea(ctx, 1.3);

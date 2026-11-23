@@ -104,7 +104,7 @@
   // ---- agente: dos aspectos de partida y un taller para personalizarlo ----
   const retratos = [...document.querySelectorAll('#elige .pj')].map(b => ({ b, quien: b.dataset.pj, arte: crearArte(b.querySelector('canvas')) }));
   const vistaPj = crearArte($('pjVista'));
-  const igual = (a, b) => ['piel', 'peinado', 'pelo', 'chaqueta', 'acento', 'extra'].every(k => a[k] === b[k]);
+  const igual = (a, b) => ['cuerpo', 'piel', 'peinado', 'pelo', 'chaqueta', 'acento', 'extra'].every(k => a[k] === b[k]);
   let refrescoMinis = null;
   function guardaAspecto(nuevo) {
     const habia = !!elegido();
@@ -116,6 +116,7 @@
   }
   retratos.forEach(r => r.b.onclick = () => guardaAspecto(aspectoDe(r.quien)));
   const FILAS = [
+    ['cuerpo', 'Cuerpo', ASPECTO.cuerpo.map(([v, n]) => [v, n])],
     ['piel', 'Piel', ASPECTO.piel.map((c, i) => [i, '', c[0]])],
     ['peinado', 'Peinado', ASPECTO.peinado.map(([v, n]) => [v, n])],
     ['pelo', 'Pelo', Object.entries(ASPECTO.pelo).map(([v, c]) => [v, '', c[0]])],
