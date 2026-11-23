@@ -55,7 +55,7 @@ const LEVELS = [
     clave: 'celda', title: "La celda", concept: "Instrucciones", goals: ["salida"], maxLines: null,
     nuevos: ["derecha", "izquierda", "arriba", "abajo", "print"],
     intro: `<p>Te has despertado en una celda de la base. Para moverte, guarda en una <b>variable</b> con el nombre de la dirección los pasos que quieres dar:</p><pre>derecha = 2</pre><p>En cuanto guardas el valor, tu agente se mueve. Las direcciones son <code>derecha</code>, <code>izquierda</code>, <code>arriba</code> y <code>abajo</code>. Escribe una en la <b>consola de debajo del mapa</b> y pulsa Enter: cada línea se apunta en el editor, y al final puedes lanzar el programa entero con <b>Ejecutar</b>.</p><p>Tienes <b>3 vidas</b>: cada vez que te chocas pierdes una, pero sigues donde estabas.</p>`,
-    hint: `Derecha 2, abajo 2 y otra vez derecha 2. Una variable por línea: <code>abajo = 2</code>. Los nombres van en minúsculas.`,
+    hint: `Cuenta las casillas en el mapa antes de escribir cada número.`,
     starter: `# Cada línea guarda un valor en una variable y tu agente se mueve\n`,
     make: () => ({ map: ["#######", "#H..###", "###.###", "###..S#", "#######"], enemies: [] })
   },
@@ -63,7 +63,7 @@ const LEVELS = [
     clave: 'gemas', title: "El pasillo de las gemas", concept: "Números", goals: ["gemas", "salida"], maxLines: 3,
     nuevos: [],
     intro: `<p>El valor que guardas es el <b>número de pasos</b>. Es un número entero, un <code>int</code>: va <b>sin comillas</b> y sin decimales.</p><pre>derecha = 7</pre><p>Recoge las dos gemas y llega a la salida. Si tienes curiosidad, prueba en la consola <code>derecha = "7"</code> o <code>derecha = 7.5</code> y lee lo que pasa.</p>`,
-    hint: `Derecha 7, abajo 2 e izquierda 7. Las gemas se recogen solas al pasar por encima.`,
+    hint: `Piensa el camino como tres tramos rectos.`,
     starter: `derecha = 7\n`,
     make: () => ({ map: ["##########", "#H....g..#", "########.#", "#S..g....#", "##########"], enemies: [] })
   },
@@ -71,7 +71,7 @@ const LEVELS = [
     clave: 'guardias', title: "Los bugs", concept: "Textos (str)", goals: ["salida"], maxLines: 7,
     nuevos: ["atacar"],
     intro: `<p>Dos bugs te cortan el paso. Se llaman como los errores de Python. Para atacar, guarda su nombre en la variable <code>atacar</code>. Un nombre es un texto, así que va <b>entre comillas</b>:</p><pre>atacar = "SyntaxError"</pre><p>Un texto entre comillas es un <b>string</b> (<code>str</code>). Cada vez que guardas un nombre en <code>atacar</code> das un golpe, y cada bug aguanta 2. Tienes que estar <b>pegado</b> a él.</p>`,
-    hint: `Avanza 1, ataca dos veces a SyntaxError, avanza 4, ataca dos veces a NameError y avanza 3. Las mayúsculas cuentan: <code>"syntaxerror"</code> no es lo mismo que <code>"SyntaxError"</code>.`,
+    hint: `Cada bug aguanta 2 golpes, y en su nombre cuentan las mayúsculas.`,
     starter: `derecha = 1\n`,
     make: () => ({ map: ["###########", "#H.E...E.S#", "###########"], enemies: [{ name: "SyntaxError", hp: 2 }, { name: "NameError", hp: 2 }] })
   },
@@ -79,7 +79,7 @@ const LEVELS = [
     clave: 'escalones', title: "Los escalones", concept: "Variables", goals: ["salida"], maxLines: 6,
     nuevos: [],
     intro: `<p>Una variable puede guardar un valor para usarlo después. Los tres escalones miden lo mismo: 3 casillas. Guárdalo en la variable <code>pasos</code> y úsala:</p><pre>pasos = 3\nderecha = pasos</pre><p>El <code>=</code> no significa «igual»: significa «guarda este valor con este nombre». A la derecha del <code>=</code> puede ir un número o el nombre de otra variable.</p>`,
-    hint: `<code>derecha = pasos</code>, <code>abajo = 1</code>, y así tres veces. <code>pasos</code> va sin comillas: es el nombre de una variable.`,
+    hint: `Los tres escalones miden lo mismo: el 3 solo debería aparecer una vez en tu código.`,
     starter: `pasos = 3\nderecha = pasos\n`,
     comprobar: v => v.pasos === 3 ? [] : [v.pasos === undefined ? 'Te falta crear la variable pasos con el valor 3.' : `La variable pasos vale ${JSON.stringify(v.pasos)}, pero tenía que valer 3.`],
     make: () => {
@@ -92,8 +92,8 @@ const LEVELS = [
   {
     clave: 'clave', title: "La puerta con clave", concept: "Variables con valores", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["placa", "respuesta"],
-    intro: `<p>La barrera solo se abre con la contraseña de la placa, y la contraseña <b>cambia cada vez que ejecutas</b>. El juego la deja en una variable que ya existe: <code>placa</code>. Cópiala en una variable tuya:</p><pre>clave = placa</pre><p>Para contestar a la barrera, guarda la contraseña en la variable <code>respuesta</code> cuando estés a su lado:</p><pre>respuesta = clave</pre><p>Ahí <code>clave</code> va sin comillas: es una variable, no un texto.</p>`,
-    hint: `<pre>clave = placa\nderecha = 2\nrespuesta = clave\nderecha = 4</pre>`,
+    intro: `<p>La barrera solo se abre con la contraseña de la placa, y la contraseña <b>cambia cada vez que ejecutas</b>. El juego la deja en una variable que ya existe: <code>placa</code>. Cópiala en una variable tuya.</p><p>Para contestar a la barrera, guarda lo que quieras decirle en la variable <code>respuesta</code> cuando estés a su lado:</p><pre>respuesta = "hola"</pre><p>Si lo que guardas es otra variable, va sin comillas: es un nombre, no un texto.</p>`,
+    hint: `<code>placa</code> ya es una variable: no tienes que copiar la contraseña a mano.`,
     starter: `clave = placa\nprint(clave)\n`,
     make: () => { const pw = CLAVES[rnd(0, CLAVES.length - 1)]; return { map: ["#########", "#C#######", "#H..D..S#", "#########"], enemies: [], signo: pw, doors: [{ respuesta: pw, etiqueta: '?' }] }; }
   },
@@ -101,7 +101,7 @@ const LEVELS = [
     clave: 'constantes', title: "Las constantes de la base", concept: "Constantes", goals: ["salida"], maxLines: 5,
     nuevos: [],
     intro: `<p>Una <b>constante</b> es una variable que no va a cambiar nunca. En Python se escriben en <b>MAYÚSCULAS</b> y se ponen al principio del programa:</p><pre>ANCHO = 4\nALTO = 2</pre><p>Python no impide cambiarlas, pero es una norma que todo el mundo respeta. Define <code>ANCHO</code> y <code>ALTO</code> con las medidas de la torre y úsalas para llegar arriba.</p>`,
-    hint: `<code>derecha = ANCHO</code>, <code>arriba = ALTO</code> y <code>derecha = ANCHO</code> otra vez. Mayúsculas y minúsculas son nombres distintos: <code>ANCHO</code> no es <code>ancho</code>.`,
+    hint: `Mayúsculas y minúsculas son nombres distintos.`,
     starter: `# Constantes de la torre (siempre en MAYÚSCULAS)\nANCHO = 4\n\nderecha = ANCHO\n`,
     comprobar: v => {
       const m = [];
@@ -119,7 +119,7 @@ const LEVELS = [
     clave: 'tesoro', title: "La cámara del tesoro", concept: "Operadores matemáticos", goals: ["salida"], maxLines: 8, random: true,
     nuevos: ["operadores"],
     intro: `<p>En esta cámara hay <code>cofres</code> llenos de <code>oro</code> y unos <code>ladrones</code> esperando su parte. Esas tres variables <b>ya existen</b> y cambian en cada partida (míralas con <code>print(oro)</code>). Cada barrera pide un cálculo, que guardas en <code>respuesta</code>:</p><pre>barrera ×   oro total:     oro * cofres\nbarrera //  a cada ladrón: total // ladrones\nbarrera %   lo que sobra:  total % ladrones</pre><p>Guarda el total en una variable para no repetir el cálculo.</p>`,
-    hint: `<pre>total = oro * cofres\nderecha = 1\nrespuesta = total\nderecha = 2</pre>y lo mismo con <code>total // ladrones</code> y <code>total % ladrones</code>. Ojo: <code>/</code> da decimales; para repartir en enteros se usa <code>//</code>.`,
+    hint: `Mira los valores con <code>print()</code>. Repartir sin decimales no es lo mismo que dividir.`,
     starter: `print("Oro por cofre:", oro)\nprint("Cofres:", cofres)\nprint("Ladrones:", ladrones)\n`,
     make: () => {
       const oro = rnd(12, 40), cofres = rnd(2, 5), ladrones = rnd(3, 7), total = oro * cofres;
@@ -139,7 +139,7 @@ const LEVELS = [
     clave: 'palabras', title: "Las palabras mágicas", concept: "Bloques de texto", goals: ["salida"], maxLines: null, random: true,
     nuevos: ["textos"],
     intro: `<p>Tres barreras que solo se abren con palabras. Las variables <code>guardian</code> (un nombre) y <code>veces</code> (un número) ya existen y cambian en cada partida. Contesta a cada barrera con <code>respuesta</code>:</p><pre>barrera +    "Hola, " + guardian\nbarrera *    "ja" * veces\nbarrera """  el pergamino de 3 líneas</pre><p>El pergamino es un <b>bloque de texto</b>: un texto de varias líneas escrito entre <b>comillas triples</b>:</p><pre>hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""</pre><p>Este nivel es mejor resolverlo en el editor con <b>Ejecutar</b>, porque la consola es de una sola línea.</p>`,
-    hint: `<code>respuesta = "Hola, " + guardian</code>. Con <code>+</code> se juntan textos y con <code>*</code> se repiten. El saludo tiene que quedar exacto, con su coma y su espacio.`,
+    hint: `El texto tiene que ser exacto: fíjate en cada coma y cada espacio.`,
     starter: `hechizo = """Uno para el sol\nDos para la luna\nTres para abrir"""\n\nderecha = 1\n`,
     make: () => {
       const guardian = NOMBRES[rnd(0, NOMBRES.length - 1)], veces = rnd(2, 5), hechizo = 'Uno para el sol\nDos para la luna\nTres para abrir';
@@ -154,15 +154,15 @@ const LEVELS = [
     clave: 'roto', title: "Código roto", concept: "Errores", goals: ["salida"], maxLines: null,
     nuevos: [],
     intro: `<p>Un aprendiz ha dejado un programa que <b>tiene tres errores</b>. Ejecútalo, lee el mensaje de la consola (y la línea marcada en rojo) y arréglalo. Repite hasta que funcione.</p><ul><li><b>SyntaxError</b>: algo mal escrito (comillas, paréntesis…).</li><li><b>NameError</b>: un nombre que Python no conoce.</li><li><b>TypeError</b>: mezclar tipos que no casan, como texto + número.</li></ul>`,
-    hint: `Hay unas comillas sin cerrar, una variable mal escrita y un número que hay que convertir a texto con <code>str()</code> para poder juntarlo con <code>+</code>.`,
+    hint: `Lee el error y mira la línea que marca. Arregla uno cada vez y vuelve a ejecutar.`,
     starter: `# Este programa tiene 3 errores. Ejecútalo y arréglalos uno a uno.\npasos = 3\nderecha = paso\n\ngemas = 3\nmensaje = "Llevo " + gemas + " gemas"\nrespuesta = mensaje\n\nderecha = pasos + 1\nprint("¡Fuera!)\n`,
     make: () => ({ map: ["##########", "#H...D..S#", "##########"], enemies: [], doors: [{ respuesta: 'Llevo 3 gemas', etiqueta: '!', pista: t => `Has dicho «${t}», pero la barrera espera «Llevo 3 gemas».` }] })
   },
   {
     clave: 'placa', title: "La placa de los pasos", concept: "Conversiones: int()", goals: ["salida"], maxLines: 4, random: true,
     nuevos: ["int", "str"],
-    intro: `<p>La placa dice cuántos pasos hay hasta la barrera, pero <code>placa</code> siempre es un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Con <code>derecha = placa</code> el juego se queja. Para usarlo como número hay que <b>convertirlo</b>:</p><pre>numero = int(placa)</pre><p>Avanza ese número de pasos y contesta a la barrera con <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
-    hint: `<code>int()</code> convierte un texto en número entero, <code>float()</code> en decimal y <code>str()</code> un número en texto. Después de la barrera hay 2 pasos hasta la salida.`,
+    intro: `<p>La placa dice cuántos pasos hay hasta la barrera, pero <code>placa</code> siempre es un <b>texto</b>: <code>"4"</code>, no <code>4</code>. Con <code>derecha = placa</code> el juego se queja. Para usarlo como número hay que <b>convertirlo</b>: <code>int("4")</code> da <code>4</code>.</p><p>Avanza ese número de pasos y contesta a la barrera con <b>el doble</b> del número de la placa. Si te olvidas de <code>int()</code>, <code>"4" * 2</code> te da <code>"44"</code>…</p>`,
+    hint: `Prueba <code>print(type(placa))</code>. ¿Cómo se convierte un texto en número?`,
     starter: `print(placa, type(placa))\n`,
     make: () => {
       const n = rnd(2, 6), g = blank(11, 4);
@@ -175,7 +175,7 @@ const LEVELS = [
     clave: 'guardian', title: "El guardián pregunta", concept: "Entrada: input()", goals: ["salida"], maxLines: 6, random: true,
     nuevos: ["input"],
     intro: `<p><code>input()</code> le hace una pregunta a la persona que está jugando (¡tú!) y devuelve lo que escribe, <b>siempre como texto</b>:</p><pre>texto = input("¿Cuántos pasos? ")</pre><p>El pasillo mide algo distinto cada vez. Pregunta cuántos pasos hay hasta la barrera (cuéntalos en el mapa cuando salga la pregunta), conviértelo con <code>int()</code> y avanza. Luego pregunta tu nombre y contesta a la barrera con <code>"Soy "</code> + tu nombre.</p>`,
-    hint: `<pre>pasos = int(input("¿Cuántos pasos? "))\nderecha = pasos\nnombre = input("¿Cómo te llamas? ")\nrespuesta = "Soy " + nombre</pre>Después de la barrera hay 2 pasos hasta la salida.`,
+    hint: `<code>input()</code> siempre devuelve un texto.`,
     starter: `pasos = input("¿Cuántos pasos hay hasta la barrera? ")\nprint(pasos, type(pasos))\n`,
     comprobar: (v, s) => s.preguntas >= 2 ? [] : ['Tienes que usar input() para preguntar los pasos y tu nombre.'],
     make: () => {
@@ -189,7 +189,7 @@ const LEVELS = [
     clave: 'verdad', title: "Las barreras de la verdad", concept: "Comparaciones y lógica", goals: ["salida"], maxLines: 8, random: true,
     nuevos: [],
     intro: `<p>La variable <code>numero</code> ya existe y cambia en cada partida. Cada barrera pide <code>True</code> o <code>False</code>, y Python lo calcula por ti con una <b>comparación</b>:</p><pre>barrera >    numero > 10\nbarrera ==   numero % 2 == 0     (¿es par?)\nbarrera and  numero > 10 and numero % 2 == 0</pre><p>Guarda el resultado en <code>respuesta</code>: <code>respuesta = numero > 10</code>.</p>`,
-    hint: `Las comparaciones (<code>&gt; &lt; == !=</code>) devuelven <code>True</code> o <code>False</code>. <code>and</code> solo es <code>True</code> si las dos partes lo son. No escribas True a mano: deja que Python lo calcule.`,
+    hint: `No escribas True ni False a mano: deja que Python compare.`,
     starter: `print("El número es", numero)\nderecha = 1\n`,
     make: () => {
       const numero = rnd(1, 30), b = x => x ? 'True' : 'False';
@@ -205,7 +205,7 @@ const LEVELS = [
     clave: 'caracol', title: "La escalera de caracol", concept: "Bucle for", goals: ["gemas", "salida"], maxLines: 3,
     nuevos: [],
     intro: `<p>La escalera repite el mismo movimiento 4 veces: dos a la derecha y uno abajo. En vez de copiar y pegar, usa un <b>bucle</b>:</p><pre>for i in range(4):\n    # lo que se repite</pre><p>Todo lo que esté <b>sangrado</b> (4 espacios a la derecha) debajo del <code>for</code> se repite.</p>`,
-    hint: `Dentro del bucle van dos líneas: <code>derecha = 2</code> y <code>abajo = 1</code>. No te olvides de los dos puntos <code>:</code> al final de la línea del <code>for</code>.`,
+    hint: `¿Qué se repite exactamente en cada escalón?`,
     starter: `for i in range(4):\n    \n`,
     make: () => {
       const g = blank(11, 7); let x = 1, y = 1; g[y][x] = 'H';
@@ -217,8 +217,8 @@ const LEVELS = [
   {
     clave: 'sinfin', title: "El pasillo sin fin", concept: "Bucle while", goals: ["salida"], maxLines: 3, random: true,
     nuevos: ["camino"],
-    intro: `<p>Cada vez que ejecutas, el pasillo mide algo distinto. El juego tiene la variable <code>camino_derecha</code>: vale <code>True</code> si puedes avanzar a la derecha. Repite <b>mientras</b> sea así:</p><pre>while camino_derecha:\n    derecha = 1</pre><p>Cuando se acabe el pasillo, la salida está justo debajo.</p>`,
-    hint: `Después del <code>while</code>, ya sin sangría, añade la línea para bajar: <code>abajo = 1</code>.`,
+    intro: `<p>Cada vez que ejecutas, el pasillo mide algo distinto. El juego tiene la variable <code>camino_derecha</code>: vale <code>True</code> si puedes avanzar a la derecha. Un <code>while</code> repite lo que tiene sangrado <b>mientras</b> la condición sea <code>True</code>:</p><pre>while condición:\n    ...</pre><p>Cuando se acabe el pasillo, la salida está justo debajo.</p>`,
+    hint: `Cuando el bucle termina, ¿dónde está la salida?`,
     starter: `while camino_derecha:\n    \n`,
     make: () => {
       const L = rnd(4, 10), g = blank(13, 4);
@@ -230,8 +230,8 @@ const LEVELS = [
   {
     clave: 'emboscada', title: "Emboscada", concept: "Condicionales if", goals: ["salida"], maxLines: 5, random: true,
     nuevos: ["enemigo"],
-    intro: `<p>Hay bugs en sitios que cambian en cada partida. Avanza casilla a casilla y, <b>si</b> tienes un enemigo al lado, atácalo antes de seguir.</p><pre>if enemigo:\n    atacar = enemigo</pre><p><code>enemigo</code> es una variable del juego: tiene el nombre del bug que tienes al lado, o <code>None</code> si no hay nadie. Un <code>if</code> con <code>None</code> funciona como <code>False</code>. Estos bugs caen de un golpe.</p>`,
-    hint: `Son 8 pasos: <code>for i in range(8):</code>. Dentro: si hay enemigo, atácalo, y después avanza con <code>derecha = 1</code>.`,
+    intro: `<p>Hay bugs en sitios que cambian en cada partida. Avanza casilla a casilla y, <b>si</b> tienes un enemigo al lado, atácalo antes de seguir.</p><p><code>enemigo</code> es una variable del juego: tiene el nombre del bug que tienes al lado, o <code>None</code> si no hay nadie. Un <code>if</code> con <code>None</code> funciona como <code>False</code>. Estos bugs caen de un golpe.</p>`,
+    hint: `En cada paso, mira primero si hay enemigo y luego avanza.`,
     starter: `for i in range(8):\n    derecha = 1\n`,
     make: pasilloConGuardias(1, 1, 2, 4)
   },
@@ -239,7 +239,7 @@ const LEVELS = [
     clave: 'tozudos', title: "Bugs tozudos", concept: "while dentro de for", goals: ["salida"], maxLines: 5, random: true,
     nuevos: [],
     intro: `<p>Estos bugs aguantan entre 1 y 3 golpes, y no sabes cuántos. Tienes que atacar <b>mientras</b> siga habiendo un enemigo a tu lado.</p><p>Es un bucle <code>while</code> metido dentro de un bucle <code>for</code>. Fíjate bien en la sangría: cada nivel, 4 espacios más.</p>`,
-    hint: `Parte de tu solución del nivel anterior y cambia el <code>if</code> por un <code>while</code>: <code>while enemigo:</code> y dentro <code>atacar = enemigo</code>.`,
+    hint: `Un <code>if</code> mira una sola vez; un <code>while</code> repite mientras se cumpla.`,
     starter: `for i in range(8):\n    derecha = 1\n`,
     make: pasilloConGuardias(1, 3, 3, 5)
   },
@@ -247,7 +247,7 @@ const LEVELS = [
     clave: 'columnas', title: "La escalera del doble", concept: "Funciones (def y return)", goals: ["gemas", "salida"], maxLines: 5,
     nuevos: ["funciones"],
     intro: `<p>Cada tramo de esta escalera mide el doble que su número: el tramo 1 mide 2, el 2 mide 4 y el 3 mide 6. Crea tu propia <b>función</b> que calcule el doble de un número y te lo <b>devuelva</b> con <code>return</code>:</p><pre>def doble(n):\n    return n * 2</pre><p>Definirla no hace nada por sí solo. Hay que <b>llamarla</b> con un dato entre paréntesis, y lo que devuelve se puede guardar en una variable: <code>derecha = doble(3)</code>.</p>`,
-    hint: `<pre>for n in range(1, 4):\n    derecha = doble(n)\n    abajo = 1</pre>`,
+    hint: `Llama a tu función dentro de un bucle.`,
     starter: `def doble(n):\n    return n * 2\n\nprint(doble(3))\n`,
     make: () => {
       const g = blank(16, 6); let x = 1, y = 1; g[y][x] = 'H';
@@ -260,7 +260,7 @@ const LEVELS = [
     clave: 'laberinto', title: "El laberinto", concept: "Algoritmos", goals: ["salida"], maxLines: null, random: true,
     nuevos: ["hay_camino", "mover", "en_salida"],
     intro: `<p>Un laberinto distinto en cada partida. Hay un truco clásico: la <b>regla de la mano derecha</b>. Si apoyas la mano en la pared de tu derecha y nunca la sueltas, acabas encontrando la salida.</p><p>En cada paso: si puedes girar a la derecha, gira; si no, sigue recto; si tampoco, gira a la izquierda; y si no hay nada, date la vuelta. Guarda hacia dónde miras en una variable y usa una lista de direcciones. La función del juego <code>hay_camino(direccion)</code> te dice si puedes ir hacia allí, y <code>mover = direccion</code> da un paso.</p>`,
-    hint: `<pre>if hay_camino(direcciones[dcha]):\n    mirando = dcha\nelif hay_camino(direcciones[mirando]):\n    pass\nelif hay_camino(direcciones[(mirando + 3) % 4]):\n    mirando = (mirando + 3) % 4\nelse:\n    mirando = (mirando + 2) % 4</pre>`,
+    hint: `Mano derecha en la pared: antes que nada, intenta girar a la derecha.`,
     starter: `direcciones = ["arriba", "derecha", "abajo", "izquierda"]\nmirando = 1  # miras a la derecha (posición 1)\n\nwhile not en_salida:\n    dcha = (mirando + 1) % 4  # lo que queda a tu derecha\n    # 1) ¿Camino a la derecha? Gira hacia allí\n    # 2) Si no, ¿camino de frente? Sigue recto\n    # 3) Si no, gira a la izquierda o date la vuelta\n    mover = direcciones[mirando]\n`,
     make: laberinto
   },
@@ -268,7 +268,7 @@ const LEVELS = [
     clave: 'potencias', title: "La torre de las potencias", concept: "Potencias y prioridad", goals: ["salida"], maxLines: 7, random: true,
     nuevos: [],
     intro: `<p>Más operadores. <code>**</code> es la <b>potencia</b>: <code>2 ** 3</code> es 2 × 2 × 2 = 8. Y cuidado con el <b>orden</b>: igual que en mates, Python hace primero <code>**</code>, luego <code>* / // %</code> y al final <code>+ -</code>. Los paréntesis van siempre primero.</p><pre>barrera **   base ** exponente\nbarrera +*   base + extra * 2\nbarrera ()   (base + extra) * 2</pre><p>Las variables <code>base</code>, <code>exponente</code> y <code>extra</code> ya existen y cambian en cada partida. Contesta con <code>respuesta</code>.</p>`,
-    hint: `Escribe las cuentas tal cual y deja que Python las calcule: <code>respuesta = base + extra * 2</code>. Fíjate en que las dos últimas barreras dan resultados distintos.`,
+    hint: `Deja que Python haga las cuentas y acuérdate del orden de las operaciones.`,
     starter: `print(base, exponente, extra)\nderecha = 1\n`,
     make: () => {
       const base = rnd(3, 5), exponente = rnd(2, 3), extra = rnd(2, 6); // con base 2 y exponente 2, 2*2 == 2**2
@@ -284,7 +284,7 @@ const LEVELS = [
     clave: 'roto2', title: "Código roto 2", concept: "Más errores", goals: ["salida"], maxLines: null,
     nuevos: [],
     intro: `<p>Otro programa estropeado, con <b>tres errores</b> distintos de los de antes. Ejecútalo, lee cada mensaje y arréglalo:</p><ul><li><b>IndentationError</b>: espacios de más al principio de una línea.</li><li><b>NameError</b>: Python distingue MAYÚSCULAS y minúsculas.</li><li><b>ValueError</b>: <code>int()</code> solo convierte textos que son números, como <code>"3"</code>.</li></ul>`,
-    hint: `Quita los espacios del principio de la línea 3, usa el mismo nombre que la constante y cambia <code>"tres"</code> por <code>"3"</code>.`,
+    hint: `Cada error te dice su línea. Python distingue mayúsculas de minúsculas.`,
     starter: `# Otro programa con 3 errores. Ejecútalo y arréglalos uno a uno.\nALTO = 2\n  derecha = 2\narriba = alto\n\npasos = int("tres")\nderecha = pasos\n`,
     make: () => ({ map: ["########", "###...S#", "###.####", "#H..####", "########"], enemies: [] })
   }
@@ -321,8 +321,8 @@ const JEFES = [
   {
     clave: 'jefe1', title: "Miniboss: el Portero", concept: "Textos (str)", goals: ["salida"], maxLines: null,
     nuevos: ["tipos"],
-    intro: `<p>El <b>Portero</b> quiere saber cómo te llamas. Crea la variable <code>nombre</code> con tu nombre. Un nombre es un <b>texto</b>, así que va <b>entre comillas</b>:</p><pre>nombre = "Carlos"</pre><p>Luego te preguntará <b>de qué tipo</b> es. Contesta guardándolo en la variable <code>tipo</code>:</p><pre>tipo = "str"</pre><p>Los tipos que vas a usar:</p><pre>"Carlos"   str    texto (lleva comillas)\n16         int    número entero\n1.75       float  número con decimales\nTrue       bool   verdadero o falso</pre><p>Ponte a su lado para que te oiga.</p>`,
-    hint: `<pre>derecha = 5\nnombre = "Carlos"\ntipo = "str"\nderecha = 2</pre>`,
+    intro: `<p>El <b>Portero</b> quiere saber cómo te llamas. Crea la variable <code>nombre</code> con tu nombre. Un nombre es un <b>texto</b>, así que va <b>entre comillas</b>:</p><pre>nombre = "Carlos"</pre><p>Luego te preguntará <b>de qué tipo</b> es. Contesta guardándolo, entre comillas, en la variable <code>tipo</code>:</p><pre>tipo = "..."</pre><p>Los tipos que vas a usar:</p><pre>"Carlos"   str    texto (lleva comillas)\n16         int    número entero\n1.75       float  número con decimales\nTrue       bool   verdadero o falso</pre><p>Ponte a su lado para que te oiga.</p>`,
+    hint: `Primero acércate. Un nombre lleva comillas… ¿y de qué tipo es un texto?`,
     starter: `derecha = 5\n`,
     make: nivelJefe('Portero', [
       { var: 'nombre', pregunta: '¿Cómo te llamas? Guárdalo en la variable nombre.', corta: '¿nombre?', valida: (v, t) => t !== 'str' ? 'Un nombre es un texto: ponlo entre comillas, nombre = "Ana"' : !v.trim() ? 'Tu nombre está vacío.' : /^\d+$/.test(v.trim()) ? 'Eso es un número entre comillas. ¡Dime tu nombre!' : true },
@@ -332,7 +332,7 @@ const JEFES = [
   {
     clave: 'jefe2', title: "Miniboss: la Guardiana", concept: "Números enteros (int)", goals: ["salida"], maxLines: null,
     intro: `<p>La <b>Guardiana</b> quiere saber tu edad. Crea la variable <code>edad</code>. Es un número, así que va <b>sin comillas</b>:</p><pre>edad = 16</pre><p>Después te preguntará de qué tipo es. Contesta con la variable <code>tipo</code>, como con el Portero.</p>`,
-    hint: `<pre>edad = 16\nderecha = 5\ntipo = "int"\nderecha = 2</pre>`,
+    hint: `¿Un número lleva comillas?`,
     starter: `derecha = 5\n`,
     make: nivelJefe('Guardiana', [
       { var: 'edad', pregunta: '¿Cuántos años tienes? Guárdalo en la variable edad.', corta: '¿edad?', valida: (v, t) => t === 'str' ? 'edad tiene comillas, así que es un texto. Quítaselas: edad = 16' : t === 'float' ? 'Con decimales no: la edad es un número entero, edad = 16' : t !== 'int' ? 'La edad es un número entero: edad = 16' : true },
@@ -342,7 +342,7 @@ const JEFES = [
   {
     clave: 'jefe3', title: "Miniboss: el Eco", concept: "Unir textos", goals: ["salida"], maxLines: null,
     intro: `<p>El <b>Eco</b> repite lo que oye. Crea la variable <code>nombre</code> y otra, <code>saludo</code>, que junte <code>"Hola, "</code> con tu nombre usando <code>+</code>:</p><pre>nombre = "Carlos"\nsaludo = "Hola, " + nombre</pre><p>Luego te hará una pregunta trampa sobre tipos. Fíjate bien en las comillas.</p>`,
-    hint: `<pre>nombre = "Carlos"\nsaludo = "Hola, " + nombre\nderecha = 5\ntipo = "str"\nderecha = 2</pre>Aunque dentro haya un número, si va entre comillas es un texto.`,
+    hint: `Fíjate bien en las comillas: lo que va entre comillas siempre es…`,
     starter: `nombre = "Carlos"\nderecha = 5\n`,
     make: nivelJefe('Eco', [
       { var: 'saludo', pregunta: 'Guarda en saludo "Hola, " + tu nombre.', corta: '¿saludo?', valida: (v, t, s) => !valor(s, 'nombre') ? 'Primero crea la variable nombre: nombre = "Carlos"' : t !== 'str' ? 'saludo tiene que ser un texto.' : v !== 'Hola, ' + valor(s, 'nombre').v ? `saludo vale «${v}», pero tenía que ser «Hola, ${valor(s, 'nombre').v}». Ojo con la coma y el espacio.` : true },
@@ -351,8 +351,8 @@ const JEFES = [
   },
   {
     clave: 'jefe4', title: "Miniboss: la Calculadora", concept: "Decimales (float)", goals: ["salida"], maxLines: null,
-    intro: `<p>La <b>Calculadora</b> quiere repartir 7 gemas entre 2. Guarda en la variable <code>media</code> el resultado de <code>7 / 2</code>:</p><pre>media = 7 / 2</pre><p>Con <code>/</code> el resultado tiene decimales. ¿De qué tipo será?</p>`,
-    hint: `<pre>media = 7 / 2\nderecha = 5\ntipo = "float"\nderecha = 2</pre><code>7 // 2</code> daría 3 (sin decimales), pero la Calculadora quiere el resultado exacto.`,
+    intro: `<p>La <b>Calculadora</b> quiere repartir 7 gemas entre 2. Guarda en la variable <code>media</code> el resultado de dividir 7 entre 2, <b>exacto</b>. Recuerda que en Python hay dos divisiones: <code>/</code> y <code>//</code>. Después te preguntará de qué tipo es.</p>`,
+    hint: `¿Qué división conserva los decimales?`,
     starter: `derecha = 5\n`,
     make: nivelJefe('Calculadora', [
       { var: 'media', pregunta: 'Guarda 7 / 2 en la variable media.', corta: '¿media?', valida: (v, t) => t === 'int' ? `media vale ${v}: has perdido los decimales. Usa / en vez de //.` : t !== 'float' || v !== '3.5' ? 'media tiene que ser el resultado de 7 / 2.' : true },
@@ -361,8 +361,8 @@ const JEFES = [
   },
   {
     clave: 'jefe5', title: "Miniboss: el Interrogador", concept: "input() devuelve str", goals: ["salida"], maxLines: null,
-    intro: `<p>El <b>Interrogador</b> quiere que preguntes tu edad con <code>input()</code> y la guardes en <code>edad</code>:</p><pre>edad = input("¿Cuántos años tienes? ")</pre><p>Te preguntará de qué tipo es lo que te da <code>input()</code> (contesta con <code>tipo</code>). Y al final querrá tu edad convertida en número entero, guardada en <code>numero</code>:</p><pre>numero = int(edad)</pre>`,
-    hint: `<pre>edad = input("¿Cuántos años tienes? ")\nderecha = 5\ntipo = "str"\nnumero = int(edad)\nderecha = 2</pre>input() siempre devuelve un texto, aunque escribas un número.`,
+    intro: `<p>El <b>Interrogador</b> quiere que preguntes tu edad con <code>input()</code> y la guardes en <code>edad</code>:</p><pre>edad = input("¿Cuántos años tienes? ")</pre><p>Te preguntará de qué tipo es lo que te da <code>input()</code> (contesta con <code>tipo</code>). Y al final querrá tu edad convertida en número entero, guardada en la variable <code>numero</code>.</p>`,
+    hint: `<code>input()</code> siempre devuelve un texto, aunque escribas un número.`,
     starter: `edad = input("¿Cuántos años tienes? ")\nprint(edad, type(edad))\nderecha = 5\n`,
     make: nivelJefe('Interrogador', [
       { var: 'edad', pregunta: 'Pregunta tu edad con input() y guárdala en edad.', corta: '¿edad?', valida: (v, t, s) => s.preguntas < 1 ? 'Tienes que preguntar la edad con input(): edad = input("¿Cuántos años tienes? ")' : true },
@@ -373,7 +373,7 @@ const JEFES = [
   {
     clave: 'jefe6', title: "Miniboss: el Gran Bug", concept: "Mezclar tipos", goals: ["salida"], maxLines: null, random: true,
     intro: `<p>El <b>Gran Bug</b> quiere que guardes en <code>frase</code> el texto <code>Tengo … años</code> con el número de la variable <code>edad</code>, que ya existe y cambia en cada partida. El programa de abajo da error: ejecútalo, lee el error y arréglalo.</p><p>No se puede juntar un texto con un número usando <code>+</code>. Convierte el número con <code>str()</code>.</p>`,
-    hint: `<pre>derecha = 5\nfrase = "Tengo " + str(edad) + " años"\ntipo = "int"\nderecha = 2</pre>`,
+    hint: `No se puede juntar un texto con un número: uno de los dos tiene que cambiar de tipo.`,
     starter: `derecha = 5\nfrase = "Tengo " + edad + " años"\n`,
     make: () => { const edad = rnd(12, 19); return nivelJefe('Gran Bug', [
       { var: 'frase', pregunta: 'Guarda en frase "Tengo … años" usando la variable edad.', corta: '¿frase?', valida: v => v === `Tengo ${edad} años` ? true : v.includes(String(edad)) ? `Casi: tiene que ser exactamente «Tengo ${edad} años», con los espacios.` : 'Usa la variable edad: "Tengo " + str(edad) + " años"' },
@@ -382,8 +382,8 @@ const JEFES = [
   },
   {
     clave: 'jefe8', title: "Miniboss: el Juez", concept: "Verdadero o falso (bool)", goals: ["salida"], maxLines: null, random: true,
-    intro: `<p>El <b>Juez</b> solo acepta verdades. La variable <code>numero</code> ya existe y cambia en cada partida. Guarda en <code>mayor</code> si <code>numero</code> es mayor que 10:</p><pre>mayor = numero > 10</pre><p>Una comparación da <code>True</code> o <code>False</code>. ¿De qué tipo es eso?</p>`,
-    hint: `<pre>mayor = numero > 10\nderecha = 5\ntipo = "bool"\nderecha = 2</pre>`,
+    intro: `<p>El <b>Juez</b> solo acepta verdades. La variable <code>numero</code> ya existe y cambia en cada partida. Guarda en la variable <code>mayor</code> si <code>numero</code> es mayor que 10 (sin escribir tú True o False). Una comparación da <code>True</code> o <code>False</code>. ¿De qué tipo es eso?</p>`,
+    hint: `Una comparación ya da True o False: no lo escribas tú.`,
     starter: `print(numero)\nderecha = 5\n`,
     make: () => { const numero = rnd(3, 20); return nivelJefe('Juez', [
       { var: 'mayor', pregunta: 'Guarda en mayor si numero es mayor que 10.', corta: '¿mayor?', valida: (v, t) => t !== 'bool' ? 'mayor tiene que ser una comparación, sin comillas: mayor = numero > 10' : v !== (numero > 10 ? 'True' : 'False') ? 'Esa comparación no es la que te pido: numero > 10' : true },
@@ -410,15 +410,15 @@ const NIVELES_RA2 = [
   {
     clave: 'semaforo', title: "El cruce", concept: "if / else", goals: ["salida"], maxLines: 6, random: true,
     nuevos: ["si"],
-    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. La placa dice cuál: <code>"arriba"</code> o <code>"abajo"</code>, y cambia en cada partida. Tu programa tiene que <b>decidir</b>:</p><pre>if placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
-    hint: `<pre>derecha = 2\nif placa == "arriba":\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4</pre>No te olvides de los dos puntos <code>:</code> después de la condición y del <code>else</code>.`,
+    intro: `<p>En el cruce hay dos caminos y solo uno lleva a la salida. La placa dice cuál: <code>"arriba"</code> o <code>"abajo"</code>, y cambia en cada partida. Tu programa tiene que <b>decidir</b>. Así se escribe una decisión:</p><pre>if clave == "abre":\n    print("Pasa")\nelse:\n    print("Fuera")</pre><p><code>if</code> significa «si». Si la condición es <code>True</code> se hace lo que está <b>sangrado</b> debajo; si no, lo que está debajo del <code>else</code> («si no»). Para comparar se usa <code>==</code>, no <code>=</code>.</p>`,
+    hint: `Para comparar se usa <code>==</code>. Revisa los dos puntos y la sangría.`,
     starter: `print(placa)\nderecha = 2\n`,
     make: () => { const bueno = Math.random() < .5 ? 'arriba' : 'abajo'; return { map: bifurcacion(bueno, true), enemies: [], signo: bueno }; }
   },
   {
     clave: 'termometro', title: "El termómetro", concept: "if / elif / else", goals: ["salida"], maxLines: 10, random: true,
-    intro: `<p>La variable <code>temperatura</code> ya existe y cambia en cada partida. Según lo que marque, la salida está en un pasillo distinto:</p><pre>menos de 15      arriba\nmás de 30        abajo\nentre 15 y 30    recto</pre><p>Con más de dos casos se encadenan condiciones con <code>elif</code> («si no, si…»):</p><pre>if temperatura < 15:\n    ...\nelif temperatura > 30:\n    ...\nelse:\n    ...</pre><p>Python mira las condiciones en orden y hace solo la primera que se cumple.</p>`,
-    hint: `Recto son <code>derecha = 6</code>. Arriba: <code>derecha = 2</code>, <code>arriba = 2</code> y <code>derecha = 4</code>. Abajo, igual pero con <code>abajo = 2</code>. Ojo: con 15 y con 30 hay que ir recto.`,
+    intro: `<p>La variable <code>temperatura</code> ya existe y cambia en cada partida. Según lo que marque, la salida está en un pasillo distinto:</p><pre>menos de 15      arriba\nmás de 30        abajo\nentre 15 y 30    recto</pre><p>Con más de dos casos se encadenan condiciones con <code>elif</code> («si no, si…»):</p><pre>if nota < 5:\n    print("Suspenso")\nelif nota < 7:\n    print("Aprobado")\nelse:\n    print("Notable o más")</pre><p>Python mira las condiciones en orden y hace solo la primera que se cumple.</p>`,
+    hint: `¿Qué pasa justo con 15 y con 30? Piensa si va <code>&lt;</code> o <code>&lt;=</code>.`,
     starter: `print("Temperatura:", temperatura)\n`,
     make: () => {
       const caso = rnd(0, 2), temperatura = caso === 0 ? rnd(-5, 14) : caso === 1 ? rnd(31, 42) : [15, 30, rnd(16, 29)][rnd(0, 2)];
@@ -431,7 +431,7 @@ const NIVELES_RA2 = [
   {
     clave: 'escudo', title: "El puente de energía", concept: "and, or, not", goals: ["salida"], maxLines: 7, random: true,
     intro: `<p>El puente de arriba solo aguanta si llevas <b>escudo</b> <b>y</b> te queda <b>más de 50</b> de energía. Si no, tienes que bajar por el túnel. Las variables <code>escudo</code> (<code>True</code> o <code>False</code>) y <code>energia</code> (un número) ya existen y cambian en cada partida.</p><pre>and   las dos cosas tienen que ser True\nor    basta con que una sea True\nnot   le da la vuelta: not True es False</pre><p>Junta las dos condiciones en un solo <code>if</code>.</p>`,
-    hint: `<pre>derecha = 2\nif escudo and energia > 50:\n    arriba = 2\nelse:\n    abajo = 2\nderecha = 4</pre>`,
+    hint: `Las dos condiciones tienen que cumplirse a la vez.`,
     starter: `print("Escudo:", escudo, "Energía:", energia)\nderecha = 2\n`,
     make: () => {
       const escudo = Math.random() < .5, energia = Math.random() < .5 ? rnd(51, 100) : rnd(10, 50);
@@ -441,7 +441,7 @@ const NIVELES_RA2 = [
   {
     clave: 'contador', title: "La escalera que crece", concept: "for con range(inicio, fin)", goals: ["gemas", "salida"], maxLines: 3,
     intro: `<p>Cada tramo de esta escalera es un paso más largo que el anterior: 1, 2, 3 y 4. La variable del <code>for</code> va cambiando en cada vuelta, y la puedes usar:</p><pre>for i in range(1, 5):\n    print(i)</pre><p><code>range(1, 5)</code> da 1, 2, 3 y 4: empieza en el primer número y para <b>antes</b> del segundo.</p>`,
-    hint: `Dentro del bucle: <code>derecha = i</code> y <code>abajo = 1</code>.`,
+    hint: `La variable del <code>for</code> cambia en cada vuelta: úsala.`,
     starter: `for i in range(1, 5):\n    print(i)\n`,
     make: () => {
       const g = blank(14, 7); let x = 1, y = 1; g[y][x] = 'H';
@@ -452,8 +452,8 @@ const NIVELES_RA2 = [
   },
   {
     clave: 'bateria', title: "La batería", concept: "while con contador", goals: ["salida"], maxLines: 4, random: true,
-    intro: `<p>Tu batería tiene <code>energia</code> para unos pocos pasos (cambia en cada partida). Cada paso gasta 1. Avanza <b>mientras</b> te quede energía y, cuando llegue a 0, baja: la salida está justo debajo.</p><pre>while energia > 0:\n    derecha = 1\n    energia = energia - 1</pre><p>Si te olvidas de restar, la condición nunca deja de ser <code>True</code> y el bucle no acaba nunca.</p>`,
-    hint: `Después del bucle, ya sin sangría: <code>abajo = 1</code>.`,
+    intro: `<p>Tu batería tiene <code>energia</code> para unos pocos pasos (cambia en cada partida). Cada paso gasta 1. Avanza <b>mientras</b> te quede energía y, cuando llegue a 0, baja: la salida está justo debajo. Un bucle que cuenta hacia atrás se ve así:</p><pre>vueltas = 3\nwhile vueltas > 0:\n    print(vueltas)\n    vueltas = vueltas - 1</pre><p>Si te olvidas de restar, la condición nunca deja de ser <code>True</code> y el bucle no acaba nunca.</p>`,
+    hint: `Cuando el bucle termina, ¿dónde está la salida?`,
     starter: `print("Energía:", energia)\nwhile energia > 0:\n    derecha = 1\n`,
     comprobar: v => v.energia === 0 ? [] : [`La batería tenía que acabar a 0, y energia vale ${JSON.stringify(v.energia)}. Réstale 1 en cada vuelta.`],
     make: () => {
@@ -466,7 +466,7 @@ const NIVELES_RA2 = [
   {
     clave: 'ruta', title: "La ruta secreta", concept: "for sobre un texto + if/elif", goals: ["salida"], maxLines: 7, random: true,
     intro: `<p>La variable <code>ruta</code> es un texto con el camino, letra a letra, y cambia en cada partida:</p><pre>D   derecha\nA   arriba\nB   abajo (bajar)</pre><p>Un <code>for</code> puede recorrer un texto: en cada vuelta, la variable vale una letra.</p><pre>for letra in ruta:\n    print(letra)</pre><p>Dentro del bucle, decide con <code>if</code> / <code>elif</code> qué hacer con cada letra.</p>`,
-    hint: `<pre>for letra in ruta:\n    if letra == "D":\n        derecha = 1\n    elif letra == "A":\n        arriba = 1\n    else:\n        abajo = 1</pre>`,
+    hint: `En cada vuelta tienes una letra: compárala con cada opción.`,
     starter: `print(ruta)\nfor letra in ruta:\n    print(letra)\n`,
     make: () => {
       let x = 1, y = 3, ruta = '', ult = '';
@@ -486,8 +486,8 @@ const NIVELES_RA2 = [
   },
   {
     clave: 'jefe7', title: "Miniboss: el Repetidor", concept: "Acumular en un bucle", goals: ["salida"], maxLines: null, random: true,
-    intro: `<p>El <b>Repetidor</b> quiere la suma de todos los números del 1 hasta <code>n</code> (la variable <code>n</code> ya existe y cambia en cada partida). Con un bucle se va <b>acumulando</b>: empiezas en 0 y en cada vuelta sumas el número.</p><pre>suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i</pre><p>Haz la cuenta antes de acercarte. Luego te preguntará cuántas vueltas da un bucle: contesta con la variable <code>vueltas</code>.</p>`,
-    hint: `<pre>suma = 0\nfor i in range(1, n + 1):\n    suma = suma + i\nderecha = 5\nvueltas = 7\nderecha = 2</pre><code>range(2, 9)</code> da 2, 3, 4, 5, 6, 7 y 8: siete números.`,
+    intro: `<p>El <b>Repetidor</b> quiere la suma de todos los números del 1 hasta <code>n</code> (la variable <code>n</code> ya existe y cambia en cada partida). Con un bucle se va <b>acumulando</b>: la variable <code>suma</code> empieza en 0 y en cada vuelta le sumas el número que toque.</p><p>Haz la cuenta antes de acercarte. Luego te preguntará cuántas vueltas da un bucle: contesta con la variable <code>vueltas</code>.</p>`,
+    hint: `Empieza la suma en 0 y añádele algo en cada vuelta. <code>range</code> para antes del último número.`,
     starter: `print("n vale", n)\nsuma = 0\n`,
     make: () => { const n = rnd(5, 12); return nivelJefe('Repetidor', [
       { var: 'suma', pregunta: `Suma los números del 1 al n y guárdalo en suma.`, corta: '¿suma?', valida: (v, t) => t !== 'int' ? 'suma tiene que ser un número entero.' : Number(v) === n * (n + 1) / 2 ? true : Number(v) === n * (n - 1) / 2 ? `Te has quedado corto: range(1, n) para antes de n. Usa range(1, n + 1).` : `suma vale ${v}, pero la suma del 1 al ${n} no es esa.` },
